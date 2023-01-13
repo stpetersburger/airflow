@@ -1,0 +1,7 @@
+data/*
+plugins/*
+logs/*
+/.DS_Store
+.idea/
+pyprojects/datawarehouse/*
+*/.DS_Store
