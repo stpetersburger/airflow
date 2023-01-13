@@ -2,7 +2,7 @@
 the repo is used to keep the configuration of airflow >2 (2.2.4)
 
 
-###1. To create the customized image for airflow services:
+### 1. To create the customized image for airflow services:
 
 docker build --tag stpetersburger/airflow:latest .
 
@@ -12,7 +12,7 @@ Each is run on a separate container
 webserver is accessible on localhost:8080
 flower - localhost:5555
 
-####Project description
+#### Project description
 
 .env file has the assigned values to the environmental variables of the airflow service
 it is used on docker compose stage in order to make testing of the new features simpler
@@ -31,10 +31,10 @@ airflow containers on a new dag (task) to develop and run
 /pyproject consists of .py scripts to run within dags or to serve the execution of those scripts
 an overall concept: from a datasource to the datalake (datawarehouse)
 
-###2. To run the containers (locally on MacOs - docker desktop needs to be available and run):
+### 2. To run the containers (locally on MacOs - docker desktop needs to be available and run):
 
 docker-compose -f docker-compose.yaml up -d
 
-###3. To stop the containers deployment:
+### 3. To stop the containers deployment:
 
 docker-compose -f docker-compose.yaml
