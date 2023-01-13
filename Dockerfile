@@ -1,5 +1,5 @@
 # VERSION 1
-# AUTHOR: "alghandianalytics based on puckel"
+# AUTHOR: "stpetersburger based on puckel"
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm --no-cache -t stpetersburger/airflow .
 # SOURCE: https://github.com/stpetersburger/airflow
