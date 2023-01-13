@@ -1,8 +1,8 @@
 # VERSION 1
 # AUTHOR: "alghandianalytics based on puckel"
 # DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm --no-cache -t alghandianalytics/airflow .
-# SOURCE: https://github.com/alghandianalytics/airflow
+# BUILD: docker build --rm --no-cache -t stpetersburger/airflow .
+# SOURCE: https://github.com/stpetersburger/airflow
 
 #base image
 FROM python:3.8.12-slim-buster
