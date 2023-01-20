@@ -1,4 +1,4 @@
-# VERSION 1
+x# VERSION 1
 # AUTHOR: "stpetersburger based on puckel"
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm --no-cache -t stpetersburger/airflow .
@@ -55,8 +55,8 @@ ENV LC_MESSAGES en_US.UTF-8
 
 
 #COPY --chown=airflow ./requirements.txt /requirements.txt
-#COPY --chown=airflow script/docker-entrypoint.sh /docker-entrypoint.sh
-#COPY --chown=airflow configs/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+#COPY --chown=airflow old_script/docker-entrypoint.sh /docker-entrypoint.sh
+#COPY --chown=airflow old_configs/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
 #COPY --chown=airflow ./dags ${AIRFLOW_USER_HOME}/dags
 #COPY --chown=airflow ./logs ${AIRFLOW_USER_HOME}/logs
 #COPY --chown=airflow ./plugins ${AIRFLOW_USER_HOME}/plugins
@@ -87,9 +87,11 @@ RUN set -ex \
         /usr/share/doc-base
 
 COPY configs/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
+COPY ./data ${AIRFLOW_USER_HOME}/data
 COPY ./dags ${AIRFLOW_USER_HOME}/dags
 COPY ./logs ${AIRFLOW_USER_HOME}/logs
 COPY ./plugins ${AIRFLOW_USER_HOME}/plugins
+COPY ./pyprojects/datawarehouse/pipelines ${AIRFLOW_USER_HOME}/pyprojects/datawarehouse/pipelines
 
 EXPOSE 8080 5555 6379 5432 8786 2375 8125 5555
 RUN chmod 755 docker-entrypoint.sh
