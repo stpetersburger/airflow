@@ -5,7 +5,8 @@ plugins/*
 logs/*
 !logs/__init__.py
 /.DS_Store
-.idea/
+.idea
 pyprojects/creds
 !pyprojects/creds/__init__.py
 */.DS_Store
+READMY_for_local_testing

@@ -1,4 +1,4 @@
-x# VERSION 1
+# VERSION 1
 # AUTHOR: "stpetersburger based on puckel"
 # DESCRIPTION: Basic Airflow container
 # BUILD: docker build --rm --no-cache -t stpetersburger/airflow .
@@ -38,6 +38,7 @@ ARG AIRFLOW_USER_HOME="/usr/local/airflow"
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
+ENV PYTHONPATH "${PYTHONPATH}:${AIRFLOW_USER_HOME}/pyprojects"
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8

@@ -35,16 +35,16 @@ import sys
 #env = dict(os.environ, **customEnv)
 
 dag = DAG(
-    dag_id="test_spryker2dwh",
-    start_date=datetime(2023, 1, 17),
+    dag_id="test_spryker2dwh_orders",
+    start_date=datetime(2023, 1, 20),
     catchup=False,
     tags=["test"],
     schedule_interval=None,
 )
 
 t1 = BashOperator(
-    task_id="spryker2dwh",
-    bash_command='python /usr/local/airflow/pyprojects/datawarehouse/pipelines/spryker2dwh.py -env prod',
+    task_id="spryker2dwh_orders",
+    bash_command='python /usr/local/airflow/pyprojects/datawarehouse/pipelines/spryker2dwh.py -env prod -dataset items',
  #   env=env,
     dag=dag
 )
