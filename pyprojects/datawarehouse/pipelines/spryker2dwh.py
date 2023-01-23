@@ -83,9 +83,9 @@ def run(args):
                             value='')
             print(f'DF ARABIC CHANGE END - {datetime.datetime.now()}')
 
-            print(f'WRITE TO BG START - {datetime.datetime.now()}')
+            print(f'WRITE TO BQ START - {datetime.datetime.now()}')
             pandas_gbq.to_gbq(df, f'aws_s3.{pipelines[0]}', if_exists='replace')
-            print(f'WRITE TO BG END - {datetime.datetime.now()}')
+            print(f'WRITE TO BQ END - {datetime.datetime.now()}')
 
 
 if __name__ == '__main__':
