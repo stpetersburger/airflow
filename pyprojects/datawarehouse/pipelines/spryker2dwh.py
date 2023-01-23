@@ -14,7 +14,7 @@ from google.oauth2 import service_account
 
 #projdir='/usr/local/airflow'
 #projdir='/Users/ilya/mystuff/data_engineering/airflow'
-projdir = os.environ["AIRFLOW_USER_HOME"]
+projdir = os.environ["AIRFLOW_HOME"]
 
 def run(args):
 

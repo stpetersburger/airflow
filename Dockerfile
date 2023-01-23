@@ -89,11 +89,11 @@ RUN set -ex \
         /usr/share/doc-base
 
 COPY configs/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
-COPY pgdata ${AIRFLOW_USER_HOME}/data
 COPY ./dags ${AIRFLOW_USER_HOME}/dags
 COPY ./logs ${AIRFLOW_USER_HOME}/logs
 COPY ./plugins ${AIRFLOW_USER_HOME}/plugins
-RUN mkdir -p ${AIRFLOW_USER_HOME}/pyprojects
+COPY ./pyprojects  ${AIRFLOW_USER_HOME}/pyprojects
+RUN mkdir -p ${AIRFLOW_USER_HOME}/pyprojects/creds
 
 EXPOSE 8080 5555 6379 5432 8786 2375 8125 5555
 RUN chmod 755 docker-entrypoint.sh

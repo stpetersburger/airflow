@@ -9,4 +9,4 @@ logs/*
 pyprojects/creds/aws_s3.json
 pyprojects/creds/gcp_bq.json
 */.DS_Store
-local_testing
+z_local_testing
