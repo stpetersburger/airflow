@@ -45,7 +45,7 @@ dag = DAG(
 t1 = BashOperator(
     task_id="spryker2dwh_orders",
     bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py '
-                 f'-env prod -dataset order',
+                 f'-env prod -dataset items',
  #   env=env,
     dag=dag
 )

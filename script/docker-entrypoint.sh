@@ -24,8 +24,8 @@ wait_for_port() {
 # Global defaults and back-compat
 : "${AIRFLOW__CORE__EXECUTOR:=${AIRFLOW_EXECUTOR:-Sequential}Executor}"
 if [ -z "$POSTGRES_EXTRAS" ]; then
-  : "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
-
+#  : "${AIRFLOW__CORE__FERNET_KEY:=${FERNET_KEY:=$(python -c "from cryptography.fernet import Fernet; FERNET_KEY = Fernet.generate_key().decode(); print(FERNET_KEY)")}}"
+  : "${AIRFLOW__CORE__FERNET_KEY:=${AIRFLOW__CORE__FERNET_KEY}}"
   export AIRFLOW__CORE__FERNET_KEY
 
   : "${AIRFLOW__WEBSERVER__SECRET_KEY:=${AIRFLOW__CORE__FERNET_KEY}}"
