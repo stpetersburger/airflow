@@ -13,11 +13,11 @@ import urllib.parse
 #projdir='/usr/local/airflow'
 #projdir='/Users/ilya/mystuff/data_engineering/airflow'
 
-projdir = os.environ["AIRFLOW_HOME"]
+projdir = f"""{os.environ["AIRFLOW_HOME"]}/pyprojects"""
 
 def get_creds(conn_name,conn_section=''):
 
-    with open(f"""{projdir}/pyprojects/creds/{conn_name}.json""") as f:
+    with open(f"""{projdir}/creds/{conn_name}.json""") as f:
         creds = json.load(f)
         f.close()
 
@@ -28,7 +28,7 @@ def get_creds(conn_name,conn_section=''):
 
 def get_etl_datatypes(etl,dataset=''):
 
-    with open(f"""{projdir}/pyprojects/datawarehouse/etl_schemas.json""") as f:
+    with open(f"""{projdir}/datawarehouse/etl_schemas.json""") as f:
         etl_schemas = json.load(f)
         f.close()
 

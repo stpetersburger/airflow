@@ -63,15 +63,6 @@ if [[ "${AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION:=1}" == 1 ]]; then
 else
   AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=False
 fi
-# Check if the user has provided explicit Airflow configuration concerning the database
-#if [ -z "$AIRFLOW__CORE__SQL_ALCHEMY_CONN" ]; then
-# Default values corresponding to the default compose files
-#  : "${POSTGRES_HOST:=${POSTGRES_HOST}}"
-#  : "${POSTGRES_PORT:=${POSTGRES_PORT}}"
-#  : "${POSTGRES_USER:=${POSTGRES_USER}}"
-#  : "${POSTGRES_PASSWORD:=${POSTGRES_PASSWORD}}"
-#  : "${POSTGRES_DB:=${POSTGRES_DB}}"
-#  : "${POSTGRES_EXTRAS:=${POSTGRES_EXTRAS:-""}}"
 
 if [ -z "$POSTGRES_EXTRAS" ]; then
   echo "NO POSTGRES EXTRAS"

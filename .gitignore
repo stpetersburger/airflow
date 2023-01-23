@@ -4,7 +4,6 @@ plugins/*
 !plugins/__init__.py
 logs/*
 !logs/__init__.py
-/.DS_Store
 .idea
 pyprojects/creds/aws_s3.json
 pyprojects/creds/gcp_bq.json

@@ -12,8 +12,6 @@ from pyprojects.utils.udfs import *
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-#projdir='/usr/local/airflow'
-#projdir='/Users/ilya/mystuff/data_engineering/airflow'
 projdir = os.environ["AIRFLOW_HOME"]
 
 def run(args):
@@ -37,8 +35,6 @@ def run(args):
     pandas_gbq.context.credentials = gbq_credentials
     pandas_gbq.context.project = qbq_project
 
-    filepath = f'{projdir}/pgdata'
-
     datasets_schemas = get_etl_datatypes('spryker2dwh')
     pipelines = args.dst.split()
     
@@ -58,7 +54,6 @@ def run(args):
                 print(json_data)
                 print(f'READING JSON END - {datetime.datetime.now()}')
                 for substuff in json_data:
-                    #if substuff in ['order', 'items', 'customer']:
                     if substuff in pipelines:
                         print(f'READING DATE OUT OF DATAFRAME START - {datetime.datetime.now()}')
                         if isinstance(json_data[substuff], list):

@@ -1,7 +1,6 @@
 # VERSION 1
 # AUTHOR: "stpetersburger based on puckel"
 # DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm --no-cache -t stpetersburger/airflow .
 # SOURCE: https://github.com/stpetersburger/airflow
 
 #base image
@@ -48,21 +47,6 @@ ENV LC_ALL en_US.UTF-8
 ENV LC_CTYPE en_US.UTF-8
 ENV LC_MESSAGES en_US.UTF-8
 
-#RUN set -ex && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow
-#RUN chown -R airflow: ${AIRFLOW_USER_HOME}
-#RUN chgrp -R 0 ${AIRFLOW_USER_HOME} && chmod -R g+rwX ${AIRFLOW_USER_HOME}
-#adding the user to root group (id=0) if needed
-#RUN set -ex && useradd -ms /bin/bash -d ${AIRFLOW_USER_HOME} airflow -g 0
-###
-
-
-#COPY --chown=airflow ./requirements.txt /requirements.txt
-#COPY --chown=airflow old_script/docker-entrypoint.sh /docker-entrypoint.sh
-#COPY --chown=airflow old_configs/airflow.cfg ${AIRFLOW_USER_HOME}/airflow.cfg
-#COPY --chown=airflow ./dags ${AIRFLOW_USER_HOME}/dags
-#COPY --chown=airflow ./logs ${AIRFLOW_USER_HOME}/logs
-#COPY --chown=airflow ./plugins ${AIRFLOW_USER_HOME}/plugins
-
 COPY ./requirements.txt /requirements.txt
 COPY script/docker-entrypoint.sh /docker-entrypoint.sh
 
@@ -103,4 +87,3 @@ RUN chmod 666 /var/run/*
 #USER airflow
 WORKDIR ${AIRFLOW_USER_HOME}
 ENTRYPOINT ["/docker-entrypoint.sh"]
-#CMD ["webserver"]
