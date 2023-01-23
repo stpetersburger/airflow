@@ -28,11 +28,11 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__USE_ROW_LEVEL_LOCKING: ${AIRFLOW__SCHEDULER__USE_ROW_LEVEL_LOCKING}
     FLOWER_PORT: ${FLOWER_PORT}
   volumes:
-    - ./data:${AIRFLOW_USER_HOME}/data
+    #- ./pgdata:/var/lib/postgresql/data/pgdata
     - ./dags:${AIRFLOW_USER_HOME}/dags
     - ./logs:${AIRFLOW_USER_HOME}/logs
     - ./plugins:${AIRFLOW_USER_HOME}/plugins
-    - ./pyprojects/creds:${AIRFLOW_USER_HOME}/pyprojects/creds
+    - ./pyprojects:${AIRFLOW_USER_HOME}/pyprojects
 
 services:
 

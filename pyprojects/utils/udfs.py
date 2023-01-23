@@ -10,7 +10,10 @@ import pandas as pd
 import sys
 import urllib.parse
 
-projdir='/usr/local/airflow'
+#projdir='/usr/local/airflow'
+#projdir='/Users/ilya/mystuff/data_engineering/airflow'
+
+projdir = os.environ["AIRFLOW_USER_HOME"]
 
 def get_creds(conn_name,conn_section=''):
 

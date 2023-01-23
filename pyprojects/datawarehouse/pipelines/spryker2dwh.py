@@ -1,5 +1,5 @@
 """
-Script to bring data from Spryker to Analytics datalake
+Script to bring pgdata from Spryker to Analytics datalake
 """
 
 import argparse
@@ -12,7 +12,9 @@ from pyprojects.utils.udfs import *
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-projdir='/usr/local/airflow'
+#projdir='/usr/local/airflow'
+#projdir='/Users/ilya/mystuff/data_engineering/airflow'
+projdir = os.environ["AIRFLOW_USER_HOME"]
 
 def run(args):
 
@@ -25,20 +27,17 @@ def run(args):
     )
 
     #bigQuery credentials
-    credentials = service_account.Credentials.from_service_account_file(
-        f'{projdir}/pyprojects/creds/gcp_bq.json',
-        scopes=["https://www.googleapis.com/auth/cloud-platform"],
-    )
 
-    #bigQuery service definition
-    client = bigquery.Client(credentials=credentials, project=credentials.project_id, )
-    project = client.project
+    qbq_project = get_creds('gcp_bq', 'project_id')
+    gbq_credentials = service_account.Credentials.from_service_account_info(get_creds('gcp_bq'))
+
+    gbq = bigquery.Client(credentials=gbq_credentials, )
 
     #pandas_gbq definition
-    pandas_gbq.context.credentials = credentials
-    pandas_gbq.context.project = project
+    pandas_gbq.context.credentials = gbq_credentials
+    pandas_gbq.context.project = qbq_project
 
-    filepath = f'{projdir}/data'
+    filepath = f'{projdir}/pgdata'
 
     datasets_schemas = get_etl_datatypes('spryker2dwh')
     pipelines = args.dst.split()
@@ -90,16 +89,14 @@ def run(args):
             print(f'DF ARABIC CHANGE END - {datetime.datetime.now()}')
 
             print(f'WRITE TO BG START - {datetime.datetime.now()}')
-            pandas_gbq.to_gbq(df, f'aws_s3.{pipelines[0]}',
-                              project_id=project,
-                              if_exists='replace')
+            pandas_gbq.to_gbq(df, f'aws_s3.{pipelines[0]}', if_exists='replace')
             print(f'WRITE TO BG END - {datetime.datetime.now()}')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='sourcing datawarehouse with spryker')
     parser.add_argument('-environment', dest='env', required=False,
-                        help="data environment as string of dev, tst, prod")
+                        help="pgdata environment as string of dev, tst, prod")
     parser.add_argument('-dataset', dest='dst', required=True,
                         help="list of datasets to write in")
     run(parser.parse_args())
