@@ -7,10 +7,12 @@ import datetime
 import boto3
 import pandas as pd
 import pandas_gbq
+import json
 from pyprojects.utils.udfs import *
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+projdir='/usr/local/airflow'
 
 def run(args):
 
@@ -24,7 +26,7 @@ def run(args):
 
     #bigQuery credentials
     credentials = service_account.Credentials.from_service_account_file(
-        f'{os.environ["AIRFLOW_USER_HOME"]}/pyprojects/creds/gcp_bq.json',
+        f'{projdir}/pyprojects/creds/gcp_bq.json',
         scopes=["https://www.googleapis.com/auth/cloud-platform"],
     )
 
@@ -36,7 +38,7 @@ def run(args):
     pandas_gbq.context.credentials = credentials
     pandas_gbq.context.project = project
 
-    filepath = f'{os.environ["AIRFLOW_USER_HOME"]}/data'
+    filepath = f'{projdir}/data'
 
     datasets_schemas = get_etl_datatypes('spryker2dwh')
     pipelines = args.dst.split()

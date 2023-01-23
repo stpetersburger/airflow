@@ -6,7 +6,7 @@ logs/*
 !logs/__init__.py
 /.DS_Store
 .idea
-pyprojects/creds
-!pyprojects/creds/__init__.py
+pyprojects/creds/aws_s3.json
+pyprojects/creds/gcp_bq.json
 */.DS_Store
 READMY_for_local_testing

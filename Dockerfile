@@ -38,7 +38,8 @@ ARG AIRFLOW_USER_HOME="/usr/local/airflow"
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
 ENV AIRFLOW_HOME=${AIRFLOW_USER_HOME}
-ENV PYTHONPATH "${PYTHONPATH}:${AIRFLOW_USER_HOME}/pyprojects"
+ENV AIRFLOW_USER_HOME=${AIRFLOW_USER_HOME}
+ENV PYTHONPATH "${PYTHONPATH}:${AIRFLOW_HOME}"
 
 # Define en_US.
 ENV LANGUAGE en_US.UTF-8
@@ -92,7 +93,10 @@ COPY ./data ${AIRFLOW_USER_HOME}/data
 COPY ./dags ${AIRFLOW_USER_HOME}/dags
 COPY ./logs ${AIRFLOW_USER_HOME}/logs
 COPY ./plugins ${AIRFLOW_USER_HOME}/plugins
-COPY ./pyprojects/datawarehouse/pipelines ${AIRFLOW_USER_HOME}/pyprojects/datawarehouse/pipelines
+COPY ./pyprojects/datawarehouse ${AIRFLOW_USER_HOME}/pyprojects/datawarehouse
+COPY ./pyprojects/utils ${AIRFLOW_USER_HOME}/pyprojects/utils
+COPY ./pyprojects/__init__.py ${AIRFLOW_USER_HOME}/pyprojects
+RUN mkdir -p ${AIRFLOW_USER_HOME}/pyprojects/creds
 
 EXPOSE 8080 5555 6379 5432 8786 2375 8125 5555
 RUN chmod 755 docker-entrypoint.sh
