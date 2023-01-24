@@ -7,6 +7,5 @@ logs/*
 .idea
 pyprojects/creds/aws_s3.json
 pyprojects/creds/gcp_bq.json
-./.DS_Store
-**/.DS_Store
+.DS_Store
 z_local_testing
