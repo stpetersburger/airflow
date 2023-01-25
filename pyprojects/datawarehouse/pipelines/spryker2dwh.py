@@ -3,48 +3,30 @@ Script to bring pgdata from Spryker to Analytics datalake
 """
 
 import argparse
-import datetime
+from pyprojects.utils.udfs import *
 import boto3
 import pandas as pd
-import pandas_gbq
-import json
-from pyprojects.utils.udfs import *
-from google.cloud import bigquery
-from google.oauth2 import service_account
 
-projdir = os.environ["AIRFLOW_HOME"]
 
 def run(args):
 
     #s3 credentials
     s3 = boto3.resource(
-        service_name=get_creds('aws_s3', 'service_name'),
-        region_name=get_creds('aws_s3', 'region_name'),
-        aws_access_key_id=get_creds('aws_s3', 'aws_access_key_id'),
-        aws_secret_access_key=get_creds('aws_s3', 'aws_secret_access_key')
+    service_name=get_creds(args.schema, 'service_name'),
+    region_name=get_creds(args.schema, 'region_name'),
+    aws_access_key_id=get_creds(args.schema, 'aws_access_key_id'),
+    aws_secret_access_key=get_creds(args.schema, 'aws_secret_access_key')
     )
 
-    #bigQuery credentials
-
-    qbq_project = get_creds('gcp_bq', 'project_id')
-    gbq_credentials = service_account.Credentials.from_service_account_info(get_creds('gcp_bq'))
-
-    gbq = bigquery.Client(credentials=gbq_credentials, )
-
-    #pandas_gbq definition
-    pandas_gbq.context.credentials = gbq_credentials
-    pandas_gbq.context.project = qbq_project
-
     datasets_schemas = get_etl_datatypes('spryker2dwh')
-    pipelines = args.dst.split()
-    
+
     #navigate to the s3 bucket
     for bucket in s3.buckets.all():
         if bucket.name == 'stg-analytics-stream':
             print(bucket.name)
             my_bucket = s3.Bucket(bucket.name)
             df = pd.DataFrame()
-            #roam through the files in the navigated s3 bucket
+            # roam through the files in the navigated s3 bucket
             for my_bucket_object in my_bucket.objects.all():
                 print(my_bucket_object.key)
                 print(f'START - reading from s3 - {datetime.datetime.now()}')
@@ -54,7 +36,7 @@ def run(args):
                 print(json_data)
                 print(f'READING JSON END - {datetime.datetime.now()}')
                 for substuff in json_data:
-                    if substuff in pipelines:
+                    if substuff in args.dataset:
                         print(f'READING DATE OUT OF DATAFRAME START - {datetime.datetime.now()}')
                         if isinstance(json_data[substuff], list):
                             for i in json_data[substuff]:
@@ -73,7 +55,7 @@ def run(args):
                         print(f'READING DATE OUT OF DATAFRAME END - {datetime.datetime.now()}')
 
             print(f'DF SCHEMA START - {datetime.datetime.now()}')
-            for fld in datasets_schemas[pipelines[0]]:
+            for fld in datasets_schemas[args.dataset]:
                 print(fld)
                 df[fld] = df[fld].astype("string")
             print(f'DF SCHEMA END - {datetime.datetime.now()}')
@@ -82,17 +64,30 @@ def run(args):
             df = df.replace(regex=r'[^\x00-\x7F]+',
                             value='')
             print(f'DF ARABIC CHANGE END - {datetime.datetime.now()}')
-
             print(f'WRITE TO BQ START - {datetime.datetime.now()}')
-            pandas_gbq.to_gbq(df, f'aws_s3.{pipelines[0]}', if_exists='replace')
-            print(f'WRITE TO BQ END - {datetime.datetime.now()}')
+            try:
+                write_to_gbq(args.conn,
+                             args.schema,
+                             args.dataset,
+                             df,
+                             args.wtype)
+                print(f'WRITE TO BQ END - {datetime.datetime.now()}')
+            except Exception as e:
+                print(f'caught {type(e)}: {str(e)}')
+                sys.exit()
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='sourcing datawarehouse with spryker')
-    parser.add_argument('-environment', dest='env', required=False,
-                        help="pgdata environment as string of dev, tst, prod")
-    parser.add_argument('-dataset', dest='dst', required=True,
+    parser.add_argument('-connection_name', dest='conn', required=True,
+                        help="connection name to gbq")
+    parser.add_argument('-schema_name', dest='schema', required=True,
                         help="list of datasets to write in")
+    parser.add_argument('-dataset_name', dest='dataset', required=True,
+                        help="list of datasets to write in")
+    parser.add_argument('-writing_type', dest='wtype', required=True,
+                        help="append or replace")
+    parser.add_argument('-date', dest='dt', required=False,
+                        help="start date to get the data")
     run(parser.parse_args())
 

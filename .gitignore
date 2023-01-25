@@ -5,7 +5,6 @@ plugins/*
 logs/*
 !logs/__init__.py
 .idea
-pyprojects/creds/aws_s3.json
-pyprojects/creds/gcp_bq.json
+pyprojects/creds/*
 .DS_Store
 z_local_testing
