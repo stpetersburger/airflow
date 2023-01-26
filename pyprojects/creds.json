@@ -1,0 +1,29 @@
+{
+	"aws_s3": {
+		"spryker2dwh": {
+			"region_name": "AWS_DEFAULT_REGION",
+			"aws_access_key_id": "AWS_ACCESS_KEY_ID",
+			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY"
+		}
+
+	},
+	"gcp_bq": {
+		"datawarehouse": {
+			"google_cloud_platform": "GOOGLE_APPLICATION_CREDENTIALS"
+		}
+
+	},
+	"gs": {
+		"spreadsheets": {
+			"prefix": "GOOGLE_SPREADSHEETS_PREFIX",
+			"config_sheet": "GOOGLE_SPREADSHEETS_CONFIGSHEET"
+		}
+	},
+	"ms_sharepoint": {
+		"spreadsheets": {
+			"username": "MS_SHAREPOINT_USERNAME",
+			"password": "MS_SHAREPOINT_PASSWORD",
+			"prefix": "MS_SHAREPOINT_SPREADSHEETS_PREFIX"
+		}
+	}
+}

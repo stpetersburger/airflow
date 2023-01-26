@@ -12,10 +12,10 @@ def run(args):
 
     #s3 credentials
     s3 = boto3.resource(
-    service_name=get_creds(args.schema, 'service_name'),
-    region_name=get_creds(args.schema, 'region_name'),
-    aws_access_key_id=get_creds(args.schema, 'aws_access_key_id'),
-    aws_secret_access_key=get_creds(args.schema, 'aws_secret_access_key')
+    service_name='s3',
+    region_name=get_creds(args.schema, 'spryker2dwh', 'region_name'),
+    aws_access_key_id=get_creds(args.schema, 'spryker2dwh', 'aws_access_key_id'),
+    aws_secret_access_key=get_creds(args.schema, 'spryker2dwh', 'aws_secret_access_key')
     )
 
     datasets_schemas = get_etl_datatypes('spryker2dwh')
@@ -82,7 +82,7 @@ if __name__ == '__main__':
     parser.add_argument('-connection_name', dest='conn', required=True,
                         help="connection name to gbq")
     parser.add_argument('-schema_name', dest='schema', required=True,
-                        help="list of datasets to write in")
+                        help="dwh schema to write in")
     parser.add_argument('-dataset_name', dest='dataset', required=True,
                         help="list of datasets to write in")
     parser.add_argument('-writing_type', dest='wtype', required=True,

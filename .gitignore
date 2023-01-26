@@ -5,6 +5,5 @@ plugins/*
 logs/*
 !logs/__init__.py
 .idea
-pyprojects/creds/*
 .DS_Store
 z_local_testing
