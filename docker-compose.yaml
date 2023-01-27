@@ -3,7 +3,9 @@
 version: '3.8'
 x-airflow-common:
   &airflow-common
-  env_file: ./.env
+  env_file:
+    - ./.env
+    - ./.env_
   image: ${AIRFLOW_IMAGE_NAME}
   environment:
     CELERY_POSTGRES_DRIVER: ${CELERY_POSTGRES_DRIVER}
@@ -30,7 +32,7 @@ x-airflow-common:
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: ${POSTGRES_DRIVER}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
     FLOWER_PORT: ${FLOWER_PORT}
   volumes:
-    #- ./pgdata:/var/lib/postgresql/data/pgdata
+    - ./pgdata:/var/lib/postgresql/data
     - ./dags:${AIRFLOW_USER_HOME}/dags
     - ./logs:${AIRFLOW_USER_HOME}/logs
     - ./plugins:${AIRFLOW_USER_HOME}/plugins
@@ -40,7 +42,6 @@ services:
 
     postgres:
       <<: *airflow-common
-      env_file: ./.env
       image: ${METADB_IMAGE_NAME}
       container_name: postgres
       hostname: ${POSTGRES_HOST}
