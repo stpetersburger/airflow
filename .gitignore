@@ -6,4 +6,3 @@ logs/*
 !logs/__init__.py
 .idea
 .DS_Store
-z_local_testing
