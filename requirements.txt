@@ -16,6 +16,7 @@ openapi-schema-validator<0.2.0
 markupsafe<2.1.0
 datetime
 authlib
+openpyxl
 google.cloud
 google.oauth
 google-auth-oauthlib
@@ -24,3 +25,4 @@ pandas
 pandas_gbq
 pyarrow
 gspread
+office365

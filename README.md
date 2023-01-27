@@ -33,8 +33,8 @@ an overall concept: from a datasource to the datalake (datawarehouse)
 
 ### 2. To run the containers (locally on MacOs - docker desktop needs to be available and run):
 
-docker-compose -f docker-compose.yaml up -d
+docker compose -f docker-compose.yaml up -d
 
 ### 3. To stop the containers deployment:
 
-docker-compose -f docker-compose.yaml
+docker compose down

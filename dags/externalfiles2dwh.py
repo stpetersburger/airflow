@@ -35,7 +35,7 @@ import sys
 #env = dict(os.environ, **customEnv)
 
 dag = DAG(
-    dag_id="test_spryker2dwh_orders",
+    dag_id="externalfiles2dwh",
     start_date=datetime(2023, 1, 20),
     catchup=False,
     tags=["test"],
@@ -43,12 +43,11 @@ dag = DAG(
 )
 
 t1 = BashOperator(
-    task_id="spryker2dwh_orders",
-    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py '
-                 f'-conn gcp_bq -schema aws_s3 -dataset order -writing_type replace',
+    task_id="externalfiles2dwh",
+    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
+                 f'-conn gcp_bq',
  #   env=env,
     dag=dag
 )
-
 
 t1
