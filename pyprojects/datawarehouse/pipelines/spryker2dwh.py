@@ -18,8 +18,6 @@ def run(args):
     aws_secret_access_key=get_creds(args.schema, 'spryker2dwh', 'aws_secret_access_key')
     )
 
-    datasets_schemas = get_etl_datatypes('spryker2dwh')
-
     #navigate to the s3 bucket
     for bucket in s3.buckets.all():
         if bucket.name == 'stg-analytics-stream':
@@ -54,22 +52,12 @@ def run(args):
 
                         print(f'READING DATE OUT OF DATAFRAME END - {datetime.datetime.now()}')
 
-            print(f'DF SCHEMA START - {datetime.datetime.now()}')
-            for fld in datasets_schemas[args.dataset]:
-                print(fld)
-                df[fld] = df[fld].astype("string")
-            print(f'DF SCHEMA END - {datetime.datetime.now()}')
-            print(df)
-            print(f'DF ARABIC CHANGE START - {datetime.datetime.now()}')
-            df = df.replace(regex=r'[^\x00-\x7F]+',
-                            value='')
-            print(f'DF ARABIC CHANGE END - {datetime.datetime.now()}')
             print(f'WRITE TO BQ START - {datetime.datetime.now()}')
             try:
                 write_to_gbq(args.conn,
                              args.schema,
                              args.dataset,
-                             df,
+                             clean_pandas_dataframe(df, 'spryker2dwh'),
                              args.wtype)
                 print(f'WRITE TO BQ END - {datetime.datetime.now()}')
             except Exception as e:

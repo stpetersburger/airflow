@@ -105,11 +105,21 @@ def clean_pandas_dataframe(df, pipeline=''):
     header_list_new = list(
         map(lambda i: re.sub('[^a-zA-Z0-9] *', '_', header_list[i]).lower(), range(0, len(header_list))))
     df.columns = header_list_new
-    df = df.astype(str)
 
-    if pipeline == 'sharepoint2dwh':
+    if pipeline in ['googlesheet2dwh', 'sharepoint2dwh', 'url']:
 
+        df = df.astype(str)
         df = df[df.iloc[:, 0] != 'nan']
 
+    elif pipeline in ['spryker2dwh']:
+
+        datasets_schemas = get_etl_datatypes(pipeline)
+
+        #changing the field format to be accepted by BQ
+        for fld in datasets_schemas:
+            if fld in header_list_new:
+                df[fld] = df[fld].astype("string")
+
+    df["inserted_at"] = datetime.datetime.now()
     print(df)
     return df

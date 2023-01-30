@@ -36,10 +36,10 @@ import sys
 
 dag = DAG(
     dag_id="externalfiles2dwh",
-    start_date=datetime(2023, 1, 20),
+    start_date=datetime(2023, 1, 28),
     catchup=False,
-    tags=["test"],
-    schedule_interval=None,
+    tags=["staging"],
+    schedule_interval='0 8 * * *',
 )
 
 t1 = BashOperator(

@@ -1,15 +1,6 @@
 {
 	"spryker2dwh": {
-		"customer": {
-			"external_id": "string",
-			"phone": "string"
-		},
-		"order": {},
-		"items": {}
-	},
-	"spreadsheets2dwh": {
-		"master_sheet": {
-
-		}
+		"external_id": "string",
+		"phone": "string"
 	}
 }
