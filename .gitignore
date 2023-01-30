@@ -6,5 +6,4 @@ logs/*
 !logs/__init__.py
 .idea
 .DS_Store
-/.DS_Store
 __pycache__

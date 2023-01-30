@@ -120,6 +120,24 @@ def clean_pandas_dataframe(df, pipeline=''):
             if fld in header_list_new:
                 df[fld] = df[fld].astype("string")
 
-    df["inserted_at"] = datetime.datetime.now()
+    #as jobs run in the beginning of an hour - this is to round the date of insert to the hour, when it loads the data
+    ins_dt = datetime.datetime.now()
+    df["inserted_at"] = ins_dt.replace(minute=0,
+                                       hour=ins_dt.hour,
+                                       second=0,
+                                       microsecond=0)
     print(df)
     return df
+
+
+def get_s3_prefix(project='spryker', business_type='b2c'):
+
+    rdate = datetime.datetime.now()#-datetime.timedelta(1)
+    prefix = "{}/{}/{}/{}/{}/".format(project,
+                                      rdate.year,
+                                      rdate.month,
+                                      rdate.day,
+                                      business_type
+                                      )
+
+    return prefix

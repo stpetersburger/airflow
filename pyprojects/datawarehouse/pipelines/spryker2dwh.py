@@ -17,7 +17,14 @@ def run(args):
     aws_access_key_id=get_creds(args.schema, 'spryker2dwh', 'aws_access_key_id'),
     aws_secret_access_key=get_creds(args.schema, 'spryker2dwh', 'aws_secret_access_key')
     )
-
+    prefix = get_s3_prefix()
+    my_bucket = s3.Bucket('stg-analytics-stream')
+    print(prefix)
+    for obj in my_bucket.objects.filter(Prefix=prefix):
+        if obj.key.endswith('json'):
+            print(obj.key)
+            print(obj.last_modified)
+    sys.exit()
     #navigate to the s3 bucket
     for bucket in s3.buckets.all():
         if bucket.name == 'stg-analytics-stream':
