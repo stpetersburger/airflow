@@ -44,26 +44,10 @@ dag = DAG(
 
 t1 = BashOperator(
     task_id="orders",
-    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py '
-                 f'-conn gcp_bq -schema aws_s3 -dataset order -writing_type replace',
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
+                 f"""-conn gcp_bq -business_type b2c -schema aws_s3 -writing_type append -date ''""",
  #   env=env,
     dag=dag
 )
 
-t2 = BashOperator(
-    task_id="items",
-    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py '
-                 f'-conn gcp_bq -schema aws_s3 -dataset items -writing_type replace',
- #   env=env,
-    dag=dag
-)
-
-t3 = BashOperator(
-    task_id="customer",
-    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py '
-                 f'-conn gcp_bq -schema aws_s3 -dataset customer -writing_type replace',
- #   env=env,
-    dag=dag
-)
-
-t1 >> t2 >> t3
+t1
