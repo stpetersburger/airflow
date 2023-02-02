@@ -5,6 +5,7 @@ plugins/*
 logs/*
 !logs/__init__.py
 .idea
+*/.DS_Store
 .DS_Store
-pyprojects/__pycache__
-pyprojects/utils/__pycache__
+*/__pycache__
+utils/__pycache__
