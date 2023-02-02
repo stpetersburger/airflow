@@ -8,4 +8,4 @@ logs/*
 */.DS_Store
 .DS_Store
 */__pycache__
-utils/__pycache__
+pyprojects/utils/__pycache__
