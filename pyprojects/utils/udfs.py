@@ -201,11 +201,11 @@ def get_deduplication_data(conn, entity, df_new, index):
     if entity == 'spryker2dwh_b2c_items':
         strsql = f"""select  {flds},1 state
                        from  aws_s3.sales_order_item_states
-                      where  updated_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY))"""
+                      where  updated_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY)"""
     elif entity == 'spryker2dwh_b2c_orders':
         strsql = f"""select  {flds},1 state
                        from  aws_s3.sales_order_states
-                              where  updated_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY))"""
+                              where  updated_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY)"""
 
     df_old = get_from_gbq(conn, strsql)
 

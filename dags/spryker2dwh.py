@@ -38,7 +38,7 @@ dag = DAG(
     dag_id="spryker2dwh",
     start_date=datetime(2023, 1, 20),
     catchup=False,
-    tags=["test"],
+    tags=["staging"],
     schedule_interval=None,
 )
 
