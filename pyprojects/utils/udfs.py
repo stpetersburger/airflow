@@ -119,10 +119,7 @@ def clean_pandas_dataframe(df, pipeline=''):
     header_list = df.columns.tolist()
     # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
     header_list_new = list(
-        map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
-                             re.sub(r'\B[A-Z]\B', lambda x: '_' + x.group().lower(),
-                                    header_list[i])
-                             ).lower(),
+        map(lambda i: re.sub('[^a-zA-Z0-9] *', '_', header_list[i]).lower(),
             range(0, len(header_list))))
     df.columns = header_list_new
 
@@ -190,7 +187,8 @@ def get_delta(conn, pipeline_nk, dt=''):
             delta = time.mktime(datetime.datetime.strptime(dt, "%Y%m%d").timetuple())
     else:
         delta = delta['delta'].iloc[0]
-
+    print(delta)
+    sys.exit()
     return delta
 
 

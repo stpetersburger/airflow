@@ -36,14 +36,14 @@ import sys
 
 dag = DAG(
     dag_id="spryker2dwh",
-    start_date=datetime(2023, 1, 20),
+    start_date=datetime(2023, 2, 2),
     catchup=False,
     tags=["staging"],
-    schedule_interval=None,
+    schedule_interval='0 4 * * *',
 )
 
 t1 = BashOperator(
-    task_id="orders",
+    task_id="spryker_orders_info",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
                  f"""-conn gcp_bq -business_type b2c -schema aws_s3 -writing_type append -date ''""",
  #   env=env,
