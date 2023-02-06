@@ -112,26 +112,35 @@ def get_from_gbq(conn, str_sql):
                            progress_bar_type=None)
 
 
-def clean_pandas_dataframe(df, pipeline=''):
+def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
 
-    # get the initial names of the fields
-    header_list = df.columns.tolist()
-    # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
-    header_list_new = list(
-        map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
-                             re.sub(r'\B[A-Z]\B', lambda x: '_' + x.group().lower(),
-                                    header_list[i])
-                             ).lower(),
-            range(0, len(header_list))))
-    df.columns = header_list_new
+    if pipeline == '':
+        # get the initial names of the fields
+        header_list = df.columns.tolist()
+        # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
+        if standartise:
+            header_list_new = list(
+                map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
+                                     re.sub(r'\B[A-Z]\B', lambda x: '_' + x.group().lower(),
+                                            header_list[i])
+                                     ).lower(),
+                    range(0, len(header_list))))
+        else:
+            header_list_new = list(
+                map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
+                                     header_list[i]
+                                     ).lower(),
+                    range(0, len(header_list))))
 
-    for col in header_list_new:
-        if "_at" in col:
-            df[col] = pd.to_datetime(df[col], utc=True)
+        df.columns = header_list_new
 
-    if pipeline != '':
-
-        if pipeline in ['googlesheet2dwh', 'sharepoint2dwh', 'url']:
+        for col in header_list_new:
+            if "_at" in col:
+                df[col] = pd.to_datetime(df[col], utc=True)
+            elif "price" in col or "amount" in col or "rate" in col:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype('float')
+    else:
+        if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
 
             df = df.astype(str)
             df = df[df.iloc[:, 0] != 'nan']
@@ -142,11 +151,14 @@ def clean_pandas_dataframe(df, pipeline=''):
 
             #changing the field format to be accepted by BQ
             for fld in datasets_schemas:
-                if fld in header_list_new:
+                if fld in df.columns.tolist():
+                    print(fld)
                     df[fld] = df[fld].astype("string")
-
-        ins_dt = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
-        df["inserted_at"] = ins_dt
+        print(batch_num)
+        if batch_num != '':
+            df["inserted_at"] = batch_num
+        else:
+            df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
 
     return df
 
@@ -175,11 +187,11 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
     return prefix
 
 
-def get_delta(conn, pipeline_nk, dt=''):
+def get_delta(conn, id_pipeline, dt=''):
 
     strsql = f"""select max(delta)  delta
                from etl_metadata.airflow_run 
-              where pipeline_nk ='{pipeline_nk}'"""
+              where id_pipeline ='{id_pipeline}'"""
     delta = get_from_gbq(conn, strsql)
 
     if pd.isnull(delta['delta'].iloc[0]):
@@ -189,7 +201,7 @@ def get_delta(conn, pipeline_nk, dt=''):
             delta = time.mktime(datetime.datetime.strptime(dt, "%Y%m%d").timetuple())
     else:
         delta = delta['delta'].iloc[0]
-    print(delta)
+
     return delta
 
 
@@ -200,16 +212,11 @@ def get_deduplication_data(conn, entity, df_new, index):
     if entity == 'spryker2dwh_b2c_items':
         strsql = f"""select  {flds},1 state
                        from  aws_s3.sales_order_item_states
-                      where  _PARTITIONTIME  >= TIMESTAMP_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
-
-    elif entity == 'spryker2dwh_b2c_orders':
-        strsql = f"""select  {flds},1 state
-                       from  aws_s3.sales_order_states
-                              where  _PARTITIONTIME  >= TIMESTAMP_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
+                      where  created_at  >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY)"""
 
     df_old = get_from_gbq(conn, strsql)
 
-    df_new = clean_pandas_dataframe(df_new, 'spryker2dwh')
+    df_new = clean_pandas_dataframe(df_new)
 
     df = pd.merge(df_new, df_old, left_on=index,
                    right_on=index,

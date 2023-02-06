@@ -11,7 +11,7 @@ import pandas as pd
 def run(args):
     project = 'spryker'
     pipeline = f"""{project}2dwh"""
-    pipeline_nk = f"""{pipeline}_{args.btype}"""
+    id_pipeline = f"""{pipeline}_{args.btype}"""
 
     # s3 credentials
     s3 = boto3.resource(
@@ -21,7 +21,7 @@ def run(args):
         aws_secret_access_key=get_creds(args.schema, pipeline, 'aws_secret_access_key')
     )
 
-    delta = get_delta(args.conn, pipeline_nk, args.dt)
+    delta = get_delta(args.conn, id_pipeline, args.dt)
 
     my_bucket = s3.Bucket(get_creds(args.schema, pipeline, 'bucket'))
     prefix = get_s3_prefix(project, args.btype, args.dt)
@@ -30,7 +30,6 @@ def run(args):
     df_news_items = pd.DataFrame()
     df_news_orders = pd.DataFrame()
     df_hist_items = pd.DataFrame()
-    df_hist_orders = pd.DataFrame()
     last_modified = 0
     cnt = 0
 
@@ -44,7 +43,6 @@ def run(args):
                     last_modified = time.mktime(obj.last_modified.timetuple())
 
                 msg_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
-
                 msg_data_order = clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["order"]]))[[
                     'id_sales_order',
                     'is_test',
@@ -52,7 +50,6 @@ def run(args):
                     'fk_locale',
                     'cart_note',
                     'currency_iso_code',
-                    'price_mode',
                     'order_exchange_rate',
                     'fk_customer',
                     'order_custom_reference',
@@ -65,40 +62,26 @@ def run(args):
                 if msg_data["eventName"] == '':
 
                     if msg_data["items"][0]["item_status"] == 'new':
-                        msg_data_order_status = msg_data_order.filter(items=[
-                                                                            'id_sales_order',
-                                                                            'created_at',
-                                                                            'updated_at'])
-
-                        msg_data_order_status['sales_order_state_name_en'] = "new"
-
-                        msg_data_order_status = msg_data_order_status.filter(items=[
-                                                                                'sales_order_state_name_en',
-                                                                                'id_sales_order',
-                                                                                'created_at',
-                                                                                'updated_at'])
-
-                        df_hist_orders = concatenate_dataframes(df_hist_orders, msg_data_order_status)
 
                         msg_data_order_totals = clean_pandas_dataframe(
-                            pd.DataFrame.from_dict([msg_data["order_totals"][0]]))
+                            pd.DataFrame.from_dict([msg_data["order_totals"][0]]), '', True)
                         msg_data_order_totals = msg_data_order_totals.drop(columns=['created_at',
                                                                                 'updated_at',
                                                                                 'fk_sales_order'], axis=1)
 
                         msg_data_shipping_expense = clean_pandas_dataframe(pd.DataFrame.from_dict(
-                            [msg_data["shipping_expense"][0]]))[['id_sales_expense',
-                                                                 'discount_amount_aggregation',
-                                                                 'gross_price',
-                                                                 'name',
-                                                                 'net_price',
-                                                                 'price',
-                                                                 'price_to_pay_aggregation',
-                                                                 'refundable_amount',
-                                                                 'tax_amount']]
+                            [msg_data["shipping_expense"][0]]), '', True)[['id_sales_expense',
+                                                                           'discount_amount_aggregation',
+                                                                           'gross_price',
+                                                                           'name',
+                                                                           'net_price',
+                                                                           'price',
+                                                                           'price_to_pay_aggregation',
+                                                                           'refundable_amount',
+                                                                           'tax_amount']]
 
                         msg_data_shipping_address = \
-                            clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["shipping_address"]]))[[
+                            clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["shipping_address"]]), '', True)[[
                                                                                             'id_sales_order_address',
                                                                                             'fk_country',
                                                                                             'fk_region',
@@ -118,7 +101,6 @@ def run(args):
                                                                       'fk_locale',
                                                                       'cart_note',
                                                                       'currency_iso_code',
-                                                                      'price_mode',
                                                                       'order_exchange_rate',
                                                                       'order_custom_reference',
                                                                       'customer_reference',
@@ -159,7 +141,6 @@ def run(args):
                             'id_sales_order_item',
                             'fk_sales_order_item_bundle',
                             'fk_sales_shipment',
-                            'group_key',
                             'quantity',
                             'is_quantity_splittable',
                             'canceled_amount',
@@ -186,88 +167,36 @@ def run(args):
                                                                                       'created_at',
                                                                                       'updated_at']]
 
-                    msg_data_items_state.rename(columns={"fk_oms_order_item_state":"id_sales_order_item_state"},
+                    msg_data_items_state.rename(columns={"fk_oms_order_item_state": "id_sales_order_item_state"},
                                                 inplace=True)
 
                     df_hist_items = concatenate_dataframes(df_hist_items, msg_data_items_state)
-
-                    # orders_hist
-                    if msg_data["eventName"] != '':
-                        #get max updated_at from items for the order_status_change:
-                        osch = msg_data_items_state["updated_at"].max()
-
-                        msg_data_order_status = msg_data_order.filter(items=['id_sales_order',
-                                                                             'created_at',
-                                                                             'updated_at'])
-                        msg_data_order_status['sales_order_state_name_en'] = msg_data["eventName"]
-                        msg_data_order_status['updated_at'] = osch
-
-                        df_hist_orders = concatenate_dataframes(df_hist_orders, msg_data_order_status)
-
-    dim_msg_data_order_status = get_gbq_dim_data(args.conn,
-                                                 'gcp_gs',
-                                                 'map_order_status',
-                                                 ['id_sales_order_state',
-                                                  'sales_order_state_name_en'])
-
-    print(df_hist_orders)
-
-    df_hist_orders = pd.merge(df_hist_orders,
-                                     dim_msg_data_order_status,
-                                     left_on=['sales_order_state_name_en'],
-                                     right_on=['sales_order_state_name_en'],
-                                     how='left')
-
-    print(df_hist_orders)
-
-    df_hist_orders = df_hist_orders.filter(items=[
-        'id_sales_order_state',
-        'id_sales_order',
-        'created_at',
-        'updated_at'])
-    df_hist_orders.fillna(-1, inplace=True)
-
-    print(df_hist_orders)
                         
     if cnt > 0:
 
-        df_news_orders = clean_pandas_dataframe(df_news_orders.drop_duplicates(), pipeline)
-        df_hist_orders = clean_pandas_dataframe(df_hist_orders.drop_duplicates(), pipeline)
-        df_news_items = clean_pandas_dataframe(df_news_items.drop_duplicates(), pipeline)
-        df_hist_items = clean_pandas_dataframe(df_hist_items.drop_duplicates(), pipeline)
+        df_news_orders = clean_pandas_dataframe(df_news_orders.drop_duplicates(), pipeline, '', last_modified)
 
-        print(df_news_orders)
+        df_news_items.rename(columns={"sku": "fk_sku_simple"}, inplace=True)
+        df_news_items = clean_pandas_dataframe(df_news_items.drop_duplicates(), pipeline, '', last_modified)
 
+        if not df_hist_items.empty:
+            df_hist_items = get_deduplication_data(args.conn,
+                                                   f"""{id_pipeline}_items""",
+                                                   df_hist_items,
+                                                   ['id_sales_order_item', 'updated_at'])
+            df_hist_items = clean_pandas_dataframe(df_hist_items.drop_duplicates(), pipeline, '', last_modified)
 
-        #deduplication with history:
-        #if not df_hist_orders.empty:
-        #    df_hist_orders = get_deduplication_data(args.conn,
-        #                                            f"""{pipeline_nk}_orders""",
-        #                                            df_hist_orders,
-        #                                            ['id_sales_order', 'updated_at'])
-        #if not df_hist_items.empty:
-        #    df_hist_items = get_deduplication_data(args.conn,
-        #                                           f"""{pipeline_nk}_items""",
-        #                                           df_hist_items,
-        #                                           ['id_sales_order_item', 'updated_at'])
-
-        delta_update = {"pipeline_nk": f"""{pipeline_nk}""", "delta": last_modified}
+        delta_update = {"id_pipeline": f"""{id_pipeline}""", "delta": last_modified}
         delta_update = pd.DataFrame.from_dict([delta_update])
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
 
         print(f'WRITE TO BQ START - {datetime.datetime.now()}')
 
         try:
-            print(df_news_orders)
             write_to_gbq(args.conn,
                          args.schema, 'sales_orders', df_news_orders, args.wtype)
-            print(df_hist_orders)
-            write_to_gbq(args.conn,
-                         args.schema, 'sales_order_states', df_hist_orders, args.wtype)
-            print(df_news_items)
             write_to_gbq(args.conn,
                          args.schema, 'sales_order_items', df_news_items, args.wtype)
-            print(df_hist_items)
             write_to_gbq(args.conn,
                          args.schema, 'sales_order_item_states', df_hist_items, args.wtype)
             write_to_gbq(args.conn,
