@@ -152,9 +152,8 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
             #changing the field format to be accepted by BQ
             for fld in datasets_schemas:
                 if fld in df.columns.tolist():
-                    print(fld)
                     df[fld] = df[fld].astype("string")
-        print(batch_num)
+
         if batch_num != '':
             df["inserted_at"] = batch_num
         else:
@@ -189,18 +188,17 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
 
 def get_delta(conn, id_pipeline, dt=''):
 
-    strsql = f"""select max(delta)  delta
-               from etl_metadata.airflow_run 
-              where id_pipeline ='{id_pipeline}'"""
-    delta = get_from_gbq(conn, strsql)
+    if dt == '':
+        strsql = f"""select max(delta)  delta
+                       from etl_metadata.airflow_run 
+                      where id_pipeline ='{id_pipeline}'"""
 
-    if pd.isnull(delta['delta'].iloc[0]):
-        if dt == '':
+        delta = get_from_gbq(conn, strsql)
+
+        if pd.isnull(delta['delta'].iloc[0]):
             delta = 1675140678.0
-        else:
-            delta = time.mktime(datetime.datetime.strptime(dt, "%Y%m%d").timetuple())
     else:
-        delta = delta['delta'].iloc[0]
+        delta = time.mktime(datetime.datetime.strptime(dt, "%Y%m%d").timetuple())
 
     return delta
 
