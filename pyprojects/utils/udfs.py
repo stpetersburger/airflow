@@ -73,7 +73,6 @@ def get_data_from_sharepoint(conn="ms_sharepoint", sheet='', sheet_tab='Sheet1')
     bytes_file_obj = io.BytesIO()
     bytes_file_obj.write(response.content)
     bytes_file_obj.seek(0)  # set file object to start
-    print("PASSED HERE")
     # read excel file and each sheet into pandas dataframe
     df = pd.read_excel(bytes_file_obj, sheet_name=sheet_tab, engine='openpyxl')
 
@@ -119,7 +118,10 @@ def clean_pandas_dataframe(df, pipeline=''):
     header_list = df.columns.tolist()
     # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
     header_list_new = list(
-        map(lambda i: re.sub('[^a-zA-Z0-9] *', '_', header_list[i]).lower(),
+        map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
+                             re.sub(r'\B[A-Z]\B', lambda x: '_' + x.group().lower(),
+                                    header_list[i])
+                             ).lower(),
             range(0, len(header_list))))
     df.columns = header_list_new
 
@@ -188,7 +190,6 @@ def get_delta(conn, pipeline_nk, dt=''):
     else:
         delta = delta['delta'].iloc[0]
     print(delta)
-    sys.exit()
     return delta
 
 
@@ -199,11 +200,12 @@ def get_deduplication_data(conn, entity, df_new, index):
     if entity == 'spryker2dwh_b2c_items':
         strsql = f"""select  {flds},1 state
                        from  aws_s3.sales_order_item_states
-                      where  updated_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY)"""
+                      where  _PARTITIONTIME  >= TIMESTAMP_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
+
     elif entity == 'spryker2dwh_b2c_orders':
         strsql = f"""select  {flds},1 state
                        from  aws_s3.sales_order_states
-                              where  updated_at >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY)"""
+                              where  _PARTITIONTIME  >= TIMESTAMP_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
 
     df_old = get_from_gbq(conn, strsql)
 
@@ -218,9 +220,17 @@ def get_deduplication_data(conn, entity, df_new, index):
 
 
 def concatenate_dataframes(df1, df2):
+
     if df1.empty:
         df1 = df2
     else:
         df1 = pd.concat([df1, df2])
 
     return df1
+
+
+def get_gbq_dim_data(conn, dataset, table, fields):
+
+    strsql = f"""SELECT {','.join(str(x) for x in fields)} FROM {dataset}.{table} """
+
+    return get_from_gbq(conn, strsql)

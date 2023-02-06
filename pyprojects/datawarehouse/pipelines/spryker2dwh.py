@@ -62,63 +62,104 @@ def run(args):
                     'updated_at'
                 ]]
 
-                if msg_data["eventName"] == '' and msg_data["items"][0]["item_status"] == 'new':
+                if msg_data["eventName"] == '':
 
-                    msg_data_order_status = msg_data_order.filter(items=[
-                        'id_sales_order',
-                        'updated_at'])
-                    msg_data_order_status['order_status_name_en'] = "new"
-                    msg_data_order_status = msg_data_order_status.filter(items=[
-                        'id_sales_order',
-                        'order_status_name_en',
-                        'updated_at'])
+                    if msg_data["items"][0]["item_status"] == 'new':
+                        msg_data_order_status = msg_data_order.filter(items=[
+                                                                            'id_sales_order',
+                                                                            'created_at',
+                                                                            'updated_at'])
 
-                    df_hist_orders = concatenate_dataframes(df_hist_orders, msg_data_order_status)
+                        msg_data_order_status['sales_order_state_name_en'] = "new"
 
-                    msg_data_order_totals = clean_pandas_dataframe(
-                        pd.DataFrame.from_dict([msg_data["order_totals"][0]]))
-                    msg_data_order_totals = msg_data_order_totals.drop(columns=["created_at", "updated_at"], axis=1)
+                        msg_data_order_status = msg_data_order_status.filter(items=[
+                                                                                'sales_order_state_name_en',
+                                                                                'id_sales_order',
+                                                                                'created_at',
+                                                                                'updated_at'])
 
-                    msg_data_shipping_expense = clean_pandas_dataframe(pd.DataFrame.from_dict(
-                        [msg_data["shipping_expense"][0]]))[[
-                        'id_sales_expense',
-                        'discount_amount_aggregation',
-                        'gross_price',
-                        'name',
-                        'net_price',
-                        'price',
-                        'price_to_pay_aggregation',
-                        'refundable_amount',
-                        'tax_amount'
-                    ]]
+                        df_hist_orders = concatenate_dataframes(df_hist_orders, msg_data_order_status)
 
-                    msg_data_shipping_address = \
-                        clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["shipping_address"]]))[[
-                            'id_sales_order_address',
-                            'fk_country',
-                            'fk_region',
-                            'address1',
-                            'address2',
-                            'address3'
-                        ]]
+                        msg_data_order_totals = clean_pandas_dataframe(
+                            pd.DataFrame.from_dict([msg_data["order_totals"][0]]))
+                        msg_data_order_totals = msg_data_order_totals.drop(columns=['created_at',
+                                                                                'updated_at',
+                                                                                'fk_sales_order'], axis=1)
 
-                    msg_data_order = msg_data_order.join(msg_data_order_totals) \
-                        .join(msg_data_shipping_expense) \
-                        .join(msg_data_shipping_address)
+                        msg_data_shipping_expense = clean_pandas_dataframe(pd.DataFrame.from_dict(
+                            [msg_data["shipping_expense"][0]]))[['id_sales_expense',
+                                                                 'discount_amount_aggregation',
+                                                                 'gross_price',
+                                                                 'name',
+                                                                 'net_price',
+                                                                 'price',
+                                                                 'price_to_pay_aggregation',
+                                                                 'refundable_amount',
+                                                                 'tax_amount']]
 
-                    df_news_orders = concatenate_dataframes(df_news_orders, msg_data_order)
+                        msg_data_shipping_address = \
+                            clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["shipping_address"]]))[[
+                                                                                            'id_sales_order_address',
+                                                                                            'fk_country',
+                                                                                            'fk_region',
+                                                                                            'address1',
+                                                                                            'address2',
+                                                                                            'address3']]
+
+                        msg_data_order = msg_data_order.join(msg_data_order_totals) \
+                            .join(msg_data_shipping_expense) \
+                            .join(msg_data_shipping_address).drop(columns=['updated_at'], axis=1)
+
+                        msg_data_order = msg_data_order.filter(items=['fk_country',
+                                                                      'fk_customer',
+                                                                      'id_sales_order',
+                                                                      'is_test',
+                                                                      'order_reference',
+                                                                      'fk_locale',
+                                                                      'cart_note',
+                                                                      'currency_iso_code',
+                                                                      'price_mode',
+                                                                      'order_exchange_rate',
+                                                                      'order_custom_reference',
+                                                                      'customer_reference',
+                                                                      'oms_processor_identifier',
+                                                                      'id_sales_order_totals',
+                                                                      'canceled_total',
+                                                                      'discount_total',
+                                                                      'grand_total',
+                                                                      'order_expense_total',
+                                                                      'refund_total',
+                                                                      'subtotal',
+                                                                      'tax_total',
+                                                                      'id_sales_expense',
+                                                                      'discount_amount_aggregation',
+                                                                      'gross_price',
+                                                                      'name',
+                                                                      'net_price',
+                                                                      'price',
+                                                                      'price_to_pay_aggregation',
+                                                                      'refundable_amount',
+                                                                      'tax_amount',
+                                                                      'id_sales_order_address',
+                                                                      'fk_region',
+                                                                      'address1',
+                                                                      'address2',
+                                                                      'address3'
+                                                                      'created_at'])
+
+                        df_news_orders = concatenate_dataframes(df_news_orders, msg_data_order)
 
                     msg_data_items = msg_data["items"]
 
                     for el in msg_data_items:
                         df_el = clean_pandas_dataframe(pd.DataFrame.from_dict([el])[[
-                            'id_sales_order_item',
+                            'sku',
+                            'merchant_id',
                             'fk_sales_order',
+                            'id_sales_order_item',
                             'fk_sales_order_item_bundle',
                             'fk_sales_shipment',
-                            'merchant_id',
                             'group_key',
-                            'sku',
                             'quantity',
                             'is_quantity_splittable',
                             'canceled_amount',
@@ -134,83 +175,103 @@ def run(args):
                             'subtotal_aggregation',
                             'tax_amount',
                             'tax_amount_full_aggregation',
-                            'created_at',
-                            'updated_at'
-                        ]]
-                                                       )
+                            'created_at']])
+
                         df_news_items = concatenate_dataframes(df_news_items, df_el)
                 else:
                     # items_hist
-                    msg_data_items_state = pd.DataFrame.from_dict(msg_data["items"])[["id_sales_order_item",
-                                                                                      "fk_sales_order",
-                                                                                      "fk_oms_order_item_state",
-                                                                                      "updated_at"]]
+                    msg_data_items_state = pd.DataFrame.from_dict(msg_data["items"])[['fk_oms_order_item_state',
+                                                                                      'fk_sales_order',
+                                                                                      'id_sales_order_item',
+                                                                                      'created_at',
+                                                                                      'updated_at']]
+
+                    msg_data_items_state.rename(columns={"fk_oms_order_item_state":"id_sales_order_item_state"},
+                                                inplace=True)
 
                     df_hist_items = concatenate_dataframes(df_hist_items, msg_data_items_state)
 
                     # orders_hist
                     if msg_data["eventName"] != '':
-                        msg_data_order_status = msg_data_order.filter(items=[
-                            'id_sales_order',
-                            'updated_at'])
-                        msg_data_order_status['order_status_name_en'] = msg_data["eventName"]
-                        msg_data_order_status = msg_data_order_status.filter(items=[
-                            'id_sales_order',
-                            'order_status_name_en',
-                            'updated_at'])
+                        #get max updated_at from items for the order_status_change:
+                        osch = msg_data_items_state["updated_at"].max()
+
+                        msg_data_order_status = msg_data_order.filter(items=['id_sales_order',
+                                                                             'created_at',
+                                                                             'updated_at'])
+                        msg_data_order_status['sales_order_state_name_en'] = msg_data["eventName"]
+                        msg_data_order_status['updated_at'] = osch
+
                         df_hist_orders = concatenate_dataframes(df_hist_orders, msg_data_order_status)
+
+    dim_msg_data_order_status = get_gbq_dim_data(args.conn,
+                                                 'gcp_gs',
+                                                 'map_order_status',
+                                                 ['id_sales_order_state',
+                                                  'sales_order_state_name_en'])
+
+    print(df_hist_orders)
+
+    df_hist_orders = pd.merge(df_hist_orders,
+                                     dim_msg_data_order_status,
+                                     left_on=['sales_order_state_name_en'],
+                                     right_on=['sales_order_state_name_en'],
+                                     how='left')
+
+    print(df_hist_orders)
+
+    df_hist_orders = df_hist_orders.filter(items=[
+        'id_sales_order_state',
+        'id_sales_order',
+        'created_at',
+        'updated_at'])
+    df_hist_orders.fillna(-1, inplace=True)
+
+    print(df_hist_orders)
                         
     if cnt > 0:
-
-        delta_update = {"pipeline_nk": f"""{pipeline_nk}""", "delta": last_modified}
-        delta_update = pd.DataFrame.from_dict([delta_update])
 
         df_news_orders = clean_pandas_dataframe(df_news_orders.drop_duplicates(), pipeline)
         df_hist_orders = clean_pandas_dataframe(df_hist_orders.drop_duplicates(), pipeline)
         df_news_items = clean_pandas_dataframe(df_news_items.drop_duplicates(), pipeline)
         df_hist_items = clean_pandas_dataframe(df_hist_items.drop_duplicates(), pipeline)
-        delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
+
+        print(df_news_orders)
+
 
         #deduplication with history:
-        if not df_hist_orders.empty:
-            df_hist_orders = get_deduplication_data(args.conn,
-                                                    f"""{pipeline_nk}_orders""",
-                                                    df_hist_orders,
-                                                    ['id_sales_order', 'updated_at'])
-        if not df_hist_items.empty:
-            df_hist_items = get_deduplication_data(args.conn,
-                                                   f"""{pipeline_nk}_items""",
-                                                   df_hist_items,
-                                                   ['id_sales_order_item', 'updated_at'])
-#
+        #if not df_hist_orders.empty:
+        #    df_hist_orders = get_deduplication_data(args.conn,
+        #                                            f"""{pipeline_nk}_orders""",
+        #                                            df_hist_orders,
+        #                                            ['id_sales_order', 'updated_at'])
+        #if not df_hist_items.empty:
+        #    df_hist_items = get_deduplication_data(args.conn,
+        #                                           f"""{pipeline_nk}_items""",
+        #                                           df_hist_items,
+        #                                           ['id_sales_order_item', 'updated_at'])
+
+        delta_update = {"pipeline_nk": f"""{pipeline_nk}""", "delta": last_modified}
+        delta_update = pd.DataFrame.from_dict([delta_update])
+        delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
+
         print(f'WRITE TO BQ START - {datetime.datetime.now()}')
 
         try:
+            print(df_news_orders)
             write_to_gbq(args.conn,
-                         args.schema,
-                         'sales_orders',
-                         df_news_orders,
-                         args.wtype)
+                         args.schema, 'sales_orders', df_news_orders, args.wtype)
+            print(df_hist_orders)
             write_to_gbq(args.conn,
-                         args.schema,
-                         'sales_order_states',
-                         df_hist_orders,
-                         args.wtype)
+                         args.schema, 'sales_order_states', df_hist_orders, args.wtype)
+            print(df_news_items)
             write_to_gbq(args.conn,
-                         args.schema,
-                         'sales_order_items',
-                         df_news_items,
-                         args.wtype)
+                         args.schema, 'sales_order_items', df_news_items, args.wtype)
+            print(df_hist_items)
             write_to_gbq(args.conn,
-                         args.schema,
-                         'sales_order_item_states',
-                         df_hist_items,
-                         args.wtype)
+                         args.schema, 'sales_order_item_states', df_hist_items, args.wtype)
             write_to_gbq(args.conn,
-                         'etl_metadata',
-                         'airflow_run',
-                         clean_pandas_dataframe(delta_update, 'spryker2dwh'),
-                         args.wtype)
+                         'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, 'spryker2dwh'), args.wtype)
 
             print(f'WRITE TO BQ END - {datetime.datetime.now()}')
         except Exception as e:
