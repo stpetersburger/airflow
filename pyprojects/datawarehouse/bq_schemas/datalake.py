@@ -20,6 +20,25 @@ create table if not exists aws_s3.catalog_products
 )
     cluster by id_sku_config, id_sku_simple, id_category, brand_name_en;
 
+drop table if exists aws_s3.historical_catalog_products;
+create table if not exists aws_s3.historical_catalog_products
+(
+    id_sku_config          STRING,
+    id_sku_simple          STRING,
+    id_category            INT64,
+    category_name_en       STRING,
+    brand_name_en          STRING,
+    gross_default_price    FLOAT64,
+    gross_original_price   FLOAT64,
+    net_default_price      FLOAT64,
+    net_original_price     FLOAT64,
+    merchant_name_en       STRING,
+    inserted_at            TIMESTAMP
+)
+    partition by DATE_TRUNC(inserted_at, MONTH)
+    cluster by id_sku_config, id_sku_simple, id_category, brand_name_en
+    options (require_partition_filter = TRUE);
+
 drop table if exists aws_s3.sales_order_item_states;
 create table if not exists aws_s3.sales_order_item_states
 (

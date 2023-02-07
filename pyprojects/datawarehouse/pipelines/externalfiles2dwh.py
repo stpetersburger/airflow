@@ -19,8 +19,8 @@ def run(args):
     for index, row in etl_config_spreadsheet.iterrows():
 
         if row['truncate'] and row['dwh_schema'] != '':
-            get_from_gbq('gcp_bq', f"""TRUNCATE TABLE {row['dwh_schema']}.{row['name']}""")
             wtype = 'append'
+            get_from_gbq('gcp_bq', f"""TRUNCATE TABLE {row['dwh_schema']}.{row['name']}""")
 
         if row['pipeline'] == 'googlesheet2dwh':
             df = get_data_from_googlesheet(conn=args.conn,
@@ -28,6 +28,7 @@ def run(args):
                                            gsheet_tab=row['tab'])
             df = clean_pandas_dataframe(df)
             write_to_gbq(args.conn, 'gcp_gs', row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
         elif row['pipeline'] == 'sharepoint2dwh':
             df = get_data_from_sharepoint(sheet=row["url"],
                                           sheet_tab=row["tab"])
@@ -70,6 +71,17 @@ def run(args):
                               'merchant_name_en']
 
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
+        if row['if_historical']:
+            strsql = f"""SELECT CURRENT_DATE() > COALESCE(MAX(DATE(inserted_at)), CURRENT_DATE()-1) 
+                         FROM {row['dwh_schema']}.historical_{row['name']}
+                         WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
+            if get_from_gbq('gcp_bq', strsql)["f0_"].iloc[0]:
+                wtype = 'append'
+                hist_fields = row['historical_fields'].split(',')
+                df = df.filter(items=hist_fields)
+                write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
+                             clean_pandas_dataframe(df, row['pipeline']), wtype)
 
 
 if __name__ == '__main__':
