@@ -23,15 +23,15 @@ create table if not exists aws_s3.catalog_products
 drop table if exists aws_s3.sales_order_item_states;
 create table if not exists aws_s3.sales_order_item_states
 (
-    id_sales_order_item_state INT64      not null,
+    fk_sales_order_item_state INT64      not null,
     fk_sales_order            INT64      not null,
-    id_sales_order_item       INT64      not null,
+    fk_sales_order_item       INT64      not null,
     created_at                TIMESTAMP,
     updated_at                TIMESTAMP,
     inserted_at               FLOAT64
 )
     partition by DATE_TRUNC(created_at, MONTH)
-    cluster by id_sales_order_item_state, fk_sales_order, id_sales_order_item
+    cluster by fk_sales_order_item_state, fk_sales_order, fk_sales_order_item
     options (require_partition_filter = TRUE);
 
 
@@ -82,14 +82,14 @@ create table if not exists aws_s3.sales_orders
     order_custom_reference      STRING,
     customer_reference          STRING,
     oms_processor_identifier    INT64,
-    id_sales_order_totals       INT64,
+    fk_sales_order_totals       INT64,
     discount_total              FLOAT64,
     grand_total                 FLOAT64,
     order_expense_total         FLOAT64,
     refund_total                FLOAT64,
     subtotal                    FLOAT64,
     tax_total                   FLOAT64,
-    id_sales_expense            INT64,
+    fk_sales_expense            INT64,
     discount_amount_aggregation FLOAT64,
     gross_price                 FLOAT64,
     name                        STRING,
@@ -98,7 +98,7 @@ create table if not exists aws_s3.sales_orders
     price_to_pay_aggregation    FLOAT64,
     refundable_amount           FLOAT64,
     tax_amount                  FLOAT64,
-    id_sales_order_address      INT64,
+    fk_sales_order_address      INT64,
     fk_region                   STRING,
     address1                    STRING,
     address2                    STRING,

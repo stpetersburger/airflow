@@ -2,5 +2,8 @@
 	"spryker2dwh": {
 		"external_id": "string",
 		"phone": "string"
+	},
+	"url": {
+
 	}
 }

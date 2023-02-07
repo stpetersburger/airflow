@@ -95,6 +95,12 @@ def run(args):
                             .join(msg_data_shipping_expense) \
                             .join(msg_data_shipping_address).drop(columns=['updated_at'], axis=1)
 
+                        msg_data_order.rename(columns={"id_sales_order_totals": "fk_sales_order_totals",
+                                                       "id_sales_expense": "fk_sales_expense",
+                                                       "id_sales_order_address": "fk_sales_order_address"
+                                                       },
+                                              inplace=True)
+
                         msg_data_order = msg_data_order.filter(items=['fk_country',
                                                                       'fk_customer',
                                                                       'id_sales_order',
@@ -107,14 +113,14 @@ def run(args):
                                                                       'order_custom_reference',
                                                                       'customer_reference',
                                                                       'oms_processor_identifier',
-                                                                      'id_sales_order_totals',
+                                                                      'fk_sales_order_totals',
                                                                       'discount_total',
                                                                       'grand_total',
                                                                       'order_expense_total',
                                                                       'refund_total',
                                                                       'subtotal',
                                                                       'tax_total',
-                                                                      'id_sales_expense',
+                                                                      'fk_sales_expense',
                                                                       'discount_amount_aggregation',
                                                                       'gross_price',
                                                                       'name',
@@ -123,7 +129,7 @@ def run(args):
                                                                       'price_to_pay_aggregation',
                                                                       'refundable_amount',
                                                                       'tax_amount',
-                                                                      'id_sales_order_address',
+                                                                      'fk_sales_order_address',
                                                                       'fk_region',
                                                                       'address1',
                                                                       'address2',
@@ -132,7 +138,6 @@ def run(args):
                                                                       'created_at'])
 
                         df_news_orders = concatenate_dataframes(df_news_orders, msg_data_order)
-
 
                     msg_data_items = msg_data["items"]
 
@@ -170,14 +175,16 @@ def run(args):
                                                                                       'created_at',
                                                                                       'updated_at']]
 
-                    msg_data_items_state.rename(columns={"fk_oms_order_item_state": "id_sales_order_item_state"},
+                    msg_data_items_state.rename(columns={"fk_oms_order_item_state": "fk_sales_order_item_state",
+                                                         "id_sales_order_item": "fk_sales_order_item"},
                                                 inplace=True)
 
                     df_hist_items = concatenate_dataframes(df_hist_items, msg_data_items_state)
                         
     if cnt > 0:
 
-        df_news_orders = clean_pandas_dataframe(df_news_orders.drop_duplicates(), pipeline, '', last_modified)
+        df_news_orders = clean_pandas_dataframe(df_news_orders.drop_duplicates())
+        df_news_orders = clean_pandas_dataframe(df_news_orders, pipeline, '', last_modified)
 
         df_news_items.rename(columns={"sku": "fk_sku_simple"}, inplace=True)
         df_news_items = clean_pandas_dataframe(df_news_items.drop_duplicates(), pipeline, '', last_modified)
@@ -186,7 +193,7 @@ def run(args):
             df_hist_items = get_deduplication_data(args.conn,
                                                    f"""{id_pipeline}_items""",
                                                    df_hist_items,
-                                                   ['id_sales_order_item', 'updated_at'])
+                                                   ['fk_sales_order_item', 'updated_at'])
             df_hist_items = clean_pandas_dataframe(df_hist_items.drop_duplicates(), pipeline, '', last_modified)
 
         delta_update = {"id_pipeline": f"""{id_pipeline}""", "delta": last_modified}
@@ -194,7 +201,8 @@ def run(args):
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
 
         print(f'WRITE TO BQ START - {datetime.datetime.now()}')
-
+        print(df_news_orders)
+        print(df_news_orders.dtypes)
         try:
             write_to_gbq(args.conn,
                          args.schema, 'sales_orders', df_news_orders, args.wtype)
@@ -208,7 +216,6 @@ def run(args):
             print(f'WRITE TO BQ END - {datetime.datetime.now()}')
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
-            sys.exit()
 
 
 if __name__ == '__main__':
