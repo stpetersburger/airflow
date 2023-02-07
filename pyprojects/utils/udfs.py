@@ -95,7 +95,7 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype):
     #pandas_gbq definition
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
-
+    print(f'WRITE TO BQ START - {datetime.datetime.now()}')
     pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
     print(f'WRITE TO BQ END - {datetime.datetime.now()}')
 

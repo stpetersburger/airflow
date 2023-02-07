@@ -7,7 +7,7 @@ def run(args):
     etl_config_spreadsheet = get_data_from_googlesheet(args.conn, get_creds('gs',
                                                                             'spreadsheets',
                                                                             'config_sheet'),
-                                                                  'etl_pipelines')
+                                                                            'etl_pipelines')
 
     etl_config_spreadsheet = etl_config_spreadsheet[etl_config_spreadsheet.iloc[:, 0] != 0]
 

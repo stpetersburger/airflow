@@ -200,9 +200,6 @@ def run(args):
         delta_update = pd.DataFrame.from_dict([delta_update])
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
 
-        print(f'WRITE TO BQ START - {datetime.datetime.now()}')
-        print(df_news_orders)
-        print(df_news_orders.dtypes)
         try:
             write_to_gbq(args.conn,
                          args.schema, 'sales_orders', df_news_orders, args.wtype)
@@ -212,8 +209,6 @@ def run(args):
                          args.schema, 'sales_order_item_states', df_hist_items, args.wtype)
             write_to_gbq(args.conn,
                          'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, 'spryker2dwh'), args.wtype)
-
-            print(f'WRITE TO BQ END - {datetime.datetime.now()}')
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
 
