@@ -142,10 +142,12 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
     else:
         if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
 
+            #make all data string
             df = df.astype(str)
+            #filter out all lines with empty first field
             df = df[df.iloc[:, 0] != 'nan']
 
-        elif pipeline in ['spryker2dwh']:
+        elif pipeline in ['spryker2dwh', 'url']:
 
             datasets_schemas = get_etl_datatypes(pipeline)
 
@@ -196,7 +198,9 @@ def get_delta(conn, id_pipeline, dt=''):
         delta = get_from_gbq(conn, strsql)
 
         if pd.isnull(delta['delta'].iloc[0]):
-            delta = 1675140678.0
+            delta = 1665140678.0
+        else:
+            delta = delta['delta'].iloc[0]
     else:
         delta = time.mktime(datetime.datetime.strptime(dt, "%Y%m%d").timetuple())
 

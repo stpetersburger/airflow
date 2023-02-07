@@ -83,7 +83,6 @@ create table if not exists aws_s3.sales_orders
     customer_reference          STRING,
     oms_processor_identifier    INT64,
     id_sales_order_totals       INT64,
-    canceled_total              FLOAT64,
     discount_total              FLOAT64,
     grand_total                 FLOAT64,
     order_expense_total         FLOAT64,
@@ -104,6 +103,7 @@ create table if not exists aws_s3.sales_orders
     address1                    STRING,
     address2                    STRING,
     address3                    STRING,
+    customer_created_at         TIMESTAMP,
     created_at                  TIMESTAMP,
     inserted_at                 FLOAT64
 )

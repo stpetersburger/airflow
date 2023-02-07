@@ -59,6 +59,8 @@ def run(args):
                     'updated_at'
                 ]]
 
+                msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
+
                 if msg_data["eventName"] == '':
 
                     if msg_data["items"][0]["item_status"] == 'new':
@@ -106,7 +108,6 @@ def run(args):
                                                                       'customer_reference',
                                                                       'oms_processor_identifier',
                                                                       'id_sales_order_totals',
-                                                                      'canceled_total',
                                                                       'discount_total',
                                                                       'grand_total',
                                                                       'order_expense_total',
@@ -126,10 +127,12 @@ def run(args):
                                                                       'fk_region',
                                                                       'address1',
                                                                       'address2',
-                                                                      'address3'
+                                                                      'address3',
+                                                                      'customer_created_at',
                                                                       'created_at'])
 
                         df_news_orders = concatenate_dataframes(df_news_orders, msg_data_order)
+
 
                     msg_data_items = msg_data["items"]
 
