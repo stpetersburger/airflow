@@ -27,13 +27,14 @@ def run(args):
                                            gsheet=row['url'],
                                            gsheet_tab=row['tab'])
             df = clean_pandas_dataframe(df)
-            write_to_gbq(args.conn, 'gcp_gs', row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
+            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         elif row['pipeline'] == 'sharepoint2dwh':
             df = get_data_from_sharepoint(sheet=row["url"],
                                           sheet_tab=row["tab"])
             df = clean_pandas_dataframe(df)
-            write_to_gbq(args.conn, 'shpoint', row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
         elif row['pipeline'] == 'url':
             df = get_data_from_url(url=row['url'],
                                    file=row['tab'],
@@ -73,7 +74,8 @@ def run(args):
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         if row['if_historical']:
-            strsql = f"""SELECT CURRENT_DATE() > COALESCE(MAX(DATE(inserted_at)), CURRENT_DATE()-1) 
+            #weekly snapshot
+            strsql = f"""SELECT (CURRENT_DATE() - 7) = MAX(DATE(inserted_at))
                          FROM {row['dwh_schema']}.historical_{row['name']}
                          WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
             if get_from_gbq('gcp_bq', strsql)["f0_"].iloc[0]:

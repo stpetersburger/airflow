@@ -28,6 +28,7 @@ create table if not exists aws_s3.historical_catalog_products
     id_category            INT64,
     category_name_en       STRING,
     brand_name_en          STRING,
+    if_simple_active       INT64,
     gross_default_price    FLOAT64,
     gross_original_price   FLOAT64,
     net_default_price      FLOAT64,

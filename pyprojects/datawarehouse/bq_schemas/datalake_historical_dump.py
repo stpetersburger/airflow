@@ -79,5 +79,4 @@ LEFT  JOIN spy_sales_order_totals sot
 LEFT  JOIN spy_sales_expense se
     ON so.id_sales_order = se.fk_sales_order
 LEFT  JOIN spy_sales_order_address soa
-    ON so.fk_sales_order_address_billing = soa.id_sales_order_address
-LIMIT 10;
+    ON so.fk_sales_order_address_billing = soa.id_sales_order_address;

@@ -115,6 +115,7 @@ def get_from_gbq(conn, str_sql):
 def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
 
     if pipeline == '':
+
         # get the initial names of the fields
         header_list = df.columns.tolist()
         # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
@@ -134,11 +135,6 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
 
         df.columns = header_list_new
 
-        for col in header_list_new:
-            if "_at" in col:
-                df[col] = pd.to_datetime(df[col], utc=True)
-            elif "price" in col or "amount" in col or "rate" in col:
-                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype('float')
     else:
         if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
 
@@ -155,6 +151,14 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
             for fld in datasets_schemas:
                 if fld in df.columns.tolist():
                     df[fld] = df[fld].astype("string")
+        for col in df.columns.tolist():
+            if "_at" in col:
+                df[col] = pd.to_datetime(df[col], utc=True)
+            elif "price" in col or "amount" in col or "rate" in col:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype('float')
+            elif df[col].dtypes == 'str':
+                # remove non-ASCII symbols from dataframe
+                df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
 
         if batch_num != '':
             df["inserted_at"] = batch_num
@@ -225,7 +229,11 @@ def get_deduplication_data(conn, entity, df_new, index):
                    how='left',
                    suffixes=['', '_old'])
 
-    return df.loc[df['state'].isnull()].drop('state', axis=1)
+    df = df.loc[df['state'].isnull()].drop('state', axis=1)
+    df = df.sort_values('updated_at', ascending=False).drop_duplicates(index).sort_index()
+    df = df.groupby(index).max()
+
+    return df
 
 
 def concatenate_dataframes(df1, df2):
