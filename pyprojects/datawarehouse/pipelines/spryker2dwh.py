@@ -31,7 +31,13 @@ def run(args):
     df_news_orders = pd.DataFrame()
     df_hist_items = pd.DataFrame()
     last_modified = 0
+    testfrauds=[]
     cnt = 0
+    # fraud or test check
+    # not all the users have fk_customer
+    fraudtestemails = get_gbq_dim_data(args.conn, 'gcp_gs', 'test_fraud_users', 'email').values.tolist()
+    fraudtestemails = list(map(''.join, fraudtestemails))
+    fraudtestemails = [x.strip().lower() for x in fraudtestemails]
 
     for p in prefix:
         for obj in my_bucket.objects.filter(Prefix=p):
@@ -44,7 +50,6 @@ def run(args):
 
                 msg_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
 
-                # items_hist
                 msg_data_items_state = pd.DataFrame.from_dict(msg_data["items"])[['fk_oms_order_item_state',
                                                                                   'fk_sales_order',
                                                                                   'id_sales_order_item',
@@ -75,8 +80,11 @@ def run(args):
                     'created_at',
                     'updated_at'
                 ]]
-
                 msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
+
+                email_to_check = msg_data["customer"]["email"].strip().lower()
+                if email_to_check.strip().lower() in fraudtestemails:
+                    msg_data_order["is_test"] = True
 
                 if msg_data["eventName"] == '' and msg_data["items"][0]["item_status"] == 'new':
 

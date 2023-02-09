@@ -11,6 +11,7 @@ import base64
 from google.cloud import bigquery
 from google.oauth2 import service_account
 import pandas as pd
+import numpy as np
 import pandas_gbq as pd_gbq
 import gspread as gs
 from office365.runtime.auth.authentication_context import AuthenticationContext
@@ -139,7 +140,7 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
         if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
 
             #make all data string
-            df = df.astype(str)
+            df = df.replace('', np.nan).fillna(np.nan).astype(str)
             #filter out all lines with empty first field
             df = df[df.iloc[:, 0] != 'nan']
 
@@ -150,20 +151,22 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
             #changing the field format to be accepted by BQ
             for fld in datasets_schemas:
                 if fld in df.columns.tolist():
-                    df[fld] = df[fld].astype("string")
-        for col in df.columns.tolist():
-            if "_at" in col:
-                df[col] = pd.to_datetime(df[col], utc=True)
-            elif "price" in col or "amount" in col or "rate" in col:
-                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype('float')
-            elif df[col].dtypes == 'str':
-                # remove non-ASCII symbols from dataframe
-                df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
+                    df[fld] = df[fld].fillna(np.nan).astype("string")
 
-        if batch_num != '':
-            df["inserted_at"] = batch_num
-        else:
-            df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
+            for col in df.columns.tolist():
+                if "_at" in col:
+                    df[col] = pd.to_datetime(df[col], utc=True)
+                elif "price" in col or "amount" in col or "rate" in col:
+                    df[col] = pd.to_numeric(df[col], errors='coerce').fillna(np.nan).astype('float')
+                elif df[col].dtypes == 'str':
+                    # remove non-ASCII symbols from dataframe
+                    df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
+
+        if pipeline not in ['fact', 'dimension']:
+            if batch_num != '':
+                df["inserted_at"] = batch_num
+            else:
+                df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
 
     return df
 
@@ -202,7 +205,7 @@ def get_delta(conn, id_pipeline, dt=''):
         delta = get_from_gbq(conn, strsql)
 
         if pd.isnull(delta['delta'].iloc[0]):
-            delta = 1665140678.0
+            delta = 1660140678.0
         else:
             delta = delta['delta'].iloc[0]
     else:
@@ -248,6 +251,11 @@ def concatenate_dataframes(df1, df2):
 
 def get_gbq_dim_data(conn, dataset, table, fields):
 
-    strsql = f"""SELECT {','.join(str(x) for x in fields)} FROM {dataset}.{table} """
+    if isinstance(fields, list):
+        flds = ','.join(str(x) for x in fields)
+    else:
+        flds = fields
+
+    strsql = f"""SELECT {flds} FROM {dataset}.{table} """
 
     return get_from_gbq(conn, strsql)

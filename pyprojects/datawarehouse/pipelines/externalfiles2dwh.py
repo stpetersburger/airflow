@@ -35,6 +35,7 @@ def run(args):
                                           sheet_tab=row["tab"])
             df = clean_pandas_dataframe(df)
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
         elif row['pipeline'] == 'url':
             df = get_data_from_url(url=row['url'],
                                    file=row['tab'],
@@ -70,6 +71,15 @@ def run(args):
                               'net_default_price',
                               'net_original_price',
                               'merchant_name_en']
+
+            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
+        elif row['pipeline'] == 'dimension':
+            with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
+                sqlstr = f.read()
+
+            df = get_from_gbq('gcp_bq', sqlstr)
+            df = df.sort_values(df.columns[0])
 
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
