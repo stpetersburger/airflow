@@ -39,7 +39,7 @@ dag = DAG(
     start_date=datetime(2023, 2, 2),
     catchup=False,
     tags=["staging"],
-    schedule_interval='0 4 * * *',
+    schedule_interval='50 5-11/3 * * *',
 )
 
 t1 = BashOperator(
