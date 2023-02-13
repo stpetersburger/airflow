@@ -6,7 +6,8 @@ SELECT  sooish.fk_oms_order_item_state id_sales_order_item_state,
         sooish.created_at updated_at
   FROM  spy_oms_order_item_state_history sooish
   LEFT  JOIN spy_sales_order_item soi
-ON soi.id_sales_order_item = sooish.fk_sales_order_item;
+ON soi.id_sales_order_item = sooish.fk_sales_order_item
+WHERE sooish.created_at >= '2023-02-10';
 
 #sales_order_item
 SELECT
@@ -32,7 +33,8 @@ subtotal_aggregation,
 tax_amount,
 tax_amount_full_aggregation,
 created_at
-FROM spy_sales_order_item;
+FROM spy_sales_order_item
+WHERE cretaed_at >= '2023-02-10';
 
 #sales_order
 SELECT
@@ -79,4 +81,5 @@ LEFT  JOIN spy_sales_order_totals sot
 LEFT  JOIN spy_sales_expense se
     ON so.id_sales_order = se.fk_sales_order
 LEFT  JOIN spy_sales_order_address soa
-    ON so.fk_sales_order_address_billing = soa.id_sales_order_address;
+    ON so.fk_sales_order_address_billing = soa.id_sales_order_address\
+WHERE so.cretaed_at >= '2023-02-10';

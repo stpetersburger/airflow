@@ -77,11 +77,22 @@ def run(args):
         elif row['pipeline'] == 'dimension':
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
                 sqlstr = f.read()
-
             df = get_from_gbq('gcp_bq', sqlstr)
             df = df.sort_values(df.columns[0])
 
-            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'replace')
+
+        elif row['pipeline'] == 'fact':
+            with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
+                sqlstr = f.read()
+            #delete incremental part
+            del_sql = f"""DELETE FROM {row['dwh_schema']}.{row['name']} WHERE {row['incr_field']} \
+                                                                    >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
+            df = get_from_gbq('gcp_bq', del_sql)
+            df = get_from_gbq('gcp_bq', sqlstr)
+            df = df.sort_values(df.columns[0])
+
+            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'append')
 
         if row['if_historical']:
             #weekly snapshot

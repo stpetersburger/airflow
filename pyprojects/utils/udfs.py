@@ -154,9 +154,7 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
                     df[fld] = df[fld].fillna(np.nan).astype("string")
 
             for col in df.columns.tolist():
-                if "_at" in col:
-                    df[col] = pd.to_datetime(df[col], utc=True)
-                elif "price" in col or "amount" in col or "rate" in col:
+                if "price" in col or "amount" in col or "rate" in col:
                     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(np.nan).astype('float')
                 elif df[col].dtypes == 'str':
                     # remove non-ASCII symbols from dataframe
@@ -168,6 +166,10 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
             else:
                 df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
 
+    for col in df.columns.tolist():
+        if "_at" in col:
+            df[col] = pd.to_datetime(df[col], utc=True)
+
     return df
 
 
@@ -176,7 +178,7 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
     prefix = []
 
     if dt == '' or datetime.datetime.strptime(dt, "%Y%m%d").date() > datetime.datetime.now().date():
-        d = datetime.datetime.now().date() - datetime.timedelta(1)
+        d = datetime.datetime.now().date() - datetime.timedelta(7)
     else:
         d = datetime.datetime.strptime(dt, "%Y%m%d").date()
 
