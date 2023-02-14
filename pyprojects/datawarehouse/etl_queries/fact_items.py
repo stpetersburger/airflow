@@ -58,7 +58,7 @@ SELECT  DATE(order_created_at) order_date,
         item_discount_amount_aggregation,
         item_discount_amount_full_aggregation,
         customer_reference,
-        city,
+        COALESCE(c.city_name_en, i.city) city,
         CASE WHEN item_max_reporting_state = 0 THEN 1 ELSE 0 END if_cancelled,
         CASE WHEN item_min_reporting_state =-1 THEN 1 ELSE 0 END if_rejected,
         CASE WHEN item_max_reporting_state > 1 THEN 1 ELSE 0 END if_gross,
@@ -67,4 +67,7 @@ SELECT  DATE(order_created_at) order_date,
         CASE WHEN item_max_reporting_state >= 2 THEN 1 ELSE 0 END if_approved,
         CASE WHEN item_max_reporting_state >= 3 THEN 1 ELSE 0 END if_ready_to_ship,
  FROM   items i
-        LEFT JOIN analytics.dim_item_states a ON i.fk_sales_order_item_state = a.id_sales_order_item_state
+        LEFT JOIN analytics.dim_item_states a
+        ON i.fk_sales_order_item_state = a.id_sales_order_item_state
+        LEFT JOIN gcp_gs.map_order_cities c
+        ON i.city = c.order_city_name
