@@ -5,6 +5,7 @@ User defined functions
 import os
 import sys
 import datetime
+import calendar
 import time
 import json
 import base64
@@ -62,7 +63,7 @@ def get_data_from_sharepoint(conn="ms_sharepoint", sheet='', sheet_tab='Sheet1')
 
     sheet_url = f"""{get_creds(conn, 'spreadsheets', 'prefix')}{sheet}{'?web=1'}"""
     print(sheet_url)
-    ctx_auth = AuthenticationContext(sheet_url)
+    ctx_auth = AuthenticaftionContext(sheet_url)
     if ctx_auth.acquire_token_for_user(username, password):
         ctx = ClientContext(sheet_url, ctx_auth)
         web = ctx.web
@@ -136,6 +137,10 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
 
         df.columns = header_list_new
 
+        for col in df.columns.tolist():
+            if "_at" in col:
+                df[col] = pd.to_datetime(df[col], utc=True)
+
     else:
         if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
 
@@ -166,10 +171,6 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
             else:
                 df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
 
-    for col in df.columns.tolist():
-        if "_at" in col:
-            df[col] = pd.to_datetime(df[col], utc=True)
-
     return df
 
 
@@ -178,7 +179,7 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
     prefix = []
 
     if dt == '' or datetime.datetime.strptime(dt, "%Y%m%d").date() > datetime.datetime.now().date():
-        d = datetime.datetime.now().date() - datetime.timedelta(7)
+        d = datetime.datetime.now().date() - datetime.timedelta(1)
     else:
         d = datetime.datetime.strptime(dt, "%Y%m%d").date()
 
@@ -211,7 +212,7 @@ def get_delta(conn, id_pipeline, dt=''):
         else:
             delta = delta['delta'].iloc[0]
     else:
-        delta = time.mktime(datetime.datetime.strptime(dt, "%Y%m%d").timetuple())
+        delta = calendar.timegm(datetime.datetime.strptime(dt, "%Y%m%d").timetuple())
 
     return delta
 

@@ -36,10 +36,10 @@ import sys
 
 dag = DAG(
     dag_id="spryker2dwh",
-    start_date=datetime(2023, 2, 2),
+    start_date=datetime(2023, 2, 10),
+    schedule_interval='50 2-16/3 * * *',
     catchup=False,
     tags=["staging"],
-    schedule_interval='50 5-11/3 * * *',
 )
 
 t1 = BashOperator(

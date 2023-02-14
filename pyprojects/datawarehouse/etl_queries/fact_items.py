@@ -22,7 +22,8 @@ WITH items AS (
           MIN(a.discount_amount_aggregation)          item_discount_amount_aggregation,
           MIN(a.discount_amount_full_aggregation)     item_discount_amount_full_aggregation,
           MIN(a.fk_sales_shipment)                    fk_sales_shipment,
-          MIN(b.customer_reference)                   customer_reference
+          MIN(b.customer_reference)                   customer_reference,
+          MIN(b.address3)                             city
     FROM
           aws_s3.sales_orders b
           LEFT JOIN aws_s3.sales_order_items a ON a.fk_sales_order = b.id_sales_order
@@ -57,6 +58,7 @@ SELECT  DATE(order_created_at) order_date,
         item_discount_amount_aggregation,
         item_discount_amount_full_aggregation,
         customer_reference,
+        city,
         CASE WHEN item_max_reporting_state = 0 THEN 1 ELSE 0 END if_cancelled,
         CASE WHEN item_min_reporting_state =-1 THEN 1 ELSE 0 END if_rejected,
         CASE WHEN item_max_reporting_state > 1 THEN 1 ELSE 0 END if_gross,

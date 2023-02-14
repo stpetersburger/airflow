@@ -22,6 +22,7 @@ def run(args):
     )
 
     delta = get_delta(args.conn, id_pipeline, args.dt)
+    print(delta)
 
     my_bucket = s3.Bucket(get_creds(args.schema, pipeline, 'bucket'))
     prefix = get_s3_prefix(project, args.btype, args.dt)
@@ -38,15 +39,15 @@ def run(args):
     fraudtestemails = get_gbq_dim_data(args.conn, 'gcp_gs', 'test_fraud_users', 'email').values.tolist()
     fraudtestemails = list(map(''.join, fraudtestemails))
     fraudtestemails = [x.strip().lower() for x in fraudtestemails]
-
     for p in prefix:
         for obj in my_bucket.objects.filter(Prefix=p):
-            if obj.key.endswith('json') and time.mktime(obj.last_modified.timetuple()) > delta:
+            if obj.key.endswith('json') and calendar.timegm(obj.last_modified.timetuple()) > delta:
                 cnt += 1
                 print(obj.key)
+                print(calendar.timegm(obj.last_modified.timetuple()))
 
-                if time.mktime(obj.last_modified.timetuple()) >= last_modified:
-                    last_modified = time.mktime(obj.last_modified.timetuple())
+                if calendar.timegm(obj.last_modified.timetuple()) >= last_modified:
+                    last_modified = calendar.timegm(obj.last_modified.timetuple())
 
                 msg_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
 
@@ -64,29 +65,29 @@ def run(args):
                 else:
                     df_hist_items = concatenate_dataframes(df_hist_items, msg_data_items_state)
 
-                #orders
-                msg_data_order = clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["order"]]))[[
-                    'id_sales_order',
-                    'is_test',
-                    'order_reference',
-                    'fk_locale',
-                    'cart_note',
-                    'currency_iso_code',
-                    'order_exchange_rate',
-                    'fk_customer',
-                    'order_custom_reference',
-                    'customer_reference',
-                    'oms_processor_identifier',
-                    'created_at',
-                    'updated_at'
-                ]]
-                msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
-
-                email_to_check = msg_data["customer"]["email"].strip().lower()
-                if email_to_check.strip().lower() in fraudtestemails:
-                    msg_data_order["is_test"] = True
-
                 if msg_data["eventName"] == '' and msg_data["items"][0]["item_status"] == 'new':
+
+                    # orders
+                    msg_data_order = clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["order"]]))[[
+                        'id_sales_order',
+                        'is_test',
+                        'order_reference',
+                        'fk_locale',
+                        'cart_note',
+                        'currency_iso_code',
+                        'order_exchange_rate',
+                        'fk_customer',
+                        'order_custom_reference',
+                        'customer_reference',
+                        'oms_processor_identifier',
+                        'created_at',
+                        'updated_at'
+                    ]]
+                    msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
+
+                    email_to_check = msg_data["customer"]["email"].strip().lower()
+                    if email_to_check.strip().lower() in fraudtestemails:
+                        msg_data_order["is_test"] = True
 
                     msg_data_order_totals = clean_pandas_dataframe(
                         pd.DataFrame.from_dict([msg_data["order_totals"][0]]), '', True)
