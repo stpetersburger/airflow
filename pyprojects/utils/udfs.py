@@ -63,7 +63,7 @@ def get_data_from_sharepoint(conn="ms_sharepoint", sheet='', sheet_tab='Sheet1')
 
     sheet_url = f"""{get_creds(conn, 'spreadsheets', 'prefix')}{sheet}{'?web=1'}"""
     print(sheet_url)
-    ctx_auth = AuthenticaftionContext(sheet_url)
+    ctx_auth = AuthenticationContext(sheet_url)
     if ctx_auth.acquire_token_for_user(username, password):
         ctx = ClientContext(sheet_url, ctx_auth)
         web = ctx.web
