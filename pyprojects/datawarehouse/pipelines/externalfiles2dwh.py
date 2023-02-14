@@ -86,13 +86,18 @@ def run(args):
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
                 sqlstr = f.read()
             #delete incremental part
-            del_sql = f"""DELETE FROM {row['dwh_schema']}.{row['name']} WHERE {row['incr_field']} \
-                                                                    >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
-            df = get_from_gbq('gcp_bq', del_sql)
-            df = get_from_gbq('gcp_bq', sqlstr)
-            df = df.sort_values(df.columns[0])
+            if row['incr_field'] != '':
 
-            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'append')
+                del_sql = f"""DELETE FROM {row['dwh_schema']}.{row['name']} WHERE {row['incr_field']} \
+                                                                    >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
+                get_from_gbq('gcp_bq', del_sql)
+
+                df = get_from_gbq('gcp_bq', sqlstr)
+                df = df.sort_values(df.columns[0])
+
+                write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'append')
+            else:
+                get_from_gbq('gcp_bq', sqlstr)
 
         if row['if_historical']:
             #weekly snapshot

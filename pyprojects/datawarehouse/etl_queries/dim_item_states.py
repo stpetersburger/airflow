@@ -7,4 +7,4 @@ SELECT  a.fk_sales_order_item_state                              id_sales_order_
         ON a.fk_sales_order_item_state = CAST(b.fk_sales_order_item_state AS INT64)
  WHERE  DATE(a.created_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)
         AND b.fk_sales_order_item_state is not null
- GROUP  BY 1;
+ GROUP  BY 1
