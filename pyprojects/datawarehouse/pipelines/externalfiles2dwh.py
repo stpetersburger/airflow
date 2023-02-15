@@ -14,10 +14,10 @@ def run(args):
     if args.sheet is not None:
         etl_config_spreadsheet = etl_config_spreadsheet[etl_config_spreadsheet["name"] == args.sheet]
 
-    df = pd.DataFrame()
-
     for index, row in etl_config_spreadsheet.iterrows():
 
+        print(row['tab'])
+        df = pd.DataFrame()
         wtype = 'replace'
 
         if row['truncate'] and row['dwh_schema'] != '':
@@ -78,7 +78,6 @@ def run(args):
         elif row['pipeline'] == 'fact':
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
                 sqlstr = f.read()
-
             if row['incr_field'] != '':
                 wtype = 'append'
                 # delete incremental part
