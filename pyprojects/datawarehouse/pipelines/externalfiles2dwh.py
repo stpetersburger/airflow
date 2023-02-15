@@ -14,6 +14,7 @@ def run(args):
     if args.sheet is not None:
         etl_config_spreadsheet = etl_config_spreadsheet[etl_config_spreadsheet["name"] == args.sheet]
 
+    df = pd.DataFrame()
 
     for index, row in etl_config_spreadsheet.iterrows():
 
@@ -27,17 +28,10 @@ def run(args):
             df = get_data_from_googlesheet(conn=args.conn,
                                            gsheet=row['url'],
                                            gsheet_tab=row['tab'])
-            df = clean_pandas_dataframe(df)
-            df = df.drop_duplicates()
-
-            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         elif row['pipeline'] == 'sharepoint2dwh':
             df = get_data_from_sharepoint(sheet=row["url"],
                                           sheet_tab=row["tab"])
-            df = clean_pandas_dataframe(df)
-            df = df.drop_duplicates()
-            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         elif row['pipeline'] == 'url':
             df = get_data_from_url(url=row['url'],
@@ -74,43 +68,44 @@ def run(args):
                               'net_default_price',
                               'net_original_price',
                               'merchant_name_en']
-            df = df.drop_duplicates()
-            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         elif row['pipeline'] == 'dimension':
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
                 sqlstr = f.read()
             df = get_from_gbq('gcp_bq', sqlstr)
             df = df.sort_values(df.columns[0])
-            df = df.drop_duplicates()
-            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'replace')
 
         elif row['pipeline'] == 'fact':
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
                 sqlstr = f.read()
-            #delete incremental part
-            if row['incr_field'] != '':
 
+            if row['incr_field'] != '':
+                wtype = 'append'
+                # delete incremental part
                 del_sql = f"""DELETE FROM {row['dwh_schema']}.{row['name']} WHERE {row['incr_field']} \
                                                                     >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
                 get_from_gbq('gcp_bq', del_sql)
 
                 df = get_from_gbq('gcp_bq', sqlstr)
                 df = df.sort_values(df.columns[0])
-                df = df.drop_duplicates()
-                write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'append')
             else:
                 get_from_gbq('gcp_bq', sqlstr)
+
+        if not df.empty:
+            df = clean_pandas_dataframe(df).drop_duplicates()
+            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         if row['if_historical']:
             #weekly snapshot
             strsql = f"""SELECT (CURRENT_DATE() - 7) = MAX(DATE(inserted_at))
                          FROM {row['dwh_schema']}.historical_{row['name']}
                          WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
+
             if get_from_gbq('gcp_bq', strsql)["f0_"].iloc[0]:
                 wtype = 'append'
                 hist_fields = row['historical_fields'].split(',')
                 df = df.filter(items=hist_fields)
+
                 df = df.drop_duplicates()
                 write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
                              clean_pandas_dataframe(df, row['pipeline']), wtype)
