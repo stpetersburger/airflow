@@ -14,9 +14,10 @@ def run(args):
     if args.sheet is not None:
         etl_config_spreadsheet = etl_config_spreadsheet[etl_config_spreadsheet["name"] == args.sheet]
 
-    wtype = 'replace'
 
     for index, row in etl_config_spreadsheet.iterrows():
+
+        wtype = 'replace'
 
         if row['truncate'] and row['dwh_schema'] != '':
             wtype = 'append'
@@ -27,6 +28,7 @@ def run(args):
                                            gsheet=row['url'],
                                            gsheet_tab=row['tab'])
             df = clean_pandas_dataframe(df)
+            df = df.drop_duplicates()
 
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
@@ -34,6 +36,7 @@ def run(args):
             df = get_data_from_sharepoint(sheet=row["url"],
                                           sheet_tab=row["tab"])
             df = clean_pandas_dataframe(df)
+            df = df.drop_duplicates()
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         elif row['pipeline'] == 'url':
@@ -71,7 +74,7 @@ def run(args):
                               'net_default_price',
                               'net_original_price',
                               'merchant_name_en']
-
+            df = df.drop_duplicates()
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
         elif row['pipeline'] == 'dimension':
@@ -79,7 +82,7 @@ def run(args):
                 sqlstr = f.read()
             df = get_from_gbq('gcp_bq', sqlstr)
             df = df.sort_values(df.columns[0])
-
+            df = df.drop_duplicates()
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'replace')
 
         elif row['pipeline'] == 'fact':
@@ -94,7 +97,7 @@ def run(args):
 
                 df = get_from_gbq('gcp_bq', sqlstr)
                 df = df.sort_values(df.columns[0])
-
+                df = df.drop_duplicates()
                 write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), 'append')
             else:
                 get_from_gbq('gcp_bq', sqlstr)
@@ -108,6 +111,7 @@ def run(args):
                 wtype = 'append'
                 hist_fields = row['historical_fields'].split(',')
                 df = df.filter(items=hist_fields)
+                df = df.drop_duplicates()
                 write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
                              clean_pandas_dataframe(df, row['pipeline']), wtype)
 
