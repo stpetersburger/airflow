@@ -93,6 +93,10 @@ def run(args):
         if not df.empty:
             df = clean_pandas_dataframe(df).drop_duplicates()
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+            if row['output'] != '':
+                df = df.filter(items=row['output_fields'].split(','))
+                write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
+
 
         if row['if_historical']:
             #weekly snapshot

@@ -28,7 +28,7 @@ def get_creds(conn, pipeline, creds_name):
         creds = json.load(f)
         f.close()
 
-    if creds[conn][pipeline][creds_name].isupper():
+    if creds[conn][pipeline][creds_name][0].isupper():
         return os.environ[creds[conn][pipeline][creds_name]]
     else:
         return creds[conn][pipeline][creds_name]
@@ -54,6 +54,17 @@ def get_data_from_googlesheet(conn, gsheet, gsheet_tab):
     gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
 
     return pd.DataFrame(gs_sheet.get_all_records())
+
+
+def write_data_to_googlesheet(conn, gsheet_tab, df):
+
+    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds('gcp_bq', 'datawarehouse', 'google_cloud_platform')))
+    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 'prefix')}{get_creds('gs', 'spreadsheets', 'output_sheet')}""")
+
+    gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
+    gs_sheet.clear()
+    df = df.astype(str)
+    gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
 
 
 def get_data_from_sharepoint(conn="ms_sharepoint", sheet='', sheet_tab='Sheet1'):
@@ -184,14 +195,16 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
         d = datetime.datetime.strptime(dt, "%Y%m%d").date()
 
     while not d > datetime.datetime.now().date():
+        if project == 'spryker':
+            p = "{}/{}/{}/{}/{}/".format(d.year,
+                                         d.month,
+                                         d.day,
+                                         project,
+                                         business_type)
+        elif project == 'adjust':
+            p = "ogo3m90eil8g_{}".format(d, "YYYY-MM-DD")
 
-        prefix.append(
-            "{}/{}/{}/{}/{}/".format(d.year,
-                                     d.month,
-                                     d.day,
-                                     project,
-                                     business_type)
-        )
+        prefix.append(p)
 
         d = d+datetime.timedelta(1)
 
@@ -208,7 +221,7 @@ def get_delta(conn, id_pipeline, dt=''):
         delta = get_from_gbq(conn, strsql)
 
         if pd.isnull(delta['delta'].iloc[0]):
-            delta = 1660140678.0
+            delta = 0
         else:
             delta = delta['delta'].iloc[0]
     else:

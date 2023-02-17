@@ -5,6 +5,12 @@
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID",
 			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY",
 			"bucket": "stg-analytics-stream"
+		},
+		"adjust2dwh": {
+			"region_name": "AWS_DEFAULT_REGION",
+			"aws_access_key_id": "AWS_ACCESS_KEY_ID_adjust",
+			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY_adjust",
+			"bucket": "amal-user-device-data"
 		}
 
 	},
@@ -17,7 +23,8 @@
 	"gs": {
 		"spreadsheets": {
 			"prefix": "GOOGLE_SPREADSHEETS_PREFIX",
-			"config_sheet": "GOOGLE_SPREADSHEETS_CONFIGSHEET"
+			"config_sheet": "GOOGLE_SPREADSHEETS_CONFIGSHEET",
+			"output_sheet": "GOOGLE_SPREADSHEETS_OUTPUTSHEET"
 		}
 	},
 	"ms_sharepoint": {
