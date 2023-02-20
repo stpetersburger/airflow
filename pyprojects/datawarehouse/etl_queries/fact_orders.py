@@ -16,7 +16,6 @@ SELECT  is_test                                                 if_test_order,
                                      ORDER BY so.created_at)    previous_order_date,
         so.address3                                             city_name_en
   FROM  aws_s3.sales_orders so
- WHERE  NOT is_test
 )
 SELECT  if_test_order,
         order_date,
