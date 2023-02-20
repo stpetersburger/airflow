@@ -1,10 +1,12 @@
 DROP TABLE IF EXISTS analytics.fact_orders;
 CREATE TABLE analytics.fact_orders AS
 WITH customers_stg AS (
-SELECT  so.created_at                                           order_date,
+SELECT  is_test                                                 if_test_order,
+        so.created_at                                           order_date,
         id_sales_order,
         order_reference,
         customer_reference,
+        order_expense_total                                     shipping_fee,
         customer_created_at                                     customer_created_date,
         RANK() OVER (PARTITION BY fk_customer
                          ORDER BY so.created_at)                customer_order_rank,
@@ -16,9 +18,11 @@ SELECT  so.created_at                                           order_date,
   FROM  aws_s3.sales_orders so
  WHERE  NOT is_test
 )
-SELECT  order_date,
+SELECT  if_test_order,
+        order_date,
         id_sales_order,
         order_reference,
+        shipping_fee,
         COALESCE(c.city_name_en, a.city_name_en) city_name_en,
         customer_order_rank,
         previous_order_date,
