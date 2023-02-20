@@ -6,7 +6,8 @@ WITH items AS (
           MIN(f.id_product_category)                  fk_product_category,
           MIN(a.fk_sku_simple)                        sku,
           a.id_sales_order_item                       fk_sales_order_item,
-          MIN(b.order_reference)                      order_refrence,
+          MIN(b.order_reference)                      order_reference,
+          MIN(b.id_sales_order)                       fk_sales_order,
           MIN(quantity)                               quantity,
           MAX(c.fk_sales_order_item_state)            fk_sales_order_item_state,
           MAX(d.reporting_order_item_state)           item_max_reporting_state,
@@ -23,7 +24,7 @@ WITH items AS (
           MIN(a.discount_amount_full_aggregation)     item_discount_amount_full_aggregation,
           MIN(a.fk_sales_shipment)                    fk_sales_shipment,
           MIN(b.customer_reference)                   customer_reference,
-          MIN(b.address3)                             city
+          MIN(b.address3)                             city_name
     FROM
           aws_s3.sales_orders b
           LEFT JOIN aws_s3.sales_order_items a ON a.fk_sales_order = b.id_sales_order
@@ -45,8 +46,9 @@ SELECT  DATE(order_created_at) order_date,
         sku,
         a.order_item_state_name_en order_item_state,
         quantity,
-        order_refrence,
-        CAST(fk_sales_order_item AS STRING) fk_sales_order_item,
+        order_reference,
+        fk_sales_order,
+        CAST(fk_sales_order_item AS STRING) id_sales_order_item,
         currency,
         exchange_rate,
         item_price,
@@ -58,7 +60,7 @@ SELECT  DATE(order_created_at) order_date,
         item_discount_amount_aggregation,
         item_discount_amount_full_aggregation,
         customer_reference,
-        COALESCE(c.city_name_en, i.city) city,
+        COALESCE(c.city_name_en, i.city_name) city_name_en,
         CASE WHEN item_min_reporting_state = 0 THEN 1 ELSE 0 END if_cancelled,
         CASE WHEN item_min_reporting_state =-1 THEN 1 ELSE 0 END if_rejected,
         CASE WHEN item_max_reporting_state > 1 THEN 1 ELSE 0 END if_gross,
@@ -70,4 +72,4 @@ SELECT  DATE(order_created_at) order_date,
         LEFT JOIN analytics.dim_item_states a
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state
         LEFT JOIN gcp_gs.map_order_cities c
-        ON i.city = c.order_city_name
+        ON i.city_name = c.order_city_name
