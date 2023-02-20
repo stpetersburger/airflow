@@ -5,20 +5,20 @@
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID",
 			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY",
 			"bucket": "stg-analytics-stream"
-		},
+		}
+	},
+	"data_exploration": {
 		"adjust2dwh": {
 			"region_name": "AWS_DEFAULT_REGION",
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID_adjust",
 			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY_adjust",
 			"bucket": "amal-user-device-data"
 		}
-
 	},
 	"gcp_bq": {
 		"datawarehouse": {
 			"google_cloud_platform": "GOOGLE_APPLICATION_CREDENTIALS"
 		}
-
 	},
 	"gs": {
 		"spreadsheets": {

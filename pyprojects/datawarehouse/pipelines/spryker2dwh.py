@@ -223,7 +223,7 @@ def run(args):
             write_to_gbq(args.conn,
                          args.schema, 'sales_order_item_states', df_hist_items, args.wtype)
             write_to_gbq(args.conn,
-                         'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, 'spryker2dwh'), args.wtype)
+                         'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, pipeline), args.wtype)
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
 

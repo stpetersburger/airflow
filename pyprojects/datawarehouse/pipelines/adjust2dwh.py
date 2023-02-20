@@ -28,8 +28,9 @@ def run(args):
     prefix = get_s3_prefix(project=project,
                            dt=args.dt)
     print(prefix)
+    last_modified = 0
     cnt = 0
-
+    df = pd.DataFrame()
     for p in prefix:
         for obj in my_bucket.objects.filter(Prefix=p):
             if obj.key.endswith('csv.gz') and calendar.timegm(obj.last_modified.timetuple()) > delta:
@@ -37,21 +38,30 @@ def run(args):
                 print(obj.key)
                 print(calendar.timegm(obj.last_modified.timetuple()))
 
-                response = s3.get_object(Bucket=AWS_S3_BUCKET, Key="files/books.csv")
+                if calendar.timegm(obj.last_modified.timetuple()) >= last_modified:
+                    last_modified = calendar.timegm(obj.last_modified.timetuple())
 
-                status = response.get("ResponseMetadata", {}).get("HTTPStatusCode")
+                df_obj = pd.read_csv(obj.get()['Body'], compression='gzip')
+                df_obj["file_name"] = obj.key
 
-                if status == 200:
-                    print(f"Successful S3 get_object response. Status - {status}")
-                    books_df = pd.read_csv(response.get("Body"))
-                    print(books_df)
-                else:
-                    print(f"Unsuccessful S3 get_object response. Status - {status}")
+                if len(df_obj.columns) > 1:
+                    if df.empty:
+                        df = clean_pandas_dataframe(df_obj)
 
-                df = pd.read_csv(obj.get()['Body'].read(),
-                                 compression='gzip')
-                print(df)
-                sys.exit()
+                    else:
+                        df = concatenate_dataframes(df, clean_pandas_dataframe(df_obj))
+
+    if cnt > 0:
+        delta_update = {"id_pipeline": f"""{id_pipeline}""", "delta": last_modified}
+        delta_update = pd.DataFrame.from_dict([delta_update])
+        delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
+        try:
+            write_to_gbq(args.conn,
+                         args.schema, 'adjust_events', df, args.wtype, 'csv')
+            write_to_gbq(args.conn,
+                         'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, pipeline), args.wtype)
+        except Exception as e:
+            print(f'caught {type(e)}: {str(e)}')
 
 
 if __name__ == '__main__':

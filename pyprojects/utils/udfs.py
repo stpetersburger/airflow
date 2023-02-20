@@ -100,7 +100,7 @@ def get_data_from_url(url, file, file_type):
         return pd.read_csv(full_url)
 
 
-def write_to_gbq(conn, schema, dataset, dataframe, wtype):
+def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
     # bigQuery credentials
     gcp_credentials = json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform'))
     gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
@@ -109,7 +109,10 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype):
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
     print(f'WRITE TO BQ START - {datetime.datetime.now()}')
-    pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
+    if method == 'csv':
+        pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
+    elif method == '':
+        pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
     print(f'WRITE TO BQ END - {datetime.datetime.now()}')
 
 def get_from_gbq(conn, str_sql):
