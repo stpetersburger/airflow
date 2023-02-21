@@ -88,15 +88,33 @@ def run(args):
                 df = get_from_gbq('gcp_bq', sqlstr)
                 df = df.sort_values(df.columns[0])
             else:
-                get_from_gbq('gcp_bq', sqlstr)
+                try:
+                    get_from_gbq('gcp_bq', sqlstr)
+                    send_telegram_message(
+                        1, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
+                except Exception as e:
+                    print(e)
+                    send_telegram_message(
+                        0, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
 
         if not df.empty:
             df = clean_pandas_dataframe(df).drop_duplicates()
-            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
+            try:
+                write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+                send_telegram_message(1, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
+            except Exception as e:
+                print(e)
+                send_telegram_message(0, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
+
             if row['output'] != '':
                 df = df.filter(items=row['output_fields'].split(','))
-                write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
-
+                try:
+                    write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
+                    send_telegram_message(1, f"""OUTPUT externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
+                except Exception as e:
+                    print(e)
+                    send_telegram_message(0, f"""OUTPUT externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
 
         if row['if_historical']:
             #weekly snapshot
@@ -110,8 +128,15 @@ def run(args):
                 df = df.filter(items=hist_fields)
 
                 df = df.drop_duplicates()
-                write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
+                try:
+                    write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
                              clean_pandas_dataframe(df, row['pipeline']), wtype)
+                    send_telegram_message(
+                        1, f"""BQ HISTORICAL externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
+                except Exception as e:
+                    print(e)
+                    send_telegram_message(
+                        0, """ BQ HISTORICAL externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
 
 
 if __name__ == '__main__':

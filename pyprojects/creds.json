@@ -33,5 +33,11 @@
 			"password": "MS_SHAREPOINT_PASSWORD",
 			"prefix": "MS_SHAREPOINT_SPREADSHEETS_PREFIX"
 		}
+	},
+	"watchers": {
+		"telegram": {
+			"token": "TELEGRAM_BOT_API_TOKEN",
+			"chat_id": "TELEGRAM_WATCHER_CHANNEL_ID"
+		}
 	}
 }

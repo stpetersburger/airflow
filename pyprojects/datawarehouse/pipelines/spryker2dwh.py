@@ -218,14 +218,23 @@ def run(args):
         try:
             write_to_gbq(args.conn,
                          args.schema, 'sales_orders', df_news_orders, args.wtype)
+            send_telegram_message(
+                1, f"""BQ spryker2dwh sales_orders""")
             write_to_gbq(args.conn,
                          args.schema, 'sales_order_items', df_news_items, args.wtype)
+            send_telegram_message(
+                1, f"""BQ spryker2dwh sales_order_items""")
             write_to_gbq(args.conn,
                          args.schema, 'sales_order_item_states', df_hist_items, args.wtype)
+            send_telegram_message(
+                1, f"""BQ spryker2dwh sales_order_item_states""")
             write_to_gbq(args.conn,
                          'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, pipeline), args.wtype)
+            send_telegram_message(
+                1, f"""BQ spryker2dwh updated airflow run metadata: number of files - {cnt}, delta - {last_modified}""")
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
+            send_telegram_message(0, f"""BQ spryker2dwh caught {type(e)}: {str(e)}""")
 
 
 if __name__ == '__main__':

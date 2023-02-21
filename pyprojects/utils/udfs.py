@@ -20,6 +20,7 @@ from office365.sharepoint.client_context import ClientContext
 from office365.sharepoint.files.file import File
 import io
 import re
+import requests
 
 
 def get_creds(conn, pipeline, creds_name):
@@ -58,12 +59,13 @@ def get_data_from_googlesheet(conn, gsheet, gsheet_tab):
 
 def write_data_to_googlesheet(conn, gsheet_tab, df):
 
-    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds('gcp_bq', 'datawarehouse', 'google_cloud_platform')))
+    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform')))
     gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 'prefix')}{get_creds('gs', 'spreadsheets', 'output_sheet')}""")
 
     gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
     gs_sheet.clear()
     df = df.astype(str)
+
     gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
 
 
@@ -278,3 +280,21 @@ def get_gbq_dim_data(conn, dataset, table, fields):
     strsql = f"""SELECT {flds} FROM {dataset}.{table} """
 
     return get_from_gbq(conn, strsql)
+
+
+def send_telegram_message(msg_type, msg):
+
+        apiToken = get_creds('watchers', 'telegram', 'token')
+        chatID = get_creds('watchers', 'telegram', 'chat_id')
+        apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
+
+        if msg_type ==1:
+            message=f"""\u2705 {msg}"""
+        else:
+            message=f"""\U0001F6A8 {msg}"""
+
+        try:
+            requests.post(apiURL, json={'chat_id': chatID, 'text': message})
+        except Exception as e:
+            print(e)
+
