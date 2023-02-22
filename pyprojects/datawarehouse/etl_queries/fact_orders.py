@@ -7,7 +7,7 @@ SELECT  is_test                                                 if_test_order,
         order_reference,
         customer_reference,
         order_expense_total                                     shipping_fee,
-        customer_created_at                                     customer_created_date,
+        DATE_ADD(customer_created_at, INTERVAL 3 HOUR)          customer_created_date,
         RANK() OVER (PARTITION BY fk_customer
                          ORDER BY so.created_at)                customer_order_rank,
         MIN(so.created_at) OVER (PARTITION BY fk_customer
@@ -18,17 +18,21 @@ SELECT  is_test                                                 if_test_order,
   FROM  aws_s3.sales_orders so
 )
 SELECT  if_test_order,
-        order_date,
+        DATE_ADD(order_date, INTERVAL 3 HOUR)                   order_date,
+        DATE(DATE_ADD(order_date, INTERVAL 3 HOUR))             order_date_nk,
         id_sales_order,
         order_reference,
         shipping_fee,
-        COALESCE(c.city_name_en, a.city_name_en) city_name_en,
+        COALESCE(c.city_name_en, a.city_name_en)                city_name_en,
         customer_order_rank,
-        previous_order_date,
-        first_order_date,
-        DATE_DIFF(order_date, previous_order_date, DAY) previous_order_days,
+        DATE_ADD(previous_order_date, INTERVAL 3 HOUR)          previous_order_date,
+        DATE(DATE_ADD(previous_order_date, INTERVAL 3 HOUR))    previous_order_date_nk,
+        DATE_ADD(first_order_date, INTERVAL 3 HOUR)             first_order_date,
+        DATE(DATE_ADD(first_order_date, INTERVAL 3 HOUR))       first_order_date_nk,
+        DATE_DIFF(order_date, previous_order_date, DAY)         previous_order_days,
         customer_reference,
-        customer_created_date,
+        DATE_ADD(customer_created_date, INTERVAL 3 HOUR)        customer_created_date,
+        DATE(DATE_ADD(customer_created_date, INTERVAL 3 HOUR))  customer_created_date_nk,
         DATE_DIFF(first_order_date, customer_created_date, DAY) customer_conversion_days
   FROM  customers_stg a
   LEFT  JOIN gcp_gs.map_order_cities c
