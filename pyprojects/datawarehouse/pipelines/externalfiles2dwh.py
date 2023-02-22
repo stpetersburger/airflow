@@ -82,7 +82,8 @@ def run(args):
                 wtype = 'append'
                 # delete incremental part
                 del_sql = f"""DELETE FROM {row['dwh_schema']}.{row['name']} WHERE {row['incr_field']} \
-                                                                    >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
+                                                                    >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
+                                                                    INTERVAl 3 HOUR)), INTERVAL 1 MONTH)"""
                 get_from_gbq('gcp_bq', del_sql)
 
                 df = get_from_gbq('gcp_bq', sqlstr)

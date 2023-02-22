@@ -34,9 +34,9 @@ WITH items AS (
           LEFT JOIN analytics.dim_products e ON a.fk_sku_simple = e.sku
           LEFT JOIN analytics.dim_product_categories f ON f.id_product_category = e.fk_product_category
    WHERE  NOT b.is_test
-          AND DATE(b.created_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)
-          AND DATE(a.created_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)
-          AND DATE(c.created_at) >= DATE_SUB(CURRENT_DATE(), INTERVAL 2 MONTH)
+          AND DATE(DATE_ADD(b.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 1 MONTH)
+          AND DATE(DATE_ADD(a.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 1 MONTH)
+          AND DATE(DATE_ADD(c.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 2 MONTH)
    GROUP  BY 7
 )
 SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                  order_date,
