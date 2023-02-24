@@ -7,7 +7,7 @@ SELECT  sooish.fk_oms_order_item_state id_sales_order_item_state,
   FROM  spy_oms_order_item_state_history sooish
   LEFT  JOIN spy_sales_order_item soi
 ON soi.id_sales_order_item = sooish.fk_sales_order_item
-WHERE sooish.created_at >= '2023-02-10';
+WHERE date(sooish.created_at) = '2023-02-22';
 
 #sales_order_item
 SELECT
@@ -34,7 +34,7 @@ tax_amount,
 tax_amount_full_aggregation,
 created_at
 FROM spy_sales_order_item
-WHERE cretaed_at >= '2023-02-10';
+WHERE date(created_at) = '2023-02-22';
 
 #sales_order
 SELECT
@@ -81,5 +81,83 @@ LEFT  JOIN spy_sales_order_totals sot
 LEFT  JOIN spy_sales_expense se
     ON so.id_sales_order = se.fk_sales_order
 LEFT  JOIN spy_sales_order_address soa
-    ON so.fk_sales_order_address_billing = soa.id_sales_order_address\
-WHERE so.cretaed_at >= '2023-02-10';
+    ON so.fk_sales_order_address_billing = soa.id_sales_order_address
+WHERE date(so.created_at) = '2023-02-22';
+
+
+##########################
+#DUMP RESTORATION QUERIES#
+##########################
+
+select CAST(fk_country	as as INT64),
+       CAST(fk_customer	as as INT64),
+       CAST(id_sales_order	as as INT64),
+       CASE WHEN b.fk_customer is NULL THEN FALSE ELSE TRUE END is_test,
+       order_reference,
+       CAST(fk_locale	as as INT64),
+       cart_note,
+       currency_iso_code,
+       CAST(order_exchange_rate	as as FLOAT6464),
+       order_custom_reference,
+       a.customer_reference,
+       CAST(oms_processor_identifier	as as INT64),
+       CAST(id_sales_order_totals	as as INT64),
+       CAST(discount_total	as as FLOAT6464),
+       CAST(grand_total	as as FLOAT6464),
+       CAST(order_expense_total	as as FLOAT6464),
+       CAST(refund_total	as as FLOAT6464),
+       CAST(subtotal	as as FLOAT6464),
+       CAST(tax_total	as as FLOAT6464),
+       CAST(id_sales_expense	as as INT64),
+       CAST(discount_amount_aggregation	as as FLOAT6464),
+       CAST(gross_price	as as FLOAT6464),
+       name,
+       CAST(net_price	as as FLOAT6464),
+       CAST(price	as as FLOAT6464),
+       CAST(price_to_pay_aggregation	as as FLOAT6464),
+       CAST(refundable_amount	as as FLOAT6464),
+       CAST(tax_amount	as as FLOAT6464),
+       CAST(id_sales_order_address	as as INT64),
+       fk_region,
+       address1,
+       address2,
+       address3,
+       CAST(customer_created_at	as TIMESTAMP),
+       CAST(created_at	as TIMESTAMP),
+       4 inserted_at
+  FROM aws_s3.sales_orders_dump a
+  LEFT JOIN gcp_gs.test_fraud_users b USING (fk_customer);
+
+select fk_sku_simple,
+       merchant_id,
+       CAST(fk_sales_order	as INT64),
+       CAST(id_sales_order_item	as INT64),
+       fk_sales_order_item_bundle,
+       CAST(fk_sales_shipment	as INT64),
+       CAST(quantity	as INT64),
+       CASE WHEN is_quantity_splittable='1'THEN TRUE ELSE FALSE END,
+       CAST(canceled_amount	as FLOAT64),
+       CAST(discount_amount_aggregation	as FLOAT64),
+       CAST(discount_amount_full_aggregation	as FLOAT64),
+       CAST(gross_price	as FLOAT64),
+       CAST(net_price	as FLOAT64),
+       CAST(price	as FLOAT64),
+       CAST(price_to_pay_aggregation	as FLOAT64),
+       product_offer_reference,
+       CAST(refundable_amount	as FLOAT64),
+       CAST(product_option_price_aggregation	as FLOAT64),
+       CAST(subtotal_aggregation	as FLOAT64),
+       CAST(tax_amount	as FLOAT64),
+       CAST(tax_amount_full_aggregation	as FLOAT64),
+       CAST(created_at	as TIMESTAMP),
+       4 inserted_at
+  FROM aws_s3.sales_order_items_dump;
+
+select CAST(id_sales_order_item_state AS INT64),
+       CAST(fk_sales_order AS INT64),
+       CAST(fk_sales_order_item	AS INT64),
+       CAST(created_at AS TIMESTAMP),
+       CAST(updated_at AS TIMESTAMP),
+       3 inserted_at
+FROM aws_s3.sales_order_item_states_dump
+WHERE  DATE(updated_at)='2023-02-22';

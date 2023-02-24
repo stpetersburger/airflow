@@ -214,7 +214,6 @@ def run(args):
         delta_update = {"id_pipeline": f"""{id_pipeline}""", "delta": last_modified}
         delta_update = pd.DataFrame.from_dict([delta_update])
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
-
         try:
             write_to_gbq(args.conn,
                          args.schema, 'sales_orders', df_news_orders, args.wtype)

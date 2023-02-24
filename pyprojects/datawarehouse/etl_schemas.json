@@ -1,7 +1,8 @@
 {
 	"spryker2dwh": {
-		"external_id": "string",
-		"phone": "string"
+		"external_id": "",
+		"phone": "",
+		"merchant_id": ""
 	},
 	"url": {
 
