@@ -19,23 +19,12 @@
 """Example DAG demonstrating the usage of the DockerOperator."""
 
 from airflow import DAG
-from datetime import datetime, timedelta
+from datetime import datetime
 from airflow.operators.bash_operator import BashOperator
-from airflow.models import Variable
 import os
-import sys
-
-#pwds = Variable.get("AIRFLOW__BI__CONNPWDS")
-#conns = Variable.get("AIRFLOW__BI__CONNS")
-#customEnv = {
-#'AIRFLOW__BI__CONNPWD': f"""'{pwds}'""",
-#'AIRFLOW__BI__CONN': f"""'{conns}'"""
-#}
-
-#env = dict(os.environ, **customEnv)
 
 dag = DAG(
-    dag_id="spryker2dwh",
+    dag_id="spryker2dwh_b2c",
     start_date=datetime(2023, 2, 10),
     schedule_interval='20 2-18/3 * * *',
     catchup=False,
@@ -46,7 +35,6 @@ t1 = BashOperator(
     task_id="spryker_orders_info",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
                  f"""-conn gcp_bq -business_type b2c -schema aws_s3 -writing_type append -date ''""",
- #   env=env,
     dag=dag
 )
 
