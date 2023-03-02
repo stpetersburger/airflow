@@ -135,26 +135,31 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
     if not dataframe.empty:
-        print(f'WRITE TO BQ START - {datetime.datetime.now()}')
-        if method == 'csv':
-            pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
-        elif method == '':
-            pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
-        print(f'WRITE TO BQ END - {datetime.datetime.now()}')
+        try:
+            print(f'WRITE TO BQ START - {datetime.datetime.now()}')
+            if method == 'csv':
+                pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
+            elif method == '':
+                pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
+            print(f'WRITE TO BQ END - {datetime.datetime.now()}')
+            send_telegram_message(1, f"""BQ {dataset} """)
+        except Exception as e:
+            print(f'caught {type(e)}: {str(e)}')
+            send_telegram_message(0, f"""BQ {dataset} caught {type(e)}: {str(e)}""")
     else:
         print(f"""{dataset} - is empty""")
+
 
 def get_from_gbq(conn, str_sql):
     # bigQuery credentials
     gcp_credentials = json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform'))
     gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
 
-    #pandas_gbq definition
+    # pandas_gbq definition
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
 
-    return pd_gbq.read_gbq(str_sql,
-                           progress_bar_type=None)
+    return pd_gbq.read_gbq(str_sql, progress_bar_type=None)
 
 
 def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
@@ -262,13 +267,13 @@ def get_delta(conn, id_pipeline, dt=''):
     return delta
 
 
-def get_deduplication_data(conn, entity, df_new, index):
+def get_deduplication_data(conn, btype, entity, df_new, index):
 
     flds = ','.join(str(x) for x in index)
 
     if entity == 'spryker2dwh_items':
         strsql = f"""select  {flds},1 state
-                       from  aws_s3.sales_order_item_states
+                       from  aws_s3.{btype}_sales_order_item_states
                       where  created_at  >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 62 DAY)"""
 
     df_old = get_from_gbq(conn, strsql)

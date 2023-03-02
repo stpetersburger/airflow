@@ -26,9 +26,9 @@ WITH items AS (
           MIN(b.customer_reference)                                   customer_reference,
           MIN(b.address3)                                             city_name
     FROM
-          aws_s3.sales_orders b
-          LEFT JOIN aws_s3.sales_order_items a ON a.fk_sales_order = b.id_sales_order
-          LEFT JOIN aws_s3.sales_order_item_states c ON a.id_sales_order_item = c.fk_sales_order_item
+          aws_s3.b2c_sales_orders b
+          LEFT JOIN aws_s3.b2c_sales_order_items a ON a.fk_sales_order = b.id_sales_order
+          LEFT JOIN aws_s3.b2c_sales_order_item_states c ON a.id_sales_order_item = c.fk_sales_order_item
           LEFT JOIN analytics.dim_item_states d ON c.fk_sales_order_item_state = d.id_sales_order_item_state
           LEFT JOIN analytics.dim_products e ON a.fk_sku_simple = e.sku
           LEFT JOIN analytics.dim_product_categories f ON f.id_product_category = e.fk_product_category

@@ -4,6 +4,8 @@ from pyprojects.utils.udfs import *
 
 def run(args):
 
+    pipeline = 'externalfiles2dwh'
+
     etl_config_spreadsheet = get_data_from_googlesheet(args.conn, get_creds('gs',
                                                                             'spreadsheets',
                                                                             'config_sheet'),
@@ -38,36 +40,8 @@ def run(args):
                                    file=row['tab'],
                                    file_type=row['tab'].split(".")[1])
             if row['name'] == 'catalog_products':
-                df = clean_pandas_dataframe(df).filter(items=['sku_id',
-                                                              'concrete_sku',
-                                                              'category_id',
-                                                              'category_name',
-                                                              'brand_name',
-                                                              'product_name',
-                                                              'concrete_product_name',
-                                                              'available_quantity',
-                                                              'concrete_product_active',
-                                                              'concrete_price',
-                                                              'gross_default_price',
-                                                              'gross_original_price',
-                                                              'net_default_price',
-                                                              'net_original_price',
-                                                              'merchant_name'])
-                df.columns = ['id_sku_config',
-                              'id_sku_simple',
-                              'id_category',
-                              'category_name_en',
-                              'brand_name_en',
-                              'config_name_en',
-                              'simple_name_en',
-                              'simple_quantity',
-                              'if_simple_active',
-                              'simple_price',
-                              'gross_default_price',
-                              'gross_original_price',
-                              'net_default_price',
-                              'net_original_price',
-                              'merchant_name_en']
+                df = clean_pandas_dataframe(df).filter(items=get_etl_schema(pipeline, row['name'], 'filter'))
+                df.rename(columns=get_etl_schema(pipeline, row['name'], 'rename'), inplace=True)
 
         elif row['pipeline'] == 'dimension':
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
@@ -89,36 +63,19 @@ def run(args):
                 df = get_from_gbq('gcp_bq', sqlstr)
                 df = df.sort_values(df.columns[0])
             else:
-                try:
-                    get_from_gbq('gcp_bq', sqlstr)
-                    send_telegram_message(
-                        1, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
-                except Exception as e:
-                    print(e)
-                    send_telegram_message(
-                        0, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
+                get_from_gbq('gcp_bq', sqlstr)
 
         if not df.empty:
             df = clean_pandas_dataframe(df).drop_duplicates()
 
-            try:
-                write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
-                send_telegram_message(1, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
-            except Exception as e:
-                print(e)
-                send_telegram_message(0, f"""BQ externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
+            write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
             if row['output'] != '':
                 df = df.filter(items=row['output_fields'].split(','))
-                try:
-                    write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
-                    send_telegram_message(1, f"""OUTPUT externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
-                except Exception as e:
-                    print(e)
-                    send_telegram_message(0, f"""OUTPUT externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
+                send_telegram_message(1, f"""OUTPUT externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
 
         if row['if_historical']:
-            #weekly snapshot
+            # weekly snapshot
             strsql = f"""SELECT (CURRENT_DATE() - 7) = MAX(DATE(inserted_at))
                          FROM {row['dwh_schema']}.historical_{row['name']}
                          WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
@@ -129,15 +86,8 @@ def run(args):
                 df = df.filter(items=hist_fields)
 
                 df = df.drop_duplicates()
-                try:
-                    write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
+                write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
                              clean_pandas_dataframe(df, row['pipeline']), wtype)
-                    send_telegram_message(
-                        1, f"""BQ HISTORICAL externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
-                except Exception as e:
-                    print(e)
-                    send_telegram_message(
-                        0, """ BQ HISTORICAL externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']} - {e}""")
 
 
 if __name__ == '__main__':

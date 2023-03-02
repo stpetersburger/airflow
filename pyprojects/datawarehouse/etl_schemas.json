@@ -31,16 +31,13 @@
 			}
 		},
 		"order_totals": {
-			"message_object": "order_totals",
 			"drop": "created_at,updated_at,fk_sales_order"
 		},
 		"shipping_expense": {
-			"message_object": "shipping_expense",
 			"fields": "id_sales_expense,discount_amount_aggregation,gross_price,name,net_price,price",
 			"fields2": "price_to_pay_aggregation,refundable_amount,tax_amount"
 		},
 		"shipping_address": {
-			"message_object": "shipping_address",
 			"fields": "id_sales_order_address,fk_country,fk_region,address1,address2,address3"
 		},
 		"items": {
@@ -52,6 +49,32 @@
 			"fields5": "subtotal_aggregation,tax_amount,tax_amount_full_aggregation,created_at",
 			"rename": {
 				"sku": "fk_sku_simple"
+			}
+		}
+	},
+	"externalfiles2dwh": {
+		"catalog_products": {
+			"filter": {
+				"fields": "sku_id,concrete_sku,category_id,category_name,brand_name,product_name,concrete_product_name",
+				"fields2": "available_quantity,concrete_product_active,concrete_price,gross_default_price",
+				"fields3": "gross_original_price,net_default_price,net_original_price,merchant_name"
+			},
+			"rename": {
+				"sku_id": "id_sku_config",
+				"concrete_sku": "id_sku_simple",
+				"category_id": "id_category",
+				"category_name": "category_name_en",
+				"brand_name": "brand_name_en",
+				"product_name": "config_name_en",
+				"concrete_product_name": "simple_name_en",
+				"available_quantity": "simple_quantity",
+				"concrete_product_active": "if_simple_active",
+				"concrete_price": "simple_price",
+				"gross_default_price": "gross_default_price",
+				"gross_original_price": "gross_original_price",
+				"net_default_price": "net_default_price",
+				"net_original_price": "net_original_price",
+				"merchant_name": "merchant_name_en"
 			}
 		}
 	}
