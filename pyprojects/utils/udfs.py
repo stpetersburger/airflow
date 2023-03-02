@@ -85,12 +85,15 @@ def write_data_to_googlesheet(conn, gsheet_tab, df):
     gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 
                                                                 'prefix')}{get_creds('gs','spreadsheets', 
                                                                                             'output_sheet')}""")
-
-    gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
-    gs_sheet.clear()
-    df = df.astype(str)
-
-    gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
+    try:
+        gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
+        gs_sheet.clear()
+        df = df.astype(str)
+        gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
+        send_telegram_message(1, f"""OUTPUT Googlesheet - {gsheet_tab}""")
+    except Exception as e:
+        print(f'caught {type(e)}: {str(e)}')
+        send_telegram_message(0, f"""OUTPUT Googlesheet - {gsheet_tab} caught {type(e)}: {str(e)}""")
 
 
 def get_data_from_sharepoint(conn="ms_sharepoint", sheet='', sheet_tab='Sheet1'):
@@ -142,15 +145,15 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
             elif method == '':
                 pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
             print(f'WRITE TO BQ END - {datetime.datetime.now()}')
-            send_telegram_message(1, f"""BQ {dataset} """)
+            send_telegram_message(1, f"""BQ - {wtype} - {schema}.{dataset} """)
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
-            send_telegram_message(0, f"""BQ {dataset} caught {type(e)}: {str(e)}""")
+            send_telegram_message(0, f"""BQ {schema}.{dataset}: ERROR caught {type(e)}: {str(e)}""")
     else:
         print(f"""{dataset} - is empty""")
 
 
-def get_from_gbq(conn, str_sql):
+def get_from_gbq(conn, str_sql, etl_desc='', note=''):
     # bigQuery credentials
     gcp_credentials = json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform'))
     gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
@@ -159,7 +162,14 @@ def get_from_gbq(conn, str_sql):
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
 
-    return pd_gbq.read_gbq(str_sql, progress_bar_type=None)
+    try:
+        df = pd_gbq.read_gbq(str_sql, progress_bar_type=None)
+        send_telegram_message(1, f"""execute BQ successful {etl_desc} - {note}""")
+    except Exception as e:
+        print(f'caught {type(e)}: {str(e)}')
+        send_telegram_message(0, f"""execute BQ {etl_desc} - {note}: ERROR caught {type(e)}: {str(e)}""")
+
+    return df
 
 
 def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
@@ -255,7 +265,7 @@ def get_delta(conn, id_pipeline, dt=''):
                        from etl_metadata.airflow_run 
                       where id_pipeline ='{id_pipeline}'"""
 
-        delta = get_from_gbq(conn, strsql)
+        delta = get_from_gbq(conn, strsql, id_pipeline, 'get_delta')
 
         if pd.isnull(delta['delta'].iloc[0]):
             delta = 0
@@ -276,7 +286,7 @@ def get_deduplication_data(conn, btype, entity, df_new, index):
                        from  aws_s3.{btype}_sales_order_item_states
                       where  created_at  >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 62 DAY)"""
 
-    df_old = get_from_gbq(conn, strsql)
+    df_old = get_from_gbq(conn, strsql, entity, 'deduplication')
     df_new = clean_pandas_dataframe(df_new)
 
     df = pd.merge(df_new, df_old, left_on=index,
@@ -310,7 +320,7 @@ def get_gbq_dim_data(conn, dataset, table, fields):
 
     strsql = f"""SELECT {flds} FROM {dataset}.{table} """
 
-    return get_from_gbq(conn, strsql)
+    return get_from_gbq(conn, strsql, table, dataset)
 
 
 def send_telegram_message(msg_type, msg):

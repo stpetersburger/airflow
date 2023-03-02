@@ -3,8 +3,8 @@ from pyprojects.utils.udfs import *
 
 
 def run(args):
-
     pipeline = 'externalfiles2dwh'
+    send_telegram_message(1, f"""Pipeline {pipeline} has started""")
 
     etl_config_spreadsheet = get_data_from_googlesheet(args.conn, get_creds('gs',
                                                                             'spreadsheets',
@@ -73,7 +73,6 @@ def run(args):
             if row['output'] != '':
                 df = df.filter(items=row['output_fields'].split(','))
                 write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
-                send_telegram_message(1, f"""OUTPUT externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
 
         if row['if_historical']:
             # weekly snapshot
@@ -89,6 +88,8 @@ def run(args):
                 df = df.drop_duplicates()
                 write_to_gbq(args.conn, row['dwh_schema'], f"""historical_{row['name']}""",
                              clean_pandas_dataframe(df, row['pipeline']), wtype)
+
+    send_telegram_message(1, f"""Pipeline {pipeline} has finished""")
 
 
 if __name__ == '__main__':
