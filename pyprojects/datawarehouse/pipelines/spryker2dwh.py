@@ -14,17 +14,17 @@ def run(args):
     id_pipeline = f"""{pipeline}_{args.btype}"""
 
     # s3 credentials
-    s3 = boto3.resource(
+    etl_s3 = boto3.resource(
         service_name='s3',
-        region_name=get_creds(args.schema, pipeline, 'region_name'),
-        aws_access_key_id=get_creds(args.schema, pipeline, 'aws_access_key_id'),
-        aws_secret_access_key=get_creds(args.schema, pipeline, 'aws_secret_access_key')
+        region_name=get_creds(args.schema, id_pipeline, 'region_name'),
+        aws_access_key_id=get_creds(args.schema, id_pipeline, 'aws_access_key_id'),
+        aws_secret_access_key=get_creds(args.schema, id_pipeline, 'aws_secret_access_key')
     )
 
     delta = get_delta(args.conn, id_pipeline, args.dt)
     print(delta)
 
-    my_bucket = s3.Bucket(get_creds(args.schema, pipeline, 'bucket'))
+    etl_bucket = etl_s3.Bucket(get_creds(args.schema, id_pipeline, 'bucket'))
     prefix = get_s3_prefix(project, args.btype, args.dt)
     print(prefix)
 
@@ -32,57 +32,38 @@ def run(args):
     df_news_orders = pd.DataFrame()
     df_hist_items = pd.DataFrame()
     last_modified = 0
-    testfrauds=[]
     cnt = 0
+
     # fraud or test check
     # not all the users have fk_customer
     fraudtestemails = get_gbq_dim_data(args.conn, 'gcp_gs', 'test_fraud_users', 'email').values.tolist()
     fraudtestemails = list(map(''.join, fraudtestemails))
     fraudtestemails = [x.strip().lower() for x in fraudtestemails]
+
     for p in prefix:
-        for obj in my_bucket.objects.filter(Prefix=p):
+        for obj in etl_bucket.objects.filter(Prefix=p):
             if obj.key.endswith('json') and calendar.timegm(obj.last_modified.timetuple()) > delta:
                 cnt += 1
                 print(obj.key)
-                print(calendar.timegm(obj.last_modified.timetuple()))
 
                 if calendar.timegm(obj.last_modified.timetuple()) >= last_modified:
                     last_modified = calendar.timegm(obj.last_modified.timetuple())
 
                 msg_data = json.loads(obj.get()['Body'].read().decode('utf-8'))
 
-                msg_data_items_state = pd.DataFrame.from_dict(msg_data["items"])[['fk_oms_order_item_state',
-                                                                                  'fk_sales_order',
-                                                                                  'id_sales_order_item',
-                                                                                  'created_at',
-                                                                                  'updated_at']]
+                msg_data_items_state = pd.DataFrame.from_dict(msg_data["items"])[get_etl_schema(pipeline, 'items_state',
+                                                                                                'fields')]
 
-                msg_data_items_state.rename(columns={"fk_oms_order_item_state": "fk_sales_order_item_state",
-                                                     "id_sales_order_item": "fk_sales_order_item"},
-                                            inplace=True)
-                if df_hist_items.empty:
-                    df_hist_items = msg_data_items_state
-                else:
-                    df_hist_items = concatenate_dataframes(df_hist_items, msg_data_items_state)
+                df_hist_items = concatenate_dataframes(df_hist_items, msg_data_items_state)
 
                 if msg_data["eventName"] == '' and msg_data["items"][0]["item_status"] == 'new':
 
-                    # orders
-                    msg_data_order = clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["order"]]))[[
-                        'id_sales_order',
-                        'is_test',
-                        'order_reference',
-                        'fk_locale',
-                        'cart_note',
-                        'currency_iso_code',
-                        'order_exchange_rate',
-                        'fk_customer',
-                        'order_custom_reference',
-                        'customer_reference',
-                        'oms_processor_identifier',
-                        'created_at',
-                        'updated_at'
-                    ]]
+
+                    msg_data_order = clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["order"]]))[get_etl_schema(
+                                                                                                         pipeline,
+                                                                                                         'order',
+                                                                                                         'fields')]
+
                     msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
 
                     email_to_check = msg_data["customer"]["email"].strip().lower()
@@ -91,129 +72,63 @@ def run(args):
 
                     msg_data_order_totals = clean_pandas_dataframe(
                         pd.DataFrame.from_dict([msg_data["order_totals"][0]]), '', True)
-                    msg_data_order_totals = msg_data_order_totals.drop(columns=['created_at',
-                                                                                'updated_at',
-                                                                                'fk_sales_order'], axis=1)
+
+                    msg_data_order_totals = msg_data_order_totals.drop(columns=get_etl_schema(pipeline, 'order_totals',
+                                                                                                        'drop'), axis=1)
 
                     msg_data_shipping_expense = clean_pandas_dataframe(pd.DataFrame.from_dict(
-                        [msg_data["shipping_expense"][0]]), '', True)[['id_sales_expense',
-                                                                        'discount_amount_aggregation',
-                                                                        'gross_price',
-                                                                        'name',
-                                                                        'net_price',
-                                                                        'price',
-                                                                        'price_to_pay_aggregation',
-                                                                        'refundable_amount',
-                                                                        'tax_amount']]
-
+                        [msg_data["shipping_expense"][0]]), '', True)[get_etl_schema(pipeline,
+                                                                                     'shipping_expense',
+                                                                                     'fields')]
+#
                     msg_data_shipping_address = \
-                        clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["shipping_address"]]), '', True)[[
-                                                                                        'id_sales_order_address',
-                                                                                        'fk_country',
-                                                                                        'fk_region',
-                                                                                        'address1',
-                                                                                        'address2',
-                                                                                        'address3']]
+                        clean_pandas_dataframe(pd.DataFrame.from_dict([msg_data["shipping_address"]]),
+                                               '',
+                                               True)[get_etl_schema(pipeline,
+                                                                    'shipping_address',
+                                                                    'fields')]
 
                     msg_data_order = msg_data_order.join(msg_data_order_totals) \
                         .join(msg_data_shipping_expense) \
-                        .join(msg_data_shipping_address).drop(columns=['updated_at'], axis=1)
+                        .join(msg_data_shipping_address).drop(columns=get_etl_schema(pipeline,
+                                                                                     'order',
+                                                                                     'drop'),
+                                                              axis=1)
 
-                    msg_data_order.rename(columns={"id_sales_order_totals": "fk_sales_order_totals",
-                                                   "id_sales_expense": "fk_sales_expense",
-                                                   "id_sales_order_address": "fk_sales_order_address"
-                                                   },
-                                          inplace=True)
+                    msg_data_order = msg_data_order.filter(items=get_etl_schema(pipeline,
+                                                                                'order',
+                                                                                'filter'))
 
-                    msg_data_order = msg_data_order.filter(items=['fk_country',
-                                                                  'fk_customer',
-                                                                  'id_sales_order',
-                                                                  'is_test',
-                                                                  'order_reference',
-                                                                  'fk_locale',
-                                                                  'cart_note',
-                                                                  'currency_iso_code',
-                                                                  'order_exchange_rate',
-                                                                  'order_custom_reference',
-                                                                  'customer_reference',
-                                                                  'oms_processor_identifier',
-                                                                  'fk_sales_order_totals',
-                                                                  'discount_total',
-                                                                  'grand_total',
-                                                                  'order_expense_total',
-                                                                  'refund_total',
-                                                                  'subtotal',
-                                                                  'tax_total',
-                                                                  'fk_sales_expense',
-                                                                  'discount_amount_aggregation',
-                                                                  'gross_price',
-                                                                  'name',
-                                                                  'net_price',
-                                                                  'price',
-                                                                  'price_to_pay_aggregation',
-                                                                  'refundable_amount',
-                                                                  'tax_amount',
-                                                                  'fk_sales_order_address',
-                                                                  'fk_region',
-                                                                  'address1',
-                                                                  'address2',
-                                                                  'address3',
-                                                                  'customer_created_at',
-                                                                  'created_at'])
-
-                    if df_news_orders.empty:
-                        df_news_orders = msg_data_order
-                    else:
-                        df_news_orders = concatenate_dataframes(df_news_orders, msg_data_order)
+                    df_news_orders = concatenate_dataframes(df_news_orders, msg_data_order)
 
                     msg_data_items = msg_data["items"]
 
                     for el in msg_data_items:
-                        df_el = clean_pandas_dataframe(pd.DataFrame.from_dict([el])[[
-                            'sku',
-                            'merchant_id',
-                            'fk_sales_order',
-                            'id_sales_order_item',
-                            'fk_sales_order_item_bundle',
-                            'fk_sales_shipment',
-                            'quantity',
-                            'is_quantity_splittable',
-                            'canceled_amount',
-                            'discount_amount_aggregation',
-                            'discount_amount_full_aggregation',
-                            'gross_price',
-                            'net_price',
-                            'price',
-                            'price_to_pay_aggregation',
-                            'product_offer_reference',
-                            'refundable_amount',
-                            'product_option_price_aggregation',
-                            'subtotal_aggregation',
-                            'tax_amount',
-                            'tax_amount_full_aggregation',
-                            'created_at']])
-                        if df_news_items.empty:
-                            df_news_items = df_el
-                        else:
-                            df_news_items = concatenate_dataframes(df_news_items, df_el)
+                        df_el = clean_pandas_dataframe(pd.DataFrame.from_dict([el])[get_etl_schema(pipeline,
+                                                                                                   'items',
+                                                                                                   'fields')])
+                        df_news_items = concatenate_dataframes(df_news_items, df_el)
 
     if cnt > 0:
         df_news_orders = clean_pandas_dataframe(df_news_orders.drop_duplicates())
         df_news_orders = clean_pandas_dataframe(df_news_orders, pipeline, '', last_modified)
-
-        df_news_items.rename(columns={"sku": "fk_sku_simple"}, inplace=True)
         df_news_items = clean_pandas_dataframe(df_news_items.drop_duplicates(), pipeline, '', last_modified)
 
+        df_news_orders.rename(columns=get_etl_schema(pipeline, 'order', 'rename'), inplace=True)
+        df_news_items.rename(columns=get_etl_schema(pipeline, 'items', 'rename'), inplace=True)
+
         if not df_hist_items.empty:
+            df_hist_items.rename(columns=get_etl_schema(pipeline, 'items_state', 'rename'), inplace=True)
             df_hist_items = get_deduplication_data(args.conn,
-                                                   f"""{id_pipeline}_items""",
+                                                   f"""{pipeline}_items""",
                                                    df_hist_items,
-                                                   ['fk_sales_order_item_state', 'fk_sales_order_item'])
+                                                   get_etl_schema(pipeline, 'items_state', 'deduplication'))
             df_hist_items = clean_pandas_dataframe(df_hist_items.drop_duplicates(), pipeline, '', last_modified)
 
         delta_update = {"id_pipeline": f"""{id_pipeline}""", "delta": last_modified}
         delta_update = pd.DataFrame.from_dict([delta_update])
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
+
         try:
             write_to_gbq(args.conn,
                          args.schema, 'sales_orders', df_news_orders, args.wtype)

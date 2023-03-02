@@ -2,8 +2,7 @@ WITH items AS (
   SELECT  MIN(a.created_at)                                           order_created_at,
           MIN(e.merchant_name_en)                                     merchant,
           MIN(e.brand)                                                brand,
-          MIN(f.category_name_en)                                     product_category,
-          MIN(f.id_product_category)                                  fk_product_category,
+          MAX(f.id_product_category)                                  fk_product_category,
           MIN(a.fk_sku_simple)                                        sku,
           a.id_sales_order_item                                       fk_sales_order_item,
           MIN(b.order_reference)                                      order_reference,
@@ -39,13 +38,12 @@ WITH items AS (
           AND
           NOT b.is_test
           AND d.reporting_order_item_state < 6
-   GROUP  BY 7
+   GROUP  BY 6
 )
 SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                                 order_date,
         DATE(DATE_ADD(order_created_at, INTERVAL 3 HOUR))                           order_date_nk,
         merchant,
         brand,
-        product_category,
         fk_product_category,
         sku,
         CASE WHEN CURRENT_DATE() > DATE(status_last_updated_date) + 14

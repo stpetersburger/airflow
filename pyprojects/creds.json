@@ -1,10 +1,16 @@
 {
 	"aws_s3": {
-		"spryker2dwh": {
+		"spryker2dwh_b2c": {
 			"region_name": "AWS_DEFAULT_REGION",
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID",
 			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY",
 			"bucket": "stg-analytics-stream"
+		},
+		"spryker2dwh_b2b": {
+			"region_name": "AWS_DEFAULT_REGION",
+			"aws_access_key_id": "AWS_ACCESS_KEY_ID_aney",
+			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY_aney",
+			"bucket": "aney-stream-service-prod"
 		}
 	},
 	"data_exploration": {

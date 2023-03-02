@@ -22,12 +22,20 @@ import io
 import re
 import requests
 
+with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/creds.json""") as f:
+    creds = json.load(f)
+    f.close()
+
+with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_data_formats.json""") as f:
+    etl_data_formats = json.load(f)
+    f.close()
+
+with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_schemas.json""") as f:
+    etl_schemas = json.load(f)
+    f.close()
+
 
 def get_creds(conn, pipeline, creds_name):
-
-    with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/creds.json""") as f:
-        creds = json.load(f)
-        f.close()
 
     if creds[conn][pipeline][creds_name][0].isupper():
         return os.environ[creds[conn][pipeline][creds_name]]
@@ -37,19 +45,33 @@ def get_creds(conn, pipeline, creds_name):
 
 def get_etl_datatypes(etl, dataset=''):
 
-    with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_schemas.json""") as f:
-        etl_schemas = json.load(f)
-        f.close()
+    if dataset == '':
+        return etl_data_formats[etl]
+    else:
+        return etl_data_formats[etl][dataset]
 
-        if dataset == '':
-            return etl_schemas[etl]
-        else:
-            return etl_schemas[etl][dataset]
-        
+
+def get_etl_schema(pipeline, message_object, message_method):
+
+    msg_config = etl_schemas[pipeline][message_object]
+    l = []
+    for k, v in msg_config.items():
+        if message_method in k:
+            if isinstance(v, dict):
+                if k == 'rename':
+                    return v
+                else:
+                    for kk, vv in v.items():
+                        l = l + vv.split(",")
+            else:
+                l = l + v.split(",")
+    return l
+
 
 def get_data_from_googlesheet(conn, gsheet, gsheet_tab):
     
-    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds('gcp_bq', 'datawarehouse', 'google_cloud_platform')))
+    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'datawarehouse',
+                                                                              'google_cloud_platform')))
     gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 'prefix')}{gsheet}""")
 
     gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
@@ -60,7 +82,9 @@ def get_data_from_googlesheet(conn, gsheet, gsheet_tab):
 def write_data_to_googlesheet(conn, gsheet_tab, df):
 
     gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform')))
-    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 'prefix')}{get_creds('gs', 'spreadsheets', 'output_sheet')}""")
+    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 
+                                                                'prefix')}{get_creds('gs','spreadsheets', 
+                                                                                            'output_sheet')}""")
 
     gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
     gs_sheet.clear()
@@ -110,12 +134,15 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
     #pandas_gbq definition
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
-    print(f'WRITE TO BQ START - {datetime.datetime.now()}')
-    if method == 'csv':
-        pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
-    elif method == '':
-        pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
-    print(f'WRITE TO BQ END - {datetime.datetime.now()}')
+    if not dataframe.empty:
+        print(f'WRITE TO BQ START - {datetime.datetime.now()}')
+        if method == 'csv':
+            pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
+        elif method == '':
+            pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
+        print(f'WRITE TO BQ END - {datetime.datetime.now()}')
+    else:
+        print(f"""{dataset} - is empty""")
 
 def get_from_gbq(conn, str_sql):
     # bigQuery credentials
@@ -239,13 +266,12 @@ def get_deduplication_data(conn, entity, df_new, index):
 
     flds = ','.join(str(x) for x in index)
 
-    if entity == 'spryker2dwh_b2c_items':
+    if entity == 'spryker2dwh_items':
         strsql = f"""select  {flds},1 state
                        from  aws_s3.sales_order_item_states
-                      where  created_at  >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 31 DAY)"""
+                      where  created_at  >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 62 DAY)"""
 
     df_old = get_from_gbq(conn, strsql)
-
     df_new = clean_pandas_dataframe(df_new)
 
     df = pd.merge(df_new, df_old, left_on=index,
@@ -288,7 +314,7 @@ def send_telegram_message(msg_type, msg):
         chatID = get_creds('watchers', 'telegram', 'chat_id')
         apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
 
-        if msg_type ==1:
+        if msg_type == 1:
             message=f"""\u2705 {msg}"""
         else:
             message=f"""\U0001F6A8 {msg}"""

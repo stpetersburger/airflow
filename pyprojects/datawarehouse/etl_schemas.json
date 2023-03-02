@@ -1,10 +1,58 @@
 {
 	"spryker2dwh": {
-		"external_id": "",
-		"phone": "",
-		"merchant_id": ""
-	},
-	"url": {
-
+		"items_state": {
+			"message_object": "items",
+			"fields": "fk_oms_order_item_state,fk_sales_order,id_sales_order_item,created_at,updated_at",
+			"rename": {
+				"fk_oms_order_item_state": "fk_sales_order_item_state",
+				"id_sales_order_item": "fk_sales_order_item"
+			},
+			"deduplication": "fk_sales_order_item_state,fk_sales_order_item"
+		},
+		"order": {
+			"message_object": "order",
+			"fields": "id_sales_order,is_test,order_reference,fk_locale,cart_note,currency_iso_code",
+			"fields2": "order_exchange_rate,order_custom_reference,fk_customer,customer_reference",
+			"fields3": "oms_processor_identifier,created_at,updated_at",
+			"drop": "updated_at",
+			"filter": {
+				"fields": "fk_country,fk_customer,id_sales_order,is_test,order_reference,fk_locale,cart_note",
+				"fields2": "currency_iso_code,order_exchange_rate,order_custom_reference,customer_reference",
+				"fields3": "oms_processor_identifier,id_sales_order_totals,discount_total,grand_total",
+				"fields4": "order_expense_total,refund_total,subtotal,tax_total,id_sales_expense",
+				"fields5": "discount_amount_aggregation,gross_price,name,net_price,price",
+				"fields6": "price_to_pay_aggregation,refundable_amount,tax_amount,id_sales_order_address",
+				"fields7": "fk_region,address1,address2,address3,customer_created_at,created_at"
+			},
+			"rename": {
+				"id_sales_order_totals": "fk_sales_order_totals",
+				"id_sales_expense": "fk_sales_expense",
+				"id_sales_order_address": "fk_sales_order_address"
+			}
+		},
+		"order_totals": {
+			"message_object": "order_totals",
+			"drop": "created_at,updated_at,fk_sales_order"
+		},
+		"shipping_expense": {
+			"message_object": "shipping_expense",
+			"fields": "id_sales_expense,discount_amount_aggregation,gross_price,name,net_price,price",
+			"fields2": "price_to_pay_aggregation,refundable_amount,tax_amount"
+		},
+		"shipping_address": {
+			"message_object": "shipping_address",
+			"fields": "id_sales_order_address,fk_country,fk_region,address1,address2,address3"
+		},
+		"items": {
+			"message_object": "items",
+			"fields": "sku,merchant_id,fk_sales_order,id_sales_order_item,fk_sales_order_item_bundle,fk_sales_shipment",
+			"fields2": "quantity,is_quantity_splittable,canceled_amount,discount_amount_aggregation",
+			"fields3": "discount_amount_full_aggregation,gross_price,net_price,price,price_to_pay_aggregation",
+			"fields4": "product_offer_reference,refundable_amount,product_option_price_aggregation",
+			"fields5": "subtotal_aggregation,tax_amount,tax_amount_full_aggregation,created_at",
+			"rename": {
+				"sku": "fk_sku_simple"
+			}
+		}
 	}
 }
