@@ -85,10 +85,10 @@ def write_data_to_googlesheet(conn, gsheet_tab, df):
     gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 
                                                                 'prefix')}{get_creds('gs','spreadsheets', 
                                                                                             'output_sheet')}""")
+    df = df.astype(str)
     try:
         gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
         gs_sheet.clear()
-        df = df.astype(str)
         gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
         send_telegram_message(1, f"""OUTPUT Googlesheet - {gsheet_tab}""")
     except Exception as e:

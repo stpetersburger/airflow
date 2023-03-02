@@ -73,6 +73,11 @@ def run(args):
                     df = get_from_gbq('gcp_bq', sqlstr.format(b, s), row['pipeline'], row['name'])
                     df = df.sort_values(df.columns[0])
                     write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
+                    if row['output'] != '':
+                        df = df.filter(items=row['output_fields'].split('|'))
+                        write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=df)
+
                     i += 1
                     df = pd.DataFrame()
                 else:
@@ -82,10 +87,6 @@ def run(args):
             df = clean_pandas_dataframe(df).drop_duplicates()
 
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
-
-            if row['output'] != '':
-                df = df.filter(items=row['output_fields'].split('|'))
-                write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
 
         if row['if_historical']:
             # weekly snapshot
