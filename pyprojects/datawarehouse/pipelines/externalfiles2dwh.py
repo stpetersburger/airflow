@@ -71,7 +71,7 @@ def run(args):
             write_to_gbq(args.conn, row['dwh_schema'], row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
             if row['output'] != '':
-                df = df.filter(items=row['output_fields'].split(','))
+                df = df.filter(items=row['output_fields'].split('|'))
                 write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
 
         if row['if_historical']:
@@ -82,7 +82,7 @@ def run(args):
 
             if get_from_gbq('gcp_bq', strsql)["f0_"].iloc[0]:
                 wtype = 'append'
-                hist_fields = row['historical_fields'].split(',')
+                hist_fields = row['historical_fields'].split('|')
                 df = df.filter(items=hist_fields)
 
                 df = df.drop_duplicates()
