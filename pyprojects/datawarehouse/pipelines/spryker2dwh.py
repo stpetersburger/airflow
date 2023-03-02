@@ -42,6 +42,7 @@ def run(args):
 
     for p in prefix:
         for obj in etl_bucket.objects.filter(Prefix=p):
+            print(obj.key)
             if obj.key.endswith('json') and calendar.timegm(obj.last_modified.timetuple()) > delta:
                 print(obj.key)
                 # get the message data

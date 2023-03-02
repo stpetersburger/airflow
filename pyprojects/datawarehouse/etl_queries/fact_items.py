@@ -26,17 +26,16 @@ WITH items AS (
           MIN(b.customer_reference)                                   customer_reference,
           MIN(b.address3)                                             city_name
     FROM
-          aws_s3.b2c_sales_orders b
-          LEFT JOIN aws_s3.b2c_sales_order_items a ON a.fk_sales_order = b.id_sales_order
-          LEFT JOIN aws_s3.b2c_sales_order_item_states c ON a.id_sales_order_item = c.fk_sales_order_item
-          LEFT JOIN analytics.dim_item_states d ON c.fk_sales_order_item_state = d.id_sales_order_item_state
-          LEFT JOIN analytics.dim_products e ON a.fk_sku_simple = e.sku
-          LEFT JOIN analytics.dim_product_categories f ON f.id_product_category = e.fk_product_category
+          aws_s3.{0}_sales_orders b
+          LEFT JOIN aws_s3.{0}_sales_order_items a ON a.fk_sales_order = b.id_sales_order
+          LEFT JOIN aws_s3.{0}_sales_order_item_states c ON a.id_sales_order_item = c.fk_sales_order_item
+          LEFT JOIN {1}.dim_item_states d ON c.fk_sales_order_item_state = d.id_sales_order_item_state
+          LEFT JOIN {1}.dim_products e ON a.fk_sku_simple = e.sku
+          LEFT JOIN {1}.dim_product_categories f ON f.id_product_category = e.fk_product_category
    WHERE  DATE(DATE_ADD(b.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 1 MONTH)
           AND DATE(DATE_ADD(a.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 1 MONTH)
           AND DATE(DATE_ADD(c.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 2 MONTH)
-          AND
-          NOT b.is_test
+          AND NOT b.is_test
           AND d.reporting_order_item_state < 6
    GROUP  BY 6
 )
@@ -89,7 +88,8 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) >= 2 THEN 1 ELSE 0 END if_approved,
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) >= 3 THEN 1 ELSE 0 END if_ready_to_ship,
  FROM   items i
-        LEFT JOIN analytics.dim_item_states a
+        LEFT JOIN {1}.dim_item_states a
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state
         LEFT JOIN gcp_gs.map_order_cities c
         ON i.city_name = c.order_city_name
+ WHERE  c.business_type = '{0}'

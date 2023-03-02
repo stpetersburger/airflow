@@ -24,7 +24,7 @@ def run(args):
 
         if row['truncate'] and row['dwh_schema'] != '':
             wtype = 'append'
-            get_from_gbq('gcp_bq', f"""TRUNCATE TABLE {row['dwh_schema']}.{row['name']}""")
+            get_from_gbq('gcp_bq', f"""TRUNCATE TABLE {row['dwh_schema']}.{row['name']}""", row['name'], 'truncate')
 
         if row['pipeline'] == 'googlesheet2dwh':
             df = get_data_from_googlesheet(conn=args.conn,
@@ -46,24 +46,37 @@ def run(args):
         elif row['pipeline'] == 'dimension':
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
                 sqlstr = f.read()
-            df = get_from_gbq('gcp_bq', sqlstr)
-            df = df.sort_values(df.columns[0])
+            i = 0
+            for b in row['business_type'].split('|'):
+                s = row["dwh_schema"].split("|")[i]
+                print(sqlstr.format(b, s))
+                df = get_from_gbq('gcp_bq', sqlstr.format(b, s), row['pipeline'], row['name'])
+                df = df.sort_values(df.columns[0])
+                write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+                i += 1
+                df = pd.DataFrame()
 
         elif row['pipeline'] == 'fact':
             with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/etl_queries/{row['tab']}.py""") as f:
                 sqlstr = f.read()
-            if row['incr_field'] != '':
-                wtype = 'append'
-                # delete incremental part
-                del_sql = f"""DELETE FROM {row['dwh_schema']}.{row['name']} WHERE {row['incr_field']} \
-                                                                    >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
-                                                                    INTERVAl 3 HOUR)), INTERVAL 1 MONTH)"""
-                get_from_gbq('gcp_bq', del_sql)
+            i = 0
+            for b in row['business_type'].split('|'):
+                s = row["dwh_schema"].split("|")[i]
+                if row['incr_field'] != '':
+                    wtype = 'append'
+                    # delete incremental part
+                    del_sql = f"""DELETE FROM {s}.{row['name']} WHERE {row['incr_field']} \
+                                                                        >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
+                                                                        INTERVAl 3 HOUR)), INTERVAL 1 MONTH)"""
+                    get_from_gbq('gcp_bq', del_sql, f"""{s}.{b}""", 'incremental deletion')
 
-                df = get_from_gbq('gcp_bq', sqlstr)
-                df = df.sort_values(df.columns[0])
-            else:
-                get_from_gbq('gcp_bq', sqlstr)
+                    df = get_from_gbq('gcp_bq', sqlstr.format(b, s), row['pipeline'], row['name'])
+                    df = df.sort_values(df.columns[0])
+                    write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+                    i += 1
+                    df = pd.DataFrame()
+                else:
+                    get_from_gbq('gcp_bq', sqlstr.format(b, s), row['pipeline'], row['name'])
 
         if not df.empty:
             df = clean_pandas_dataframe(df).drop_duplicates()
@@ -80,7 +93,7 @@ def run(args):
                          FROM {row['dwh_schema']}.historical_{row['name']}
                          WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
 
-            if get_from_gbq('gcp_bq', strsql)["f0_"].iloc[0]:
+            if get_from_gbq('gcp_bq', strsql, row['name'], 'historical')["f0_"].iloc[0]:
                 wtype = 'append'
                 hist_fields = row['historical_fields'].split('|')
                 df = df.filter(items=hist_fields)
