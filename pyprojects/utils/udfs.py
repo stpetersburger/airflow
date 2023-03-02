@@ -151,6 +151,7 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
             send_telegram_message(0, f"""BQ {schema}.{dataset}: ERROR caught {type(e)}: {str(e)}""")
     else:
         print(f"""{dataset} - is empty""")
+        send_telegram_message(1, f"""BQ - {wtype} - {schema}.{dataset} is empty""")
 
 
 def get_from_gbq(conn, str_sql, etl_desc='', note=''):
