@@ -72,6 +72,7 @@ def run(args):
 
             if row['output'] != '':
                 df = df.filter(items=row['output_fields'].split(','))
+                write_data_to_googlesheet(conn=args.conn, gsheet_tab=row['output'], df=df)
                 send_telegram_message(1, f"""OUTPUT externalfiles2dwh {row['pipeline']} - {wtype} - {row['tab']}""")
 
         if row['if_historical']:
