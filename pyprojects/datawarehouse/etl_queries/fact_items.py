@@ -92,4 +92,4 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state
         LEFT JOIN gcp_gs.map_order_cities c
         ON i.city_name = c.order_city_name
- WHERE  c.business_type = '{0}'
+        AND c.business_type = '{0}'

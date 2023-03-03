@@ -37,4 +37,4 @@ SELECT  if_test_order,
   FROM  customers_stg a
   LEFT  JOIN gcp_gs.map_order_cities c
         on a.city_name_en = c.order_city_name
- WHERE  c.business_type = '{0}'
+        AND c.business_type = '{0}'
