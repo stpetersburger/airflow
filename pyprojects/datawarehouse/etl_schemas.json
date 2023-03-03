@@ -98,9 +98,9 @@
 		"items": {
 			"message_object": "items",
 			"fields": "sku,merchant_id,fk_sales_order,id_sales_order_item,fk_sales_order_item_bundle",
-			"fields2": "fk_sales_shipment, quantity,is_quantity_splittable,canceled_amount",
-			"fields3": "discount_amount_aggregation, discount_amount_full_aggregation,gross_price,net_price,price",
-			"fields4": "price_to_pay_aggregation, product_offer_reference,refundable_amount",
+			"fields2": "fk_sales_shipment,quantity,is_quantity_splittable,canceled_amount",
+			"fields3": "discount_amount_aggregation,discount_amount_full_aggregation,gross_price,net_price,price",
+			"fields4": "price_to_pay_aggregation,product_offer_reference,refundable_amount",
 			"fields5": "product_option_price_aggregation,subtotal_aggregation,tax_amount",
 			"fields6": "tax_amount_full_aggregation,created_at",
 			"rename": {
