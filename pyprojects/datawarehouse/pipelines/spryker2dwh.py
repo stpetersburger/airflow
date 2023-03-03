@@ -77,8 +77,9 @@ def run(args):
                         pd.DataFrame.from_dict([msg_data["order_totals"][0]]), '', True)
 
                     # columns to drop taken from etl_schemas.json
-                    msg_data_order_totals = msg_data_order_totals.drop(columns=get_etl_schema(id_pipeline, 'order_totals',
-                                                                                                        'drop'), axis=1)
+                    msg_data_order_totals = msg_data_order_totals.drop(columns=get_etl_schema(id_pipeline,
+                                                                                              'order_totals', 'drop'),
+                                                                       axis=1)
 
                     msg_data_shipping_expense = clean_pandas_dataframe(pd.DataFrame.from_dict(
                         [msg_data["shipping_expense"][0]]), '', True)[get_etl_schema(id_pipeline,
@@ -86,13 +87,15 @@ def run(args):
                                                                                      'fields')]
 #
                     msg_data_shipping_address = clean_pandas_dataframe(pd.DataFrame.from_dict(
-                                                                        [msg_data["shipping_address"]]), '', True)[
-                                                                                                get_etl_schema(id_pipeline,
-                                                                                                'shipping_address',
-                                                                                                'fields')]
+                                                                        [msg_data["shipping_address"]]),
+                                                                        '',
+                                                                        True)[get_etl_schema(id_pipeline,
+                                                                                             'shipping_address',
+                                                                                             'fields')]
                     msg_data_order = msg_data_order.join(msg_data_order_totals) \
                         .join(msg_data_shipping_expense) \
-                        .join(msg_data_shipping_address).drop(columns=get_etl_schema(id_pipeline, 'order', 'drop'), axis=1)
+                        .join(msg_data_shipping_address).drop(columns=get_etl_schema(id_pipeline, 'order', 'drop'),
+                                                              axis=1)
 
                     # using filter method, change the order of fields in dataframe
                     msg_data_order = msg_data_order.filter(items=get_etl_schema(id_pipeline, 'order', 'filter'))

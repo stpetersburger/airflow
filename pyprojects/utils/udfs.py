@@ -244,22 +244,21 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
 
     while not d > datetime.datetime.now().date():
         if project == 'spryker':
-            if business_type == 'b2c':
-                p = "{}/{}/{}/{}/{}/".format(d.year,
-                                             d.month,
-                                             d.day,
-                                             project,
-                                             business_type)
-            else:
-                p = "{}/{}/{}/{}/{}/".format(d.year,
-                                             d.strftime('%m'),
-                                             d.strftime('%d'),
-                                             project,
-                                             business_type)
+            dp = "{}/{}/{}/{}/{}/".format(d.year,
+                                         d.month,
+                                         d.day,
+                                         project,
+                                         business_type)
+            prefix.append(dp)
+            dp2 = "{}/{}/{}/{}/{}/".format(d.year,
+                                         d.strftime('%m'),
+                                         d.strftime('%d'),
+                                         project,
+                                         business_type)
+            prefix.append(dp2)
         elif project == 'adjust':
-            p = "ogo3m90eil8g_{}".format(d, "YYYY-MM-DD")
-
-        prefix.append(p)
+            dp = "ogo3m90eil8g_{}".format(d, "YYYY-MM-DD")
+            prefix.append(dp)
 
         d = d+datetime.timedelta(1)
 
