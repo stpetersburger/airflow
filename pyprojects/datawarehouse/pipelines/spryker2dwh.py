@@ -4,8 +4,6 @@ Script to bring pgdata from Spryker to Analytics datalake
 
 import argparse
 from pyprojects.utils.udfs import *
-import boto3
-import pandas as pd
 
 
 def run(args):

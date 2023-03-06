@@ -26,7 +26,30 @@ def run(args):
             wtype = 'append'
             get_from_gbq('gcp_bq', f"""TRUNCATE TABLE {row['dwh_schema']}.{row['name']}""", row['name'], 'truncate')
 
-        if row['pipeline'] == 'googlesheet2dwh':
+        if row['pipeline'] == 's3':
+            etl_s3 = boto3.resource(
+                service_name='s3',
+                region_name=get_creds(row['dwh_schema'], row['url'], 'region_name'),
+                aws_access_key_id=get_creds(row['dwh_schema'], row['url'], 'aws_access_key_id'),
+                aws_secret_access_key=get_creds(row['dwh_schema'], row['url'], 'aws_secret_access_key')
+            )
+            etl_bucket = etl_s3.Bucket(row['tab'])
+
+            for p in row['name'].split(','):
+                for obj in etl_bucket.objects.filter(Prefix=p):
+                    print(obj.key)
+                    file_data = obj.get()['Body'].read().decode('utf-8')
+                    obj_info = obj.key.split('.')
+                    if obj_info[1] == 'csv':
+                        df = pd.read_csv(io.StringIO(file_data))
+                        write_to_gbq(args.conn,
+                                     row['dwh_schema'],
+                                     f"""{row['business_type']}_{obj_info[0]}""",
+                                     clean_pandas_dataframe(df, '', True),
+                                     wtype)
+                        df = pd.DataFrame()
+
+        elif row['pipeline'] == 'googlesheet2dwh':
             df = get_data_from_googlesheet(conn=args.conn,
                                            gsheet=row['url'],
                                            gsheet_tab=row['tab'])
