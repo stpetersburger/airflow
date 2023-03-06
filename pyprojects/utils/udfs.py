@@ -327,7 +327,7 @@ def get_gbq_dim_data(conn, dataset, table, fields):
     else:
         flds = fields
 
-    strsql = f"""SELECT {flds} FROM {dataset}.{table} """
+    strsql = f"""SELECT {flds} FROM {dataset}.{table}"""
 
     return get_from_gbq(conn, strsql, table, dataset)
 

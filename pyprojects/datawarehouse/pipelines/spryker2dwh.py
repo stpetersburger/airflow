@@ -34,7 +34,7 @@ def run(args):
 
     # fraud or test check
     # not all the users have fk_customer
-    fraudtestemails = get_gbq_dim_data(args.conn, 'gcp_gs', 'test_fraud_users', 'email').values.tolist()
+    fraudtestemails = get_gbq_dim_data(args.conn, 'gcp_gs', 'test_fraud_users', 'customer_reference').values.tolist()
     fraudtestemails = list(map(''.join, fraudtestemails))
     fraudtestemails = [x.strip().lower() for x in fraudtestemails]
 
@@ -66,8 +66,8 @@ def run(args):
                     msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
                     msg_data_order = clean_pandas_dataframe(msg_data_order)
                     # for b2c the fraud check needs to be done as of test/fraud users
-                    email_to_check = msg_data["customer"]["email"].strip().lower()
-                    if email_to_check.strip().lower() in fraudtestemails:
+                    customer_to_check = msg_data["customer"]["customer_reference"].strip().lower()
+                    if customer_to_check.strip().lower() in fraudtestemails:
                         msg_data_order["is_test"] = True
 
                     # get data of order_totals section of the message and clean the fields' naming
