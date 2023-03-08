@@ -98,23 +98,20 @@ def run(args):
                                       row['name'],
                                       )
                     df = df.sort_values(df.columns[0])
-                    write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
 
                     if row['output'] != '':
                         o = row['output'].split('|')
                         if not i+1 > len(o):
                             df = df.filter(items=row['output_fields'].split('|'))
                             write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=df)
-
-                    i += 1
-                    df = pd.DataFrame()
                 else:
                     df = get_from_gbq('gcp_bq',
                                       sqlstr.format(b, s),
-                                      f"""{row['dwh_schema']}.{row['pipeline']}""",
+                                      f"""{s}.{row['name']}""",
                                       row['name'])
-                    write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
-                    df = pd.DataFrame()
+                write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+                i += 1
+                df = pd.DataFrame()
 
         if not df.empty:
             df = clean_pandas_dataframe(df).drop_duplicates()
