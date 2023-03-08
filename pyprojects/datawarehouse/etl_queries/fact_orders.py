@@ -1,20 +1,18 @@
-DROP TABLE IF EXISTS analytics.fact_orders;
-CREATE TABLE analytics.fact_orders AS
 WITH customers_stg AS (
-SELECT  is_test                                                 if_test_order,
-        so.created_at                                           order_date,
+SELECT  is_test                                                        if_test_order,
+        so.created_at                                                  order_date,
         id_sales_order,
         order_reference,
         customer_reference,
-        order_expense_total                                     shipping_fee,
-        DATE_ADD(customer_created_at, INTERVAL 3 HOUR)          customer_created_date,
+        order_expense_total                                            shipping_fee,
+        DATE_ADD(customer_created_at, INTERVAL 3 HOUR)                 customer_created_date,
         RANK() OVER (PARTITION BY fk_customer
-                         ORDER BY so.created_at)                customer_order_rank,
+                         ORDER BY so.created_at)                       customer_order_rank,
         MIN(so.created_at) OVER (PARTITION BY fk_customer
-                                     ORDER BY so.created_at)    first_order_date,
+                                     ORDER BY so.created_at)           first_order_date,
         LAG(so.created_at) OVER (PARTITION BY fk_customer
-                                     ORDER BY so.created_at)    previous_order_date,
-        so.address3                                             city_name_en
+                                     ORDER BY so.created_at)           previous_order_date,
+        CASE WHEN '{0}' = 'b2c' THEN so.address3 ELSE so.address2 END  city_name_en
   FROM  aws_s3.{0}_sales_orders so
 )
 SELECT  if_test_order,

@@ -4,5 +4,5 @@ SELECT  MAX(id_category)       fk_product_category,
         MAX(brand_name_en)     brand,
         MAX(simple_name_en)    simple_name_en,
         MAX(if_simple_active)  if_sku_active
-  FROM  aws_s3.catalog_products
+  FROM  aws_s3.{0}_catalog_products
  GROUP  BY 2

@@ -109,7 +109,7 @@
 		}
 	},
 	"externalfiles2dwh": {
-		"catalog_products": {
+		"b2c_catalog_products": {
 			"filter": {
 				"fields": "sku_id,concrete_sku,category_id,category_name,brand_name,product_name,concrete_product_name",
 				"fields2": "available_quantity,concrete_product_active,concrete_price,gross_default_price",

@@ -167,12 +167,27 @@ def get_from_gbq(conn, str_sql, etl_desc='', note=''):
 
     try:
         df = pd_gbq.read_gbq(str_sql, progress_bar_type=None)
+        return clean_pandas_dataframe(df)
         send_telegram_message(1, f"""execute BQ successful {etl_desc} - {note}""")
     except Exception as e:
         print(f'caught {type(e)}: {str(e)}')
         send_telegram_message(0, f"""execute BQ {etl_desc} - {note}: ERROR caught {type(e)}: {str(e)}""")
 
-    return df
+
+def execute_gbq(conn, str_sql, etl_desc='', note=''):
+    # bigQuery credentials
+    gcp_credentials = json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform'))
+    gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
+
+    # pandas_gbq definition
+    pd_gbq.context.credentials = gcp_gbq_credentials
+    pd_gbq.context.project = gcp_credentials['project_id']
+    try:
+        pd_gbq.read_gbq(str_sql, progress_bar_type=None)
+        send_telegram_message(1, f"""execute BQ successful {etl_desc} - {note}""")
+    except Exception as e:
+        print(f'caught {type(e)}: {str(e)}')
+        send_telegram_message(0, f"""execute BQ {etl_desc} - {note}: ERROR caught {type(e)}: {str(e)}""")
 
 
 def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
