@@ -111,6 +111,7 @@ def run(args):
                                       row['name'])
                 write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
                 i += 1
+
                 df = pd.DataFrame()
 
         if not df.empty:
