@@ -89,30 +89,30 @@ def run(args):
                     del_sql = f"""DELETE FROM {s}.{row['name']} WHERE {row['incr_field']} \
                                                                         >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
                                                                         INTERVAl 3 HOUR)), INTERVAL 1 MONTH)"""
-
-                    get_from_gbq('gcp_bq', del_sql, f"""{s}.{b}""", 'incremental deletion')
-
+                    print(sqlstr.format(b, s, 0 if b == "b2b" else "MIN(b.order_exchange_rate)"))
+                    execute_gbq('gcp_bq', del_sql, f"""{s}.{b}""", 'incremental deletion')
                     df = get_from_gbq('gcp_bq',
                                       sqlstr.format(b, s, 0 if b == "b2b" else "MIN(b.order_exchange_rate)"),
                                       row['pipeline'],
                                       row['name'],
                                       )
                     df = df.sort_values(df.columns[0])
-
+                    print(df)
                     if row['output'] != '':
                         o = row['output'].split('|')
                         if not i+1 > len(o):
-                            df = df.filter(items=row['output_fields'].split('|'))
-                            write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=df)
+                            dfo = df.filter(items=row['output_fields'].split('|'))
+                            write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=dfo)
                 else:
                     df = get_from_gbq('gcp_bq',
                                       sqlstr.format(b, s),
                                       f"""{s}.{row['name']}""",
                                       row['name'])
+                print(f"""{s}.{row['name']}""")
                 write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
                 i += 1
-
                 df = pd.DataFrame()
+                print(df)
 
         if not df.empty:
             df = clean_pandas_dataframe(df).drop_duplicates()

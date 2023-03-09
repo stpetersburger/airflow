@@ -32,9 +32,9 @@ WITH items AS (
           LEFT JOIN {1}.dim_item_states d ON c.fk_sales_order_item_state = d.id_sales_order_item_state
           LEFT JOIN {1}.dim_products e ON a.fk_sku_simple = e.sku
           LEFT JOIN {1}.dim_product_categories f ON f.id_product_category = e.fk_product_category
-   WHERE  DATE(DATE_ADD(b.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 1 MONTH)
-          AND DATE(DATE_ADD(a.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 1 MONTH)
-          AND DATE(DATE_ADD(c.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 2 MONTH)
+   WHERE  DATE(DATE_ADD(b.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 2 MONTH)
+          AND DATE(DATE_ADD(a.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 2 MONTH)
+          AND DATE(DATE_ADD(c.created_at, INTERVAL 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 3 MONTH)
           AND NOT b.is_test
           AND d.reporting_order_item_state < 6
    GROUP  BY 6

@@ -37,7 +37,7 @@ import sys
 dag = DAG(
     dag_id="externalfiles2dwh",
     start_date=datetime(2023, 2, 10),
-    schedule_interval='25 2-18/3 * * *',
+    schedule_interval='20 2-18/3 * * *',
     catchup=False,
     tags=["staging"],
 )
