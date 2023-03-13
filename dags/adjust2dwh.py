@@ -24,17 +24,17 @@ from airflow.operators.bash_operator import BashOperator
 import os
 
 dag = DAG(
-    dag_id="spryker2dwh_b2b",
+    dag_id="adjust2dwh",
     start_date=datetime(2023, 2, 10),
-    schedule_interval='10 0-19/5 * * *',
+    schedule_interval='0 1 * * *',
     catchup=False,
     tags=["staging"],
 )
 
 t1 = BashOperator(
-    task_id="spryker2dwh_b2b",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
-                 f"""-conn gcp_bq -business_type b2b -schema aws_s3 -writing_type append -date ''""",
+    task_id="adjust2dwh",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/adjust2dwh.py """
+                 f"""-conn gcp_bq -schema aws_s3 -writing_type append -date ''""",
     dag=dag
 )
 

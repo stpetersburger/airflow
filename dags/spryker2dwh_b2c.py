@@ -32,7 +32,7 @@ dag = DAG(
 )
 
 t1 = BashOperator(
-    task_id="spryker_orders_info",
+    task_id="spryker2dwh_b2c",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
                  f"""-conn gcp_bq -business_type b2c -schema aws_s3 -writing_type append -date ''""",
     dag=dag

@@ -13,7 +13,7 @@
 			"bucket": "aney-stream-service-prod"
 		}
 	},
-	"data_exploration": {
+	"aws_s3": {
 		"adjust2dwh": {
 			"region_name": "AWS_DEFAULT_REGION",
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID_adjust",
