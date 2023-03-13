@@ -26,7 +26,7 @@ import os
 dag = DAG(
     dag_id="spryker2dwh_b2b",
     start_date=datetime(2023, 2, 10),
-    schedule_interval='10 2-18/3 * * *',
+    schedule_interval='10 0-19/5 * * *',
     catchup=False,
     tags=["staging"],
 )

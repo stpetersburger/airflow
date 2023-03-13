@@ -35,8 +35,6 @@ def run(args):
         for obj in my_bucket.objects.filter(Prefix=p):
             if obj.key.endswith('csv.gz') and calendar.timegm(obj.last_modified.timetuple()) > delta:
                 cnt += 1
-                print(obj.key)
-                print(calendar.timegm(obj.last_modified.timetuple()))
 
                 if calendar.timegm(obj.last_modified.timetuple()) >= last_modified:
                     last_modified = calendar.timegm(obj.last_modified.timetuple())
@@ -45,9 +43,10 @@ def run(args):
                 df_obj["file_name"] = obj.key
 
                 if len(df_obj.columns) > 1:
+                    print(obj.key)
+                    print(calendar.timegm(obj.last_modified.timetuple()))
                     if df.empty:
                         df = clean_pandas_dataframe(df_obj)
-
                     else:
                         df = concatenate_dataframes(df, clean_pandas_dataframe(df_obj))
 
@@ -57,7 +56,10 @@ def run(args):
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
         try:
             write_to_gbq(args.conn,
-                         args.schema, 'adjust_events', df, args.wtype, 'csv')
+                         args.schema,
+                         'adjust_events',
+                         clean_pandas_dataframe(df, pipeline, False, last_modified),
+                         args.wtype, 'csv')
             write_to_gbq(args.conn,
                          'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, pipeline), args.wtype)
         except Exception as e:

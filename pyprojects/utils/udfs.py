@@ -215,7 +215,10 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
 
         for col in df.columns.tolist():
             if "_at" in col:
-                df[col] = pd.to_datetime(df[col], utc=True)
+                if str(df[col].dtypes) == 'int64':
+                    df[col] = pd.to_datetime(df[col], unit='s', utc=True)
+                else:
+                    df[col] = pd.to_datetime(df[col], utc=True)
 
     else:
         if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
@@ -241,7 +244,7 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
                     # remove non-ASCII symbols from dataframe
                     df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
 
-        if pipeline not in ['fact', 'dimension']:
+        if pipeline not in ['fact', 'dimension', 'adjust2dwh']:
             if batch_num != '':
                 df["inserted_at"] = batch_num
             else:
