@@ -11,9 +11,7 @@
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID_aney",
 			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY_aney",
 			"bucket": "aney-stream-service-prod"
-		}
-	},
-	"aws_s3": {
+		},
 		"adjust2dwh": {
 			"region_name": "AWS_DEFAULT_REGION",
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID_adjust",
