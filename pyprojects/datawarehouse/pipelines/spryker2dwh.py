@@ -139,7 +139,7 @@ def run(args):
         write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_order_items""", df_news_items, args.wtype)
         write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_order_item_states""", df_hist_items, args.wtype)
 
-        write_to_gbq(args.conn, 'etl_metadata', 'airflow_run', delta_update, args.wtype)
+        write_to_gbq(args.conn, 'etl_metadata', 'airflow_run', delta_update, 'append')
 
     send_telegram_message(1, f"""Pipeline {id_pipeline} has finished. {cnt} files; delta - {last_modified} """)
 

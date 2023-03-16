@@ -26,7 +26,7 @@ from airflow.operators.bash_operator import BashOperator
 dag = DAG(
     dag_id="B_hourly_job_working_hours",
     start_date=datetime(2023, 3, 16),
-    schedule_interval='00 5-15/1 * * *',
+    schedule_interval='05 5-15/1 * * *',
     catchup=False,
     tags=["prod"],
 )

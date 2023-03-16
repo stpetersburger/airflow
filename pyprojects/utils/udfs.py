@@ -243,7 +243,7 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
                     # remove non-ASCII symbols from dataframe
                     df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
 
-        if pipeline not in ['fact', 'dimension', 'adjust2dwh']:
+        if pipeline not in ['fact', 'dimension']:
             if batch_num != '':
                 df["inserted_at"] = batch_num
             else:
