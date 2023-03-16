@@ -68,8 +68,8 @@ def run(args):
                     # adding discount codes of influencers for b2c to cart_note
                     for el in msg_data:
                         if el == "discounts":
-                            msg_data_order["cart_note"] = '|'.join(msg_data["discounts"])
-
+                            msg_data_order["cart_note"] = msg_data_order["cart_note"] + '|'.join(msg_data["discounts"])
+                            
                     msg_data_order = clean_pandas_dataframe(msg_data_order)
                     # for b2c the fraud check needs to be done as of test/fraud users
                     customer_to_check = msg_data["customer"]["customer_reference"].strip().lower()

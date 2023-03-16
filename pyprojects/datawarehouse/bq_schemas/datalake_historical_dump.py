@@ -7,7 +7,7 @@ SELECT  sooish.fk_oms_order_item_state id_sales_order_item_state,
   FROM  spy_oms_order_item_state_history sooish
   LEFT  JOIN spy_sales_order_item soi
 ON soi.id_sales_order_item = sooish.fk_sales_order_item
---WHERE date(sooish.created_at) = '2023-02-22';
+
 
 #sales_order_item
 SELECT
@@ -34,7 +34,6 @@ tax_amount,
 tax_amount_full_aggregation,
 created_at
 FROM spy_sales_order_item
---WHERE date(created_at) = '2023-02-22';
 
 #sales_order
 SELECT
@@ -46,7 +45,7 @@ order_reference,
 so.fk_locale                    fk_locale,
 cart_note,
 currency_iso_code,
-order_exchange_rate,
+order_exchange_rate, #has to be 0 for b2b (or removed)
 order_custom_reference,
 so.customer_reference           customer_reference,
 oms_processor_identifier,
@@ -82,7 +81,6 @@ LEFT  JOIN spy_sales_expense se
     ON so.id_sales_order = se.fk_sales_order
 LEFT  JOIN spy_sales_order_address soa
     ON so.fk_sales_order_address_billing = soa.id_sales_order_address
---WHERE date(so.created_at) = '2023-02-22';
 
 
 ##########################
@@ -90,14 +88,14 @@ LEFT  JOIN spy_sales_order_address soa
 ##########################
 
 select CAST(fk_country	as INT64),
-       CAST(fk_customer	as INT64),
+       CAST(a.fk_customer	as INT64),
        CAST(id_sales_order	as INT64),
        CASE WHEN b.fk_customer is NULL THEN FALSE ELSE TRUE END is_test,
        order_reference,
        CAST(fk_locale	as INT64),
        cart_note,
        currency_iso_code,
-       CAST(order_exchange_rate	as FLOAT64),
+       CAST(order_exchange_rate	as FLOAT64), #has to be removee for b2b
        order_custom_reference,
        a.customer_reference,
        CAST(oms_processor_identifier	as INT64),
@@ -124,9 +122,12 @@ select CAST(fk_country	as INT64),
        address3,
        CAST(customer_created_at	as TIMESTAMP),
        CAST(created_at	as TIMESTAMP),
-       4 inserted_at
-  FROM aws_s3.sales_orders_dump a
-  LEFT JOIN gcp_gs.test_fraud_users b USING (fk_customer);
+       {} inserted_at
+  FROM data_exploration.{}_sales_orders_dump a
+  LEFT JOIN gcp_gs.test_fraud_users b
+       ON a.fk_customer = b.fk_customer
+       AND b.business_type = {}
+;
 
 select fk_sku_simple,
        merchant_id,
@@ -150,14 +151,13 @@ select fk_sku_simple,
        CAST(tax_amount	as FLOAT64),
        CAST(tax_amount_full_aggregation	as FLOAT64),
        CAST(created_at	as TIMESTAMP),
-       4 inserted_at
-  FROM aws_s3.sales_order_items_dump;
+       {} inserted_at
+  FROM data_exploration.{}_sales_order_items_dump;
 
 select CAST(id_sales_order_item_state AS INT64),
        CAST(fk_sales_order AS INT64),
        CAST(fk_sales_order_item	AS INT64),
        CAST(created_at AS TIMESTAMP),
        CAST(updated_at AS TIMESTAMP),
-       3 inserted_at
-FROM aws_s3.sales_order_item_states_dump
-WHERE  DATE(updated_at)='2023-02-22';
+       {} inserted_at
+FROM data_exploration.{}_sales_order_item_states_dump;

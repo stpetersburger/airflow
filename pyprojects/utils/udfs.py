@@ -23,6 +23,9 @@ from office365.sharepoint.files.file import File
 import io
 import re
 import requests
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/creds.json""") as f:
     creds = json.load(f)
@@ -92,18 +95,17 @@ def write_data_to_googlesheet(conn, gsheet_tab, df):
         gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
         gs_sheet.clear()
         gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
-        send_telegram_message(1, f"""OUTPUT Googlesheet - {gsheet_tab}""")
     except Exception as e:
         print(f'caught {type(e)}: {str(e)}')
         send_telegram_message(0, f"""OUTPUT Googlesheet - {gsheet_tab} caught {type(e)}: {str(e)}""")
 
 
-def get_data_from_sharepoint(conn="ms_sharepoint", sheet='', sheet_tab='Sheet1'):
+def get_data_from_sharepoint(conn="ms", sheet='', sheet_tab='Sheet1'):
 
-    username = get_creds(conn, 'spreadsheets', 'username')
-    password = get_creds(conn, 'spreadsheets', 'password')
+    username = get_creds(conn, 'o365', 'username')
+    password = get_creds(conn, 'o365', 'password')
 
-    sheet_url = f"""{get_creds(conn, 'spreadsheets', 'prefix')}{sheet}{'?web=1'}"""
+    sheet_url = f"""{get_creds(conn, 'sharepoint', 'prefix')}{sheet}{'?web=1'}"""
     print(sheet_url)
     ctx_auth = AuthenticationContext(sheet_url)
     if ctx_auth.acquire_token_for_user(username, password):
@@ -147,7 +149,6 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
             elif method == '':
                 pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
             print(f'WRITE TO BQ END - {datetime.datetime.now()}')
-            send_telegram_message(1, f"""BQ - {wtype} - {schema}.{dataset} """)
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
             send_telegram_message(0, f"""BQ {schema}.{dataset}: ERROR caught {type(e)}: {str(e)}""")
@@ -168,7 +169,6 @@ def get_from_gbq(conn, str_sql, etl_desc='', note=''):
     try:
         df = pd_gbq.read_gbq(str_sql, progress_bar_type=None)
         return clean_pandas_dataframe(df)
-        send_telegram_message(1, f"""execute BQ successful {etl_desc} - {note}""")
     except Exception as e:
         print(f'caught {type(e)}: {str(e)}')
         send_telegram_message(0, f"""execute BQ {etl_desc} - {note}: ERROR caught {type(e)}: {str(e)}""")
@@ -184,7 +184,6 @@ def execute_gbq(conn, str_sql, etl_desc='', note=''):
     pd_gbq.context.project = gcp_credentials['project_id']
     try:
         pd_gbq.read_gbq(str_sql, progress_bar_type=None)
-        send_telegram_message(1, f"""execute BQ successful {etl_desc} - {note}""")
     except Exception as e:
         print(f'caught {type(e)}: {str(e)}')
         send_telegram_message(0, f"""execute BQ {etl_desc} - {note}: ERROR caught {type(e)}: {str(e)}""")
@@ -366,3 +365,20 @@ def send_telegram_message(msg_type, msg):
         except Exception as e:
             print(e)
 
+
+def send_email(email_from, email_to, text):
+    message = text
+    s = smtplib.SMTP(host='smtp.office365.com', port=587)
+    s.starttls()
+    username = get_creds('ms', 'o365', 'username')
+    password = get_creds('ms', 'o365', 'password')
+    print(username)
+    s.login(username, password)
+    msg = MIMEMultipart()
+    msg['From'] = email_from
+    msg['To'] = email_to
+    msg['Subject'] = "Subject to be mentioned for the report sent via this email"
+    msg.attach(MIMEText(message, 'plain'))
+    s.send_message(msg)
+    del msg
+    s.quit()

@@ -31,10 +31,12 @@
 			"output_sheet": "GOOGLE_SPREADSHEETS_OUTPUTSHEET"
 		}
 	},
-	"ms_sharepoint": {
-		"spreadsheets": {
+	"ms": {
+		"o365": {
 			"username": "MS_SHAREPOINT_USERNAME",
-			"password": "MS_SHAREPOINT_PASSWORD",
+			"password": "MS_SHAREPOINT_PASSWORD"
+		},
+		"sharepoint": {
 			"prefix": "MS_SHAREPOINT_SPREADSHEETS_PREFIX"
 		}
 	},
