@@ -13,6 +13,8 @@ def run(args):
     pipeline = f"""{project}2dwh"""
     id_pipeline = pipeline
 
+    send_telegram_message(1, f"""Pipeline {id_pipeline} has started""")
+
     # s3 credentials
     s3 = boto3.resource(
         service_name='s3',
@@ -64,6 +66,8 @@ def run(args):
                          'etl_metadata', 'airflow_run', clean_pandas_dataframe(delta_update, pipeline), args.wtype)
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
+
+    send_telegram_message(1, f"""Pipeline {pipeline} has finished""")
 
 
 if __name__ == '__main__':
