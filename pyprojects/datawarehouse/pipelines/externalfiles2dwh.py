@@ -13,8 +13,8 @@ def run(args):
 
     etl_config_spreadsheet = etl_config_spreadsheet[etl_config_spreadsheet.iloc[:, 0] != 0]
 
-    if args.sheet is not None:
-        etl_config_spreadsheet = etl_config_spreadsheet[etl_config_spreadsheet["name"] == args.sheet]
+    if args.schedule is not None:
+        etl_config_spreadsheet = etl_config_spreadsheet[etl_config_spreadsheet["schedule_type"] == args.schedule]
 
     for index, row in etl_config_spreadsheet.iterrows():
         print(row['tab'])
@@ -136,6 +136,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='sourcing datawarehouse with spryker')
     parser.add_argument('-connection_name', dest='conn', required=True,
                         help="connection name to gbq")
-    parser.add_argument('-sheet', dest='sheet', required=False,
-                        help="name of the sheet from etl_config")
+    parser.add_argument('-schedule_type', dest='schedule', required=False,
+                        help="schedule type from the config: hourly, daily, etc.")
     run(parser.parse_args())

@@ -16,38 +16,24 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Example DAG demonstrating the usage of the DockerOperator."""
+"""Hourly job run within working hours of Iraq, Saudi Arabia or UAE"""
 
-from airflow import DAG
-from datetime import datetime, timedelta
-from airflow.operators.bash_operator import BashOperator
-from airflow.models import Variable
 import os
-import sys
-
-#pwds = Variable.get("AIRFLOW__BI__CONNPWDS")
-#conns = Variable.get("AIRFLOW__BI__CONNS")
-#customEnv = {
-#'AIRFLOW__BI__CONNPWD': f"""'{pwds}'""",
-#'AIRFLOW__BI__CONN': f"""'{conns}'"""
-#}
-
-#env = dict(os.environ, **customEnv)
+from airflow import DAG
+from datetime import datetime
+from airflow.operators.bash_operator import BashOperator
 
 dag = DAG(
-    dag_id="externalfiles2dwh",
-    start_date=datetime(2023, 2, 10),
-    schedule_interval='20 0-19/5 * * *',
+    dag_id="B_hourly_job_working_hours",
+    start_date=datetime(2023, 3, 16),
+    schedule_interval='00 5-15/1 * * *',
     catchup=False,
-    tags=["staging"],
+    tags=["prod"],
 )
 
 t1 = BashOperator(
     task_id="externalfiles2dwh",
     bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
-                 f'-conn gcp_bq',
- #   env=env,
+                 f'-conn gcp_bq -schedule_type hourly',
     dag=dag
 )
-
-t1

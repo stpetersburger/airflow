@@ -16,19 +16,19 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Example DAG demonstrating the usage of the DockerOperator."""
+"""Scheduled job run for datawarehouse entities - facts, dimensions"""
 
+import os
 from airflow import DAG
 from datetime import datetime
 from airflow.operators.bash_operator import BashOperator
-import os
 
 dag = DAG(
-    dag_id="spryker2dwh_b2b",
-    start_date=datetime(2023, 2, 10),
-    schedule_interval='10 0-19/5 * * *',
+    dag_id="C_scheduled_job",
+    start_date=datetime(2023, 3, 16),
+    schedule_interval='20 0-19/5 * * *',
     catchup=False,
-    tags=["staging"],
+    tags=["prod"],
 )
 
 t1 = BashOperator(
@@ -38,4 +38,18 @@ t1 = BashOperator(
     dag=dag
 )
 
-t1
+t2 = BashOperator(
+    task_id="spryker2dwh_b2c",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
+                 f"""-conn gcp_bq -business_type b2c -schema aws_s3 -writing_type append -date ''""",
+    dag=dag
+)
+
+t3 = BashOperator(
+    task_id="externalfiles2dwh",
+    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
+                 f'-conn gcp_bq -schedule_type scheduled',
+    dag=dag
+)
+
+[t1, t2] >> t3
