@@ -141,7 +141,7 @@ def run(args):
 
         write_to_gbq(args.conn, 'etl_metadata', 'airflow_run', delta_update, args.wtype)
 
-        send_telegram_message(1, f"""Pipeline {id_pipeline} has finished. {cnt} files; delta - {last_modified} """)
+    send_telegram_message(1, f"""Pipeline {id_pipeline} has finished. {cnt} files; delta - {last_modified} """)
 
 
 if __name__ == '__main__':
