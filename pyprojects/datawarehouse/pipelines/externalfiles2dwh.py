@@ -117,7 +117,7 @@ def run(args):
 
         if row['if_historical']:
             # weekly snapshot
-            strsql = f"""SELECT (CURRENT_DATE() - 7) = COALESCE(MAX(DATE(inserted_at)),'2023-03-01')
+            strsql = f"""SELECT MOD(DATE_DIFF(CURRENT_DATE(), COALESCE(MAX(DATE(inserted_at)),'2023-03-08'), DAY),7) = 0
                          FROM {row['dwh_schema']}.historical_{row['name']}
                          WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
 
