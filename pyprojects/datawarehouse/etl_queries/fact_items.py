@@ -52,7 +52,12 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
              THEN 'closed'
              ELSE a.order_item_state_name_en
         END                                                                         order_item_state,
-        i.fk_sales_order_item_state                                                 fk_sales_order_item_state,
+        CASE WHEN CURRENT_DATE() > DATE(status_last_updated_date) + 14
+                  AND CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) = 5
+                  AND CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0
+             THEN CASE WHEN '{0}'='b2c' THEN 19 ELSE 11 END
+             ELSE i.fk_sales_order_item_state
+        END                                                                         fk_sales_order_item_state,
         DATE(DATE_ADD(status_last_updated_date, INTERVAL 3 HOUR))                   status_last_changed_date_nk,
         quantity,
         order_reference,
