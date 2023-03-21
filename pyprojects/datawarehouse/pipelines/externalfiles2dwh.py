@@ -6,8 +6,8 @@ def run(args):
     pipeline = 'externalfiles2dwh'
     send_telegram_message(1, f"""Pipeline {pipeline} has started""")
 
-    etl_config_spreadsheet = get_data_from_googlesheet(args.conn, get_creds('gs',
-                                                                            'spreadsheets',
+    etl_config_spreadsheet = get_data_from_googlesheet(args.conn, get_creds('gcp',
+                                                                            'gs',
                                                                             'config_sheet'),
                                                                             'etl_pipelines')
 
@@ -24,7 +24,7 @@ def run(args):
         if row['truncate'] and row['dwh_schema'] != '':
             wtype = 'append'
             for s in row["dwh_schema"].split('|'):
-                execute_gbq('gcp_bq', f"""TRUNCATE TABLE {s}.{row['name']}""", row['name'], 'truncate')
+                execute_gbq('gcp', f"""TRUNCATE TABLE {s}.{row['name']}""", row['name'], 'truncate')
         if row['pipeline'] == 's3':
             etl_s3 = boto3.resource(
                 service_name='s3',
@@ -71,7 +71,7 @@ def run(args):
             i = 0
             for b in row['business_type'].split('|'):
                 s = row["dwh_schema"].split("|")[i]
-                df = get_from_gbq('gcp_bq', sqlstr.format(b, s), row['pipeline'], row['name'])
+                df = get_from_gbq('gcp', sqlstr.format(b, s), row['pipeline'], row['name'])
                 df = df.sort_values(df.columns[0])
                 write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
                 i += 1
@@ -89,8 +89,8 @@ def run(args):
                     del_sql = f"""DELETE FROM {s}.{row['name']} WHERE {row['incr_field']} \
                                                                         >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
                                                                         INTERVAl 3 HOUR)), INTERVAL 1 MONTH)"""
-                    execute_gbq('gcp_bq', del_sql, f"""{s}.{b}""", 'incremental deletion')
-                    df = get_from_gbq('gcp_bq',
+                    execute_gbq('gcp', del_sql, f"""{s}.{b}""", 'incremental deletion')
+                    df = get_from_gbq('gcp',
                                       sqlstr.format(b, s, 0 if b == "b2b" else "MIN(b.order_exchange_rate)"),
                                       row['pipeline'],
                                       row['name'],
@@ -102,7 +102,7 @@ def run(args):
                             dfo = df.filter(items=row['output_fields'].split('|'))
                             write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=dfo)
                 else:
-                    df = get_from_gbq('gcp_bq',
+                    df = get_from_gbq('gcp',
                                       sqlstr.format(b, s),
                                       f"""{s}.{row['name']}""",
                                       row['name'])
@@ -121,7 +121,7 @@ def run(args):
                          FROM {row['dwh_schema']}.historical_{row['name']}
                          WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
 
-            if get_from_gbq('gcp_bq', strsql, row['name'], 'historical')["f0_"].iloc[0]:
+            if get_from_gbq('gcp', strsql, row['name'], 'historical')["f0_"].iloc[0]:
                 wtype = 'append'
                 hist_fields = row['historical_fields'].split('|')
                 df = df.filter(items=hist_fields)

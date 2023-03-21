@@ -75,9 +75,9 @@ def get_etl_schema(pipeline, message_object, message_method):
 
 def get_data_from_googlesheet(conn, gsheet, gsheet_tab):
     
-    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'datawarehouse',
+    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'bq',
                                                                               'google_cloud_platform')))
-    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 'prefix')}{gsheet}""")
+    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gcp', 'gs', 'prefix')}{gsheet}""")
 
     gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
 
@@ -86,10 +86,9 @@ def get_data_from_googlesheet(conn, gsheet, gsheet_tab):
 
 def write_data_to_googlesheet(conn, gsheet_tab, df):
 
-    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform')))
-    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gs', 'spreadsheets', 
-                                                                'prefix')}{get_creds('gs','spreadsheets', 
-                                                                                            'output_sheet')}""")
+    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'bq', 'google_cloud_platform')))
+    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gcp', 'gs', 
+                                                                'prefix')}{get_creds('gcp', 'gs', 'output_sheet')}""")
     df = df.astype(str)
     try:
         gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
@@ -135,7 +134,7 @@ def get_data_from_url(url, file, file_type):
 
 def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
     # bigQuery credentials
-    gcp_credentials = json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform'))
+    gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
     gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
 
     #pandas_gbq definition
@@ -159,7 +158,7 @@ def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
 
 def get_from_gbq(conn, str_sql, etl_desc='', note=''):
     # bigQuery credentials
-    gcp_credentials = json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform'))
+    gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
     gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
 
     # pandas_gbq definition
@@ -176,7 +175,7 @@ def get_from_gbq(conn, str_sql, etl_desc='', note=''):
 
 def execute_gbq(conn, str_sql, etl_desc='', note=''):
     # bigQuery credentials
-    gcp_credentials = json.loads(get_creds(conn, 'datawarehouse', 'google_cloud_platform'))
+    gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
     gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
 
     # pandas_gbq definition

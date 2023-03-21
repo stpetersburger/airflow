@@ -41,14 +41,14 @@ t1 = BashOperator(
 t2 = BashOperator(
     task_id="spryker2dwh_b2c",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
-                 f"""-conn gcp_bq -business_type b2c -schema aws_s3 -writing_type append -date ''""",
+                 f"""-conn gcp -business_type b2c -schema aws_s3 -writing_type append -date ''""",
     dag=dag
 )
 
 t3 = BashOperator(
     task_id="externalfiles2dwh",
     bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
-                 f'-conn gcp_bq -schedule_type scheduled',
+                 f'-conn gcp -schedule_type scheduled',
     dag=dag
 )
 

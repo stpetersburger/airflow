@@ -34,6 +34,6 @@ dag = DAG(
 t1 = BashOperator(
     task_id="externalfiles2dwh",
     bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
-                 f'-conn gcp_bq -schedule_type hourly',
+                 f'-conn gcp -schedule_type hourly',
     dag=dag
 )

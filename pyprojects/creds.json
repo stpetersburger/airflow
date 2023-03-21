@@ -19,16 +19,17 @@
 			"bucket": "amal-user-device-data"
 		}
 	},
-	"gcp_bq": {
-		"datawarehouse": {
+	"gcp": {
+		"bq": {
 			"google_cloud_platform": "GOOGLE_APPLICATION_CREDENTIALS"
-		}
-	},
-	"gs": {
-		"spreadsheets": {
+		},
+		"gs": {
 			"prefix": "GOOGLE_SPREADSHEETS_PREFIX",
 			"config_sheet": "GOOGLE_SPREADSHEETS_CONFIGSHEET",
 			"output_sheet": "GOOGLE_SPREADSHEETS_OUTPUTSHEET"
+		},
+		"ga": {
+
 		}
 	},
 	"ms": {
