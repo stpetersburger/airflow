@@ -6,7 +6,8 @@ SELECT  id_category                  id_product_category,
 )
 SELECT  a.id_product_category                                           id_product_category,
         STRING_AGG(COALESCE(b.category_l1_name_en, 'unassignes'), "|")  category_L1_name_en,
-        STRING_AGG(a.category_name_en, "|")                             category_name_en
+        STRING_AGG(a.category_name_en, "|")                             category_name_en,
+        MAX(COALESCE(CAST(base_influencer_commission AS FLOAT64),0))    base_influencer_commission
   FROM  cats a
   LEFT  JOIN gcp_gs.map_product_categories b
         ON CAST(a.id_product_category AS STRING) = CAST(b.id_product_category AS STRING)
