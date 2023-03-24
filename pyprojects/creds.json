@@ -28,8 +28,10 @@
 			"config_sheet": "GOOGLE_SPREADSHEETS_CONFIGSHEET",
 			"output_sheet": "GOOGLE_SPREADSHEETS_OUTPUTSHEET"
 		},
-		"ga": {
-
+		"ga_b2c": {"bq_dataset": "GOOGLE_GA_DATASET",
+			       "bq_ga_table_prefix": "GOOGLE_GA_TABLE_PREFIX",
+			       "ga_config_events": "b2c_ga_events",
+			       "ga_config_event_properties": "b2c_ga_event_properties"
 		}
 	},
 	"ms": {

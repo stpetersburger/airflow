@@ -133,7 +133,7 @@ def run(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='sourcing datawarehouse with spryker')
+    parser = argparse.ArgumentParser(description='sourcing datawarehouse with external files')
     parser.add_argument('-connection_name', dest='conn', required=True,
                         help="connection name to gbq")
     parser.add_argument('-schedule_type', dest='schedule', required=False,

@@ -71,7 +71,7 @@ def run(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='sourcing datawarehouse with spryker')
+    parser = argparse.ArgumentParser(description='sourcing datawarehouse with adjust data')
     parser.add_argument('-connection_name', dest='conn', required=True,
                         help="connection name to gbq")
     parser.add_argument('-schema_name', dest='schema', required=True,

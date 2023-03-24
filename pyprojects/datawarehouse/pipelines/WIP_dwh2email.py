@@ -13,7 +13,7 @@ def run(args):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='sourcing datawarehouse with spryker')
+    parser = argparse.ArgumentParser(description='sending data out of datawarehouse with emails')
     parser.add_argument('-connection_name', dest='conn', required=True,
                         help="connection name to gbq")
     run(parser.parse_args())

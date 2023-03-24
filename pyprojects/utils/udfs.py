@@ -226,7 +226,7 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
             #filter out all lines with empty first field
             df = df[df.iloc[:, 0] != 'nan']
 
-        elif pipeline in ['spryker2dwh', 'url']:
+        elif pipeline in ['spryker2dwh', 'url', 'ga2dwh']:
 
             datasets_schemas = get_etl_datatypes(pipeline)
 
