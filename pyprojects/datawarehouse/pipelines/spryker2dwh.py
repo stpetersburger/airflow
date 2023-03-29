@@ -67,10 +67,15 @@ def run(args):
                     # assign value from the customer section of the message
                     msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
 
-                    # adding discount codes of influencers for b2c to cart_note
+                    # adding discount codes of influencers for b2c into cart_note field
                     for el in msg_data:
                         if el == "discounts":
                             msg_data_order["cart_note"] = msg_data_order["cart_note"] + '|'.join(msg_data["discounts"])
+                        # change 29.03.2023 - adding loyalty information
+                        if el == "loyalty":
+                            msg_data_loyalty = clean_pandas_dataframe(pd.DataFrame.from_dict(
+                                [msg_data["loyalty"]]), '', True)[get_etl_schema(id_pipeline, 'loyalty', 'fields')]
+                            msg_data_order = msg_data_order.join(msg_data_loyalty)
 
                     msg_data_order = clean_pandas_dataframe(msg_data_order)
                     # for b2c the fraud check needs to be done as of test/fraud users

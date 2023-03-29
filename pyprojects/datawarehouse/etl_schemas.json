@@ -68,7 +68,7 @@
 			"message_object": "order",
 			"fields": "id_sales_order,is_test,order_reference,fk_locale,cart_note,currency_iso_code",
 			"fields2": "order_exchange_rate,order_custom_reference,fk_customer,customer_reference",
-			"fields3": "oms_processor_identifier,created_at,updated_at",
+			"fields3": "oms_processor_identifier,created_at,updated_at,channel",
 			"drop": "updated_at",
 			"filter": {
 				"fields": "fk_country,fk_customer,id_sales_order,is_test,order_reference,fk_locale,cart_note",
@@ -77,12 +77,15 @@
 				"fields4": "order_expense_total,refund_total,subtotal,tax_total,id_sales_expense",
 				"fields5": "discount_amount_aggregation,gross_price,name,net_price,price",
 				"fields6": "price_to_pay_aggregation,refundable_amount,tax_amount,id_sales_order_address",
-				"fields7": "fk_region,address1,address2,address3,customer_created_at,created_at"
+				"fields7": "fk_region,address1,address2,address3,customer_created_at,created_at,channel",
+				"fields8": "points_redeemed,points_utilized"
 			},
 			"rename": {
 				"id_sales_order_totals": "fk_sales_order_totals",
 				"id_sales_expense": "fk_sales_expense",
-				"id_sales_order_address": "fk_sales_order_address"
+				"id_sales_order_address": "fk_sales_order_address",
+				"redeemed_points": "points_redeemed",
+				"utilized_points": "points_utilized"
 			}
 		},
 		"order_totals": {
@@ -94,6 +97,9 @@
 		},
 		"shipping_address": {
 			"fields": "id_sales_order_address,fk_country,fk_region,address1,address2,address3"
+		},
+		"loyalty": {
+			"fields": "redeemed_points,utilized_points"
 		},
 		"items": {
 			"message_object": "items",

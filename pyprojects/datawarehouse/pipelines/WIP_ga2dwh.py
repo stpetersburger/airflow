@@ -122,12 +122,14 @@ def run(args):
             df.columns.name = None
             # transforming index into columns
             df = df.rename_axis(pivot_index).reset_index()
-            # removing issues with naming
-            df = clean_pandas_dataframe(df, pipeline='', standartise=True)
-            df = clean_pandas_dataframe(df, pipeline)
             # dropping the rownum column
             df = df.drop('rownum', axis=1)
-            df = df.drop_duplicates()
+            # grouping by user_pseudo_id and event_timestamp
+            df = df.groupby(['event_timestamp', 'user_pseudo_id'], as_index=True).first()
+            df = df.rename_axis(['event_timestamp', 'user_pseudo_id']).reset_index()
+            # removing issues with columns naming
+            df = clean_pandas_dataframe(df, pipeline='', standartise=True)
+            df = clean_pandas_dataframe(df, pipeline)
             write_to_gbq(args.conn, 'gcp_ga', en, df, 'append')
             df = pd.DataFrame()
         else:
