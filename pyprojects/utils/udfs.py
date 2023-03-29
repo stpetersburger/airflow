@@ -243,10 +243,20 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
                     df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
 
         if pipeline not in ['fact', 'dimension']:
-            if batch_num != '':
-                df["inserted_at"] = batch_num
+            if pipeline in ['ga2dwh']:
+                for col in df.columns.tolist():
+                    if df[col].dtypes == 'object':
+                        df[col] = df[col].astype("string")
+                df["event_timestamp"] = pd.to_datetime(df["event_timestamp"]*1000, unit='ns')
+                df['event_timestamp'] = pd.to_datetime(df['event_timestamp'], format='%Y-%m-%d %H:%M:%S.%f')
+                df["event_date"] = pd.to_numeric(df["event_date"]).astype('int')
+                # add inserted_at as the first column. helps on first runs of an entity
+                df.insert(0, "inserted_at", pd.to_datetime(datetime.datetime.utcnow(), utc=True))
             else:
-                df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
+                if batch_num != '':
+                    df["inserted_at"] = batch_num
+                else:
+                    df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
 
     return df
 
