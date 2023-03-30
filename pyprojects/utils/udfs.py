@@ -11,7 +11,7 @@ import pandas as pd
 import time
 import json
 import base64
-from google.cloud import bigquery
+from google.cloud import bigquery as bq
 from google.oauth2 import service_account
 import pandas as pd
 import numpy as np
@@ -177,12 +177,17 @@ def execute_gbq(conn, str_sql, etl_desc='', note=''):
     # bigQuery credentials
     gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
     gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
+    client = bq.Client(credentials=gcp_gbq_credentials)
 
     # pandas_gbq definition
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
     try:
-        pd_gbq.read_gbq(str_sql, progress_bar_type=None)
+
+        #pd_gbq.read_gbq(str_sql, progress_bar_type=None)
+        query_job = client.query(str_sql)
+        print(query_job.result())
+
     except Exception as e:
         print(f'caught {type(e)}: {str(e)}')
         send_telegram_message(0, f"""execute BQ {etl_desc} - {note}: ERROR caught {type(e)}: {str(e)}""")

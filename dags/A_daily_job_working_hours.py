@@ -45,4 +45,18 @@ t2 = BashOperator(
     dag=dag
 )
 
-[t1, t2]
+t3 = BashOperator(
+    task_id="ga_intraday",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
+                 f"""-conn gcp -business_type b2c -gatype intraday""",
+    dag=dag
+)
+
+t4 = BashOperator(
+    task_id="ga",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
+                 f"""-conn gcp -business_type b2c""",
+    dag=dag
+)
+
+[t1, t2, t3, t4]

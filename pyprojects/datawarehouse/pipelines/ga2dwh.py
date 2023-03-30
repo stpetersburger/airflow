@@ -26,23 +26,46 @@ def run(args):
     df = pd.DataFrame()
 
     for index, row in ga_config_events.iterrows():
-        if '-' in args.dt:
-            from_clause: list = [f"""`{ga_dataset}.{ga_table_prefix}*`"""]
-            where_clause: list = [
-                f""" AND _TABLE_SUFFIX BETWEEN '{args.dt.split('-')[0]}' AND '{args.dt.split('-')[1]}'"""]
-        else:
-            from_clause: list = [f"""{ga_dataset}.{ga_table_prefix + args.dt.split(',')[0]}"""]
-            where_clause: list = []
+
         en = row["event_name"]
         print(f"""{en}""")
-        # sorting the event_parameters fields in an alphabetic order
-        ep = row["event_params"].split('|')
-        ep.sort()
-        #ep_fields = ',ep.'.join(ep)
+        today = datetime.date.today()
+        yesterday = today - datetime.timedelta(days=1)
+        beforeyesterday = yesterday - datetime.timedelta(days=1)
+        delete_clause = ''
         select_clause: list = []
         pivot_index: list = []
         pivot_columns: list = []
         pivot_values: list = []
+
+        if args.gatype is not None:
+
+            delete_clause = f"""DELETE FROM gcp_ga.{en} 
+                                       WHERE date(event_timestamp)>='{yesterday.strftime('%Y-%m-%d')}'"""
+            from_clause: list = [f"""`{ga_dataset}.{ga_table_prefix}intraday_*`"""]
+            where_clause: list = [
+                f""" AND _TABLE_SUFFIX BETWEEN '{yesterday.strftime('%Y%m%d')}' AND '{today.strftime('%Y%m%d')}'"""]
+        else:
+            if args.dt is not None:
+                if '-' in args.dt:
+                    from_clause: list = [f"""`{ga_dataset}.{ga_table_prefix}*`"""]
+                    where_clause: list = [
+                                f""" AND _TABLE_SUFFIX BETWEEN '{args.dt.split('-')[0]}' AND '{args.dt.split('-')[1]}'"""]
+                else:
+                    from_clause: list = [f"""{ga_dataset}.{ga_table_prefix + args.dt.split(',')[0]}"""]
+                    where_clause: list = []
+            else:
+                d = beforeyesterday.strftime('%Y%m%d')
+                delete_clause = f"""DELETE FROM gcp_ga.{en} WHERE date(event_timestamp)='{beforeyesterday}'"""
+                from_clause: list = [f"""{ga_dataset}.{ga_table_prefix}{d}"""]
+                where_clause: list = []
+
+        if delete_clause != '':
+            execute_gbq('gcp', delete_clause, etl_desc=id_pipeline, note=f"""delete data for {en} - {args.gatype}""")
+
+        # sorting the event_parameters fields in an alphabetic order
+        ep = row["event_params"].split('|')
+        ep.sort()
         for index2, row2 in ga_config_event_properties.iterrows():
             # collecting information on pivoting the final dataframe with the ga_event data
             # to handle UNNEST structure
@@ -142,6 +165,8 @@ if __name__ == '__main__':
                         help="connection name to gbq")
     parser.add_argument('-business_type', dest='btype', required=True,
                         help="b2c or b2b")
+    parser.add_argument('-gatype', dest='gatype', required=False,
+                        help="intraday events data (today and yesterday) or just events data(today and yesterday)")
     parser.add_argument('-date', dest='dt', required=False,
                         help="start date to get the data")
     run(parser.parse_args())
