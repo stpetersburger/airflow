@@ -78,7 +78,7 @@
 				"fields5": "discount_amount_aggregation,gross_price,name,net_price,price",
 				"fields6": "price_to_pay_aggregation,refundable_amount,tax_amount,id_sales_order_address",
 				"fields7": "fk_region,address1,address2,address3,customer_created_at,created_at,channel",
-				"fields8": "points_redeemed,points_utilized"
+				"fields8": "redeemed_points,utilized_points"
 			},
 			"rename": {
 				"id_sales_order_totals": "fk_sales_order_totals",

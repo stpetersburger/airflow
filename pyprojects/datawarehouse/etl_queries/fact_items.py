@@ -13,7 +13,7 @@ WITH items AS (
           MAX(CONCAT(d.reporting_order_item_state,'@',c.updated_at))             item_max_reporting_state,
           MIN(CONCAT(d.reporting_order_item_state,'@',c.updated_at))             item_min_reporting_state,
           MIN(b.currency_iso_code)                                               currency,
-          {2}                                                                    exchange_rate,
+          {exchange_rate}                                                        exchange_rate,
           MIN(b.cart_note)                                                       coupon_code,
           MIN(a.price)                                                           item_price,
           MIN(a.gross_price)                                                     item_gross_price,
@@ -25,7 +25,9 @@ WITH items AS (
           MIN(a.discount_amount_full_aggregation)                                item_discount_amount_full_aggregation,
           MIN(a.fk_sales_shipment)                                               fk_sales_shipment,
           MIN(b.customer_reference)                                              customer_reference,
-          TRIM(MIN(CASE WHEN '{0}'='b2c' THEN b.address3 ELSE b.address2 END))   city_name
+          TRIM(MIN(CASE WHEN '{0}'='b2c' THEN b.address3 ELSE b.address2 END))   city_name,
+          {points_redeemed}                                                      points_redeemed,
+          {channel}                                                              channel
     FROM
           aws_s3.{0}_sales_orders b
           LEFT JOIN aws_s3.{0}_sales_order_items a ON a.fk_sales_order = b.id_sales_order
@@ -94,6 +96,9 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) > 4 THEN 1 ELSE 0 END  if_net,
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) >= 2 THEN 1 ELSE 0 END if_approved,
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) >= 3 THEN 1 ELSE 0 END if_ready_to_ship,
+        CASE WHEN COALESCE(points_redeemed,0) > 0 THEN 1 ELSE 0 END                                    if_points_used_in_order,
+        points_redeemed                                                                                order_points_redeemed,
+        channel
  FROM   items i
         LEFT JOIN {1}.dim_item_states a
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state

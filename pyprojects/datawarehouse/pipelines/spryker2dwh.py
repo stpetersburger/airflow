@@ -63,7 +63,7 @@ def run(args):
                         (msg_data["eventName"] == 'place' and args.btype == 'b2b'):
 
                     msg_data_order = pd.DataFrame.from_dict([msg_data["order"]])[get_etl_schema(id_pipeline, 'order',
-                                                                                                          'fields')]
+                                                                                                              'fields')]
                     # assign value from the customer section of the message
                     msg_data_order["customer_created_at"] = msg_data["customer"]["created_at"]
 
@@ -119,7 +119,6 @@ def run(args):
                         df_el = clean_pandas_dataframe(pd.DataFrame.from_dict([el])[get_etl_schema(id_pipeline, 'items',
                                                                                                    'fields')])
                         df_news_items = concatenate_dataframes(df_news_items, df_el)
-
     if cnt > 0:
         df_news_orders.rename(columns=get_etl_schema(id_pipeline, 'order', 'rename'), inplace=True)
         df_news_items.rename(columns=get_etl_schema(id_pipeline, 'items', 'rename'), inplace=True)

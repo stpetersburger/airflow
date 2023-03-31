@@ -157,7 +157,7 @@ def run(args):
             df = pd.DataFrame()
         else:
             df = pd.DataFrame()
-
+    send_telegram_message(1, f"""Pipeline {id_pipeline} has finished.""")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='sourcing datawarehouse with google analytics')
