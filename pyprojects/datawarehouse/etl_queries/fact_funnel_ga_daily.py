@@ -5,7 +5,7 @@ WITH event_stg AS (
             install_source,
             platform
       FROM  gcp_ga.{event_name}
-     WHERE  DATE(event_timestamp) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL 1 MONTH)
+     WHERE  DATE(event_timestamp) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL {incr_interval})
 ),
 
 event_stg1 AS (
@@ -32,4 +32,4 @@ SELECT  event_date_nk,
         COUNT(ga_session_id)                      number_of_sessions,
         COUNT(DISTINCT ga_session_id)             number_of_unique_sessions
   FROM  event_stg1
- GROUP  BY 1,7,8
+ GROUP  BY 1,6,7

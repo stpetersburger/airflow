@@ -9,7 +9,7 @@ WITH cohort_orders AS (
             ON o.id_sales_order = oi.fk_sales_order
      WHERE  oi.if_gross = 1
             AND NOT o.if_test_order
-            AND DATE(FORMAT_DATE("%Y-%m-01", o.order_date_nk)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAl 3 HOUR)), INTERVAL 1 MONTH)
+            AND DATE(FORMAT_DATE("%Y-%m-01", o.order_date_nk)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAl 3 HOUR)), INTERVAL {incr_interval})
      GROUP  BY 1, 2
 ),
 orders AS (
@@ -22,7 +22,7 @@ orders AS (
             ON o.id_sales_order = oi.fk_sales_order
      WHERE  oi.if_gross = 1
             AND NOT o.if_test_order
-            AND DATE(FORMAT_DATE("%Y-%m-01", o.order_date_nk)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAl 3 HOUR)), INTERVAL 1 MONTH)
+            AND DATE(FORMAT_DATE("%Y-%m-01", o.order_date_nk)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(),INTERVAl 3 HOUR)), INTERVAL {incr_interval})
      GROUP  BY 1
 )
 SELECT  co.cohort_base_date_nk,
