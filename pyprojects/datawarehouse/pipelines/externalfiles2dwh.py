@@ -83,33 +83,50 @@ def run(args):
             i = 0
             for b in row['business_type'].split('|'):
                 s = row["dwh_schema"].split('|')[i]
-                if row['incr_field'] != '':
-                    wtype = 'append'
-                    # delete incremental part
-                    del_sql = f"""DELETE FROM {s}.{row['name']} WHERE {row['incr_field']} \
-                                                                        >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
-                                                                        INTERVAl 3 HOUR)), INTERVAL 1 MONTH)"""
-                    execute_gbq('gcp', del_sql, f"""{s}.{b}""", 'incremental deletion')
-                    sql_str = sqlstr.format(b, s, #as b2b doesn't have exchange rate to be used
-                                                 exchange_rate=0 if b == "b2b" else "MIN(b.order_exchange_rate)",
-                                                 # added on 29.03.2023 as b2b doesn't have loyalty points redemption
-                                                 points_redeemed="MIN(b.points_redeemed)" if b == "b2c" else 0,
-                                                 # added on 29.03.2023 as b2b doesn't have order channel (web/app)
-                                                 channel="MIN(b.channel)" if b == "b2c" else "'no_channel'")
-                    df = get_from_gbq('gcp', sql_str, row['pipeline'], row['name'],)
-                    df = df.sort_values(df.columns[0])
-                    if row['output'] != '':
-                        o = row['output'].split('|')
-                        if not i+1 > len(o):
-                            dfo = df.filter(items=row['output_fields'].split('|'))
-                            write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=dfo)
-                else:
-                    df = get_from_gbq('gcp',
-                                      sqlstr.format(b, s),
-                                      f"""{s}.{row['name']}""",
-                                      row['name'])
-                write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
-                i += 1
+                ii = 0
+                for t in row["multiple_tables"].split('|')[ii].split(','):
+                    if row['incr_field'] != '':
+                        wtype = 'append'
+                        # delete incremental part
+                        del_sql = f"""DELETE FROM {s}.{row["name"]} WHERE {row['incr_field']} \
+                                                                            >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
+                        
+                                                                            INTERVAl 3 HOUR)), INTERVAL {row['incr_interval']})"""
+                        # if multiple_table run
+                        if len(t) > 0:
+                            del_sql = del_sql + f" AND {row['url']} = '{t}'"
+
+                        execute_gbq('gcp', del_sql, f"""{s}.{b}""", 'incremental deletion')
+                        sql_str = sqlstr.format(b, s, #as b2b doesn't have exchange rate to be used
+                                                     exchange_rate=0 if b == "b2b" else "MIN(b.order_exchange_rate)",
+                                                     # added on 29.03.2023 as b2b doesn't have loyalty points redemption
+                                                     points_redeemed="MIN(b.points_redeemed)" if b == "b2c" else 0,
+                                                     # added on 29.03.2023 as b2b doesn't have order channel (web/app)
+                                                     channel="MIN(b.channel)" if b == "b2c" else "'no_channel'",
+                                                     # added on th 31.03.2023 for GA data
+                                                     event_name=t)
+                        df = get_from_gbq('gcp', sql_str, row['pipeline'], row['name'],)
+                        df = df.sort_values(df.columns[0])
+                        if row['output'] != '':
+                            o = row['output'].split('|')
+                            if not i+1 > len(o):
+                                dfo = df.filter(items=row['output_fields'].split('|'))
+                                write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=dfo)
+                    else:
+                        df = get_from_gbq('gcp',
+                                          sqlstr.format(b, s),
+                                          f"""{s}.{row['name']}""",
+                                          row['name'])
+                    write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
+
+                    # config iterations
+                    i += 1
+
+                    if len(row["multiple_tables"].split('|')) > 1:
+                        ii = i
+                    else:
+                        ii = 0
+
                 df = pd.DataFrame()
 
         if not df.empty:
