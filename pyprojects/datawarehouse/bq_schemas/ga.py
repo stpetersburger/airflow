@@ -531,3 +531,41 @@ create table if not exists gcp_ga.view_item
     cluster by user_pseudo_id, ga_session_id, item_brand, item_variant
     options (require_partition_filter = TRUE);
 
+drop table if exists gcp_ga.view_cart;
+create table if not exists gcp_ga.view_cart
+(
+    inserted_at           TIMESTAMP,
+    event_timestamp       TIMESTAMP,
+    user_pseudo_id        STRING,
+    event_date            INT64,
+    country               STRING,
+    city                  STRING,
+    id                    STRING,
+    version               STRING,
+    install_store         STRING,
+    install_source        STRING,
+    platform              STRING,
+    name                  STRING,
+    hostname              STRING,
+    app_version           STRING,
+    cart_id               STRING,
+    coupon                STRING,
+    currency              STRING,
+    engaged_session_event STRING,
+    event_platform        STRING,
+    firebase_error        STRING,
+    firebase_event_origin STRING,
+    firebase_screen_class STRING,
+    first_name            STRING,
+    ga_session_id         STRING,
+    ga_session_number     STRING,
+    ignore_referrer       STRING,
+    last_name             STRING,
+    page_location         STRING,
+    page_referrer         STRING,
+    phone_number          STRING,
+    selected_currency     STRING
+)
+    partition by DATE_TRUNC(event_timestamp, MONTH)
+    cluster by user_pseudo_id, ga_session_id, city, platform
+    options (require_partition_filter = TRUE);
