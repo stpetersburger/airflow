@@ -91,7 +91,6 @@ def run(args):
                         del_sql = f"""DELETE FROM {s}.{row["name"]} WHERE {row['incr_field']} \
                                                                             >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
                                                                             INTERVAl 3 HOUR)), INTERVAL {row['incr_interval']})"""
-                        print(del_sql)
                         # if multiple_table run
                         if len(t) > 0:
                             print(t)
