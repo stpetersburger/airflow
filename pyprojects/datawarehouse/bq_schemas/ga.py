@@ -470,9 +470,9 @@ drop table if exists gcp_ga.view_item;
 create table if not exists gcp_ga.view_item
 (
     inserted_at              TIMESTAMP,
-    event_date               INT64,
     event_timestamp          TIMESTAMP,
     user_pseudo_id           STRING,
+    event_date               INT64,
     category                 STRING,
     mobile_brand_name        STRING,
     mobile_model_name        STRING,
@@ -495,6 +495,8 @@ create table if not exists gcp_ga.view_item
     install_source           STRING,
     platform                 STRING,
     name                     STRING,
+    medium                   STRING,
+    source                   STRING,
     hostname                 STRING,
     item_id                  STRING,
     item_brand               STRING,
@@ -568,4 +570,49 @@ create table if not exists gcp_ga.view_cart
 )
     partition by DATE_TRUNC(event_timestamp, MONTH)
     cluster by user_pseudo_id, ga_session_id, city, platform
+    options (require_partition_filter = TRUE);
+
+drop table if exists gcp_ga.first_visit;
+create table if not exists gcp_ga.first_visit
+(
+    inserted_at              TIMESTAMP,
+    event_timestamp          TIMESTAMP,
+    user_pseudo_id           STRING,
+    event_date               INT64,
+    category                 STRING,
+    mobile_brand_name        STRING,
+    mobile_model_name        STRING,
+    mobile_marketing_name    STRING,
+    mobile_os_hardware_model STRING,
+    operating_system         STRING,
+    operating_system_version STRING,gcp_ga.view_item
+    vendor_id                STRING,
+    advertising_id           STRING,
+    language                 STRING,
+    is_limited_ad_tracking   STRING,
+    time_zone_offset_seconds INT64,
+    browser                  STRING,
+    browser_version          STRING,
+    country                  STRING,
+    city                     STRING,
+    id                       STRING,
+    version                  STRING,
+    install_store            STRING,
+    install_source           STRING,
+    platform                 STRING,
+    name                     STRING,
+    medium                   STRING,
+    source                   STRING,
+    hostname                 STRING,
+    engaged_session_event    STRING,
+    ga_session_id            STRING,
+    ga_session_number        STRING,
+    ignore_referrer          STRING,
+    page_location            STRING,
+    page_referrer            STRING,
+    campaign                 STRING,
+    campaign_id              STRING
+)
+    partition by DATE_TRUNC(event_timestamp, MONTH)
+    cluster by user_pseudo_id, ga_session_id, platform, medium
     options (require_partition_filter = TRUE);
