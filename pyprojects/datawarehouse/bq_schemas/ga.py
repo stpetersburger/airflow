@@ -616,3 +616,71 @@ create table if not exists gcp_ga.first_visit
     partition by DATE_TRUNC(event_timestamp, MONTH)
     cluster by user_pseudo_id, ga_session_id, platform, medium
     options (require_partition_filter = TRUE);
+
+drop table if exists gcp_ga.first_open;
+create table if not exists gcp_ga.first_open
+(
+    inserted_at               TIMESTAMP,
+    event_timestamp           TIMESTAMP,
+    user_pseudo_id            STRING,
+    event_date                INT64,
+    category                  STRING,
+    mobile_brand_name         STRING,
+    mobile_model_name         STRING,
+    mobile_marketing_name     STRING,
+    mobile_os_hardware_model  STRING,
+    operating_system          STRING,
+    operating_system_version  STRING,
+    vendor_id                 STRING,
+    advertising_id            STRING,
+    language                  STRING,
+    is_limited_ad_tracking    STRING,
+    time_zone_offset_seconds  INT64,
+    browser                   STRING,
+    browser_version           STRING,
+    country                   STRING,
+    city                      STRING,
+    id                        STRING,
+    version                   STRING,
+    install_store             STRING,
+    install_source            STRING,
+    platform                  STRING,
+    name                      STRING,
+    medium                    STRING,
+    source                    STRING,
+    hostname                  STRING,
+    engaged_session_event     STRING,
+    firebase_conversion       STRING,
+    firebase_event_origin     STRING,
+    firebase_screen_class     STRING,
+    ga_session_id             STRING,
+    previous_first_open_count STRING,
+    system_app                STRING,
+    system_app_update         STRING,
+    update_with_analytics     STRING
+)
+    partition by DATE_TRUNC(event_timestamp, MONTH)
+    cluster by user_pseudo_id, ga_session_id, source, medium
+    options (require_partition_filter = TRUE);
+
+DROP TABLE IF EXISTS analytics.fact_funnel_ga_daily_extended;
+create table if not exists analytics.fact_funnel_ga_daily_extended
+(
+    event_date_nk             DATE   not null,
+    event_name                STRING not null,
+    platform                  STRING,
+    source                    STRING,
+    medium                    STRING,
+    traffic_name              STRING,
+    campaign_id               STRING,
+    campaign                  STRING,
+    marketing_channel         STRING,
+    marketing_campaign        STRING,
+    number_of_users           INT64,
+    number_of_unique_users    INT64,
+    number_of_sessions        INT64,
+    number_of_unique_sessions INT64
+)
+    partition by DATE_TRUNC(event_date_nk, MONTH)
+    cluster by event_name, platform, traffic_name, campaign
+    options (require_partition_filter = FALSE);

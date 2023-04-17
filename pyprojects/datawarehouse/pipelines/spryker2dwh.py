@@ -70,7 +70,7 @@ def run(args):
                     # adding discount codes of influencers for b2c into cart_note field
                     for el in msg_data:
                         if el == "discounts":
-                            msg_data_order["cart_note"] = msg_data_order["cart_note"] + '|'.join(msg_data["discounts"])
+                            msg_data_order["cart_note"] = msg_data_order["cart_note"].fillna('') + '|'.join(msg_data["discounts"])
                         # change 29.03.2023 - adding loyalty information
                         if el == "loyalty":
                             msg_data_loyalty = clean_pandas_dataframe(pd.DataFrame.from_dict(

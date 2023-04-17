@@ -271,7 +271,7 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
     prefix = []
 
     if dt == '' or datetime.datetime.strptime(dt, "%Y%m%d").date() > datetime.datetime.now().date():
-        d = datetime.datetime.now().date() - datetime.timedelta(3)
+        d = datetime.datetime.now().date() - datetime.timedelta(40)
     else:
         d = datetime.datetime.strptime(dt, "%Y%m%d").date()
 
