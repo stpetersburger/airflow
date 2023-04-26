@@ -241,7 +241,7 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
                     df[fld] = df[fld].fillna(np.nan).astype("string")
 
             for col in df.columns.tolist():
-                if "price" in col or "amount" in col or "rate" in col:
+                if "price" in col or "amount" in col or "rate" in col or "quantity" in col:
                     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(np.nan).astype('float')
                 elif df[col].dtypes == 'str':
                     # remove non-ASCII symbols from dataframe
