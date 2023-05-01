@@ -86,7 +86,6 @@ def run(args):
                     # get data of order_totals section of the message and clean the fields' naming
                     msg_data_order_totals = clean_pandas_dataframe(
                         pd.DataFrame.from_dict([msg_data["order_totals"][0]]), '', True)
-
                     # columns to drop taken from etl_schemas.json
                     msg_data_order_totals = msg_data_order_totals.drop(columns=get_etl_schema(id_pipeline,
                                                                                               'order_totals', 'drop'),
@@ -96,13 +95,17 @@ def run(args):
                         [msg_data["shipping_expense"][0]]), '', True)[get_etl_schema(id_pipeline,
                                                                                      'shipping_expense',
                                                                                      'fields')]
-#
-                    msg_data_shipping_address = clean_pandas_dataframe(pd.DataFrame.from_dict(
+
+                    if not msg_data["shipping_address"] == "":
+                        msg_data_shipping_address = clean_pandas_dataframe(pd.DataFrame.from_dict(
                                                                         [msg_data["shipping_address"]]),
                                                                         '',
                                                                         True)[get_etl_schema(id_pipeline,
                                                                                              'shipping_address',
                                                                                              'fields')]
+                    else:
+                        msg_data_shipping_address = pd.DataFrame()
+
                     msg_data_order = msg_data_order.join(msg_data_order_totals) \
                         .join(msg_data_shipping_expense) \
                         .join(msg_data_shipping_address).drop(columns=get_etl_schema(id_pipeline, 'order', 'drop'),
