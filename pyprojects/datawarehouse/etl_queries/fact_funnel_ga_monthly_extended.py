@@ -12,7 +12,7 @@ WITH event_stg AS (
      WHERE  DATE(DATE_ADD(event_timestamp, INTERVAl 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL {incr_interval})
 )
 
-SELECT  estg.event_date_nk,
+SELECT  DATE_TRUNC(estg.event_date_nk, MONTH)          event_date_nk,
         '{event_name}'                                 event_name,
         estg.platform,
         estg.traffic_name,

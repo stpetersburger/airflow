@@ -9,7 +9,7 @@ WITH event_stg AS (
 ),
 
 event_stg1 AS (
-SELECT  event_date_nk,
+SELECT  DATE_TRUNC(event_date_nk, MONTH)                                  event_date_nk,
         COUNT(ga_session_id) OVER (PARTITION BY event_date_nk)            number_of_sessions_overall,
         COUNT(DISTINCT ga_session_id) OVER (PARTITION BY event_date_nk)   number_of_unique_sessions_overall,
         COUNT(DISTINCT user_pseudo_id) OVER (PARTITION BY event_date_nk)  number_of_unique_users_overall,
