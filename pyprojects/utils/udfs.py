@@ -201,12 +201,14 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
         header_list = df.columns.tolist()
         # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
         if standartise:
+            print(header_list)
             header_list_new = list(
                 map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
-                                     re.sub(r'[a-z]{1}\B[A-Z]{2}\B[a-z]{1}', lambda x: '_' + x.group().lower(),
+                                     re.sub(r'\B[A-Z]{1}[a-z]{1}', lambda x: '_' + x.group().lower(),
                                             header_list[i])
                                      ).lower(),
                     range(0, len(header_list))))
+            print(header_list_new)
         else:
             header_list_new = list(
                 map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
