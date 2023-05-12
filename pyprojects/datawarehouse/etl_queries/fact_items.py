@@ -87,8 +87,8 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         item_subtotal_aggregation,
         item_discount_amount_aggregation,
         item_discount_amount_full_aggregation,
-        customer_reference,
-        COALESCE(c.city_name_en, i.city_name) city_name_en,
+        i.customer_reference                                                                           customer_reference,
+        COALESCE(c.city_name_en, i.city_name)                                                          city_name_en,
         CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) = 0 THEN 1 ELSE 0 END  if_cancelled,
         CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) =-1 THEN 1 ELSE 0 END  if_rejected,
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) > 1 THEN 1 ELSE 0 END  if_gross,
@@ -98,10 +98,14 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) >= 3 THEN 1 ELSE 0 END if_ready_to_ship,
         CASE WHEN COALESCE(points_redeemed,0) > 0 THEN 1 ELSE 0 END                                    if_points_used_in_order,
         points_redeemed                                                                                order_points_redeemed,
-        channel
+        channel,
+        COALESCE(cust.customer_category,'Other')                                                       customer_category
  FROM   items i
         LEFT JOIN {1}.dim_item_states a
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state
         LEFT JOIN gcp_gs.map_order_cities c
         ON i.city_name = c.order_city_name
         AND c.business_type = '{0}'
+        LEFT JOIN gcp_gs.map_customers cust
+        ON i.customer_reference = cust.customer_reference
+        AND cust.business_type = '{0}'

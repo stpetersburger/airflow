@@ -203,7 +203,7 @@ def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
         if standartise:
             header_list_new = list(
                 map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
-                                     re.sub(r'\B[A-Z]\B', lambda x: '_' + x.group().lower(),
+                                     re.sub(r'[a-z]{1}\B[A-Z]{2}\B[a-z]{1}', lambda x: '_' + x.group().lower(),
                                             header_list[i])
                                      ).lower(),
                     range(0, len(header_list))))
@@ -370,9 +370,9 @@ def send_telegram_message(msg_type, msg):
         apiURL = f'https://api.telegram.org/bot{apiToken}/sendMessage'
 
         if msg_type == 1:
-            message=f"""\u2705 {msg}"""
+            message = f"""\u2705 {msg}"""
         else:
-            message=f"""\U0001F6A8 {msg}"""
+            message = f"""\U0001F6A8 {msg}"""
 
         try:
             requests.post(apiURL, json={'chat_id': chatID, 'text': message})

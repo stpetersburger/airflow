@@ -57,10 +57,11 @@
 	"spryker2dwh_b2c": {
 		"items_state": {
 			"message_object": "items",
-			"fields": "fk_oms_order_item_state,fk_sales_order,id_sales_order_item,created_at,updated_at",
+			"fields": "fk_oms_order_item_state,fk_sales_order,id_sales_order_item,created_at,updated_at,status",
 			"rename": {
 				"fk_oms_order_item_state": "fk_sales_order_item_state",
-				"id_sales_order_item": "fk_sales_order_item"
+				"id_sales_order_item": "fk_sales_order_item",
+				"status": "target_status_name"
 			},
 			"deduplication": "fk_sales_order_item_state,fk_sales_order_item"
 		},
