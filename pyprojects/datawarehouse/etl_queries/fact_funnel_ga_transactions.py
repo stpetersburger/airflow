@@ -26,14 +26,15 @@ purchases AS (
      GROUP  BY 8
 )
 
-SELECT  COALESCE(a.event_date_nk, b.event_date_nk)      event_date_nk,
-        COALESCE(a.order_reference, b.order_reference)  order_reference,
-        COALESCE(a.ga_session_id, b.ga_session_id)      ga_session_id,
-        COALESCE(a.user_pseudo_id, b.user_pseudo_id)     user_pseudo_id,
-        COALESCE(a.platform, b.platform)                platform,
-        COALESCE(a.name, b.name)                        channel,
-        COALESCE(a.medium, b.medium)                    medium,
-        COALESCE(a.source, b.source)                    source,
-        CASE WHEN b.order_reference IS NOT NULL THEN 1 else 0 END if_order
+SELECT  COALESCE(MIN(a.event_date_nk), MIN(b.event_date_nk))      event_date_nk,
+        COALESCE(a.order_reference, b.order_reference)            order_reference,
+        COALESCE(MIN(a.ga_session_id), MIN(b.ga_session_id))      ga_session_id,
+        COALESCE(MIN(a.user_pseudo_id), MIN(b.user_pseudo_id))    user_pseudo_id,
+        COALESCE(MIN(a.platform), MIN(b.platform))                platform,
+        COALESCE(MIN(a.name), MIN(b.name))                        channel,
+        COALESCE(MIN(a.medium), MIN(b.medium))                    medium,
+        COALESCE(MIN(a.source), MIN(b.source))                    source,
+        CASE WHEN MIN(b.order_reference) IS NOT NULL THEN 1 else 0 END if_order
   FROM  purchases a LEFT JOIN  orders b
         USING(order_reference)
+ GROUP  BY 2
