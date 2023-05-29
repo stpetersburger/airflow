@@ -6,7 +6,7 @@ WITH orders AS (
             COALESCE(MIN(name),'undefined')                       name,
             COALESCE(MIN(medium),'undefined')                     medium,
             COALESCE(MIN(source),'undefined')                     source,
-            order_id                                         order_reference
+            order_id                                              order_reference
       FROM  gcp_ga.`Order`
      WHERE  DATE(event_timestamp) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL {incr_interval})
      GROUP  BY 8
@@ -34,7 +34,9 @@ SELECT  COALESCE(MIN(a.event_date_nk), MIN(b.event_date_nk))      event_date_nk,
         COALESCE(MIN(a.name), MIN(b.name))                        channel,
         COALESCE(MIN(a.medium), MIN(b.medium))                    medium,
         COALESCE(MIN(a.source), MIN(b.source))                    source,
-        CASE WHEN MIN(b.order_reference) IS NOT NULL THEN 1 else 0 END if_order
+        CASE WHEN MIN(b.order_reference) IS NOT NULL
+             THEN 1 else 0
+        END                                                       if_order
   FROM  purchases a LEFT JOIN  orders b
         USING(order_reference)
  GROUP  BY 2
