@@ -125,7 +125,7 @@ def run(args):
         # showing the list of available event parameters
         print(df.ep_key.unique())
         if not df.empty:
-            # filtering the vent parameters, which are needed to be brought into table
+            # filtering the event parameters, which are needed to be brought into table
             df = df[df['ep_key'].isin(ep)]
             df = df.drop_duplicates()
             # adding dataframe index as a column for pivoting the data later to enhance

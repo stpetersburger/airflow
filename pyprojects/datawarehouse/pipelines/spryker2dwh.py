@@ -59,7 +59,7 @@ def run(args):
                 df_hist_items = concatenate_dataframes(df_hist_items, msg_data_items_state)
 
                 # if message has no event name, but the items are new, then the order is new
-                if (msg_data["eventName"] == '' and msg_data["items"][0]["item_status"] == 'new') or \
+                if (msg_data["eventName"] == '' and msg_data["items"][0]["fk_oms_order_item_state"] == 1) or \
                         (msg_data["eventName"] == 'place' and args.btype == 'b2b'):
 
                     msg_data_order = pd.DataFrame.from_dict([msg_data["order"]])[get_etl_schema(id_pipeline, 'order',
