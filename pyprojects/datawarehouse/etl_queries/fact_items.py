@@ -162,8 +162,8 @@ SELECT  order_date,
         CASE WHEN if_points_used_in_order = 1 AND order_non_cancelled_items_num > 0
                                               AND if_cancelled + if_rejected = 0
              THEN CASE WHEN order_points_redeemed>order_non_cancelled_value
-                       THEN ROUND(order_non_cancelled_value/(100*order_non_cancelled_items_num),4)
-                       ELSE ROUND(order_points_redeemed/order_non_cancelled_items_num,4)
+                       THEN ROUND(item_aggregation_price/order_non_cancelled_value,4)
+                       ELSE ROUND(order_points_redeemed*(item_aggregation_price/order_non_cancelled_value),4)
                   END
              ELSE 0
         END  order_points_redeemed
