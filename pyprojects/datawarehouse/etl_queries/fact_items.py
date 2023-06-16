@@ -41,7 +41,9 @@ WITH items AS (
           AND NOT b.is_test
           AND d.reporting_order_item_state < 6
    GROUP  BY 6
-)
+),
+
+items_stg AS (
 SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                                 order_date,
         DATE(DATE_ADD(order_created_at, INTERVAL 3 HOUR))                           order_date_nk,
         merchant,
@@ -97,9 +99,17 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) >= 2 THEN 1 ELSE 0 END if_approved,
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) >= 3 THEN 1 ELSE 0 END if_ready_to_ship,
         CASE WHEN COALESCE(points_redeemed,0) > 0 THEN 1 ELSE 0 END                                    if_points_used_in_order,
-        points_redeemed                                                                                order_points_redeemed,
         channel,
-        COALESCE(cust.customer_category,'Other')                                                       customer_category
+        COALESCE(cust.customer_category,'Other')                                                       customer_category,
+        COALESCE(points_redeemed,0)                                                                    order_points_redeemed,
+        SUM(CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0
+                 THEN item_aggregation_price
+                 ELSE 0
+            END ) OVER (PARTITION BY fk_sales_order)                                                  order_non_cancelled_value,
+        SUM(CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0
+                 THEN 1
+                 ELSE 0
+            END) OVER (PARTITION BY fk_sales_order)                                                   order_non_cancelled_items_num
  FROM   items i
         LEFT JOIN {1}.dim_item_states a
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state
@@ -109,3 +119,51 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         LEFT JOIN gcp_gs.map_customers cust
         ON i.customer_reference = cust.customer_reference
         AND cust.business_type = '{0}'
+)
+
+SELECT  order_date,
+        order_date_nk,
+        merchant,
+        brand,
+        fk_product_category,
+        sku,
+        order_item_state,
+        fk_sales_order_item_state,
+        status_last_changed_date_nk,
+        quantity,
+        order_reference,
+        fk_sales_order,
+        id_sales_order_item,
+        days_in_process_num,
+        days_delivery_num,
+        currency,
+        exchange_rate,
+        item_price,
+        coupon_code,
+        item_gross_price,
+        item_net_price,
+        item_aggregation_price,
+        item_refundable_amount,
+        item_subtotal_aggregation,
+        item_discount_amount_aggregation,
+        item_discount_amount_full_aggregation,
+        customer_reference,
+        city_name_en,
+        if_cancelled,
+        if_rejected,
+        if_gross,
+        if_sold,
+        if_net,
+        if_approved,
+        if_ready_to_ship,
+        if_points_used_in_order,
+        channel,
+        customer_category,
+        CASE WHEN if_points_used_in_order = 1 AND order_non_cancelled_items_num > 0
+             THEN CASE WHEN order_points_redeemed>order_non_cancelled_value
+                       THEN ROUND(order_non_cancelled_value/(100*order_non_cancelled_items_num),4)
+                       ELSE ROUND(order_points_redeemed/order_non_cancelled_items_num,4)
+                  END
+             ELSE 0
+        END  order_points_redeemed
+  FROM  items_stg
