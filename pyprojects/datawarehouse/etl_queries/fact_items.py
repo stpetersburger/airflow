@@ -105,11 +105,7 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         SUM(CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0
                  THEN item_aggregation_price
                  ELSE 0
-            END ) OVER (PARTITION BY fk_sales_order)                                                  order_non_cancelled_value,
-        SUM(CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0
-                 THEN 1
-                 ELSE 0
-            END) OVER (PARTITION BY fk_sales_order)                                                   order_non_cancelled_items_num
+            END ) OVER (PARTITION BY fk_sales_order)                                                  order_non_cancelled_value
  FROM   items i
         LEFT JOIN {1}.dim_item_states a
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state
