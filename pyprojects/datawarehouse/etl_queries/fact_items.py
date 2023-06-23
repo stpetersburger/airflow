@@ -155,7 +155,7 @@ SELECT  order_date,
         if_points_used_in_order,
         channel,
         customer_category,
-        CASE WHEN if_points_used_in_order = 1 AND order_non_cancelled_items_num > 0
+        CASE WHEN if_points_used_in_order = 1 AND order_non_cancelled_value > 0
                                               AND if_cancelled + if_rejected = 0
              THEN CASE WHEN order_points_redeemed>order_non_cancelled_value
                        THEN ROUND(item_aggregation_price/order_non_cancelled_value,4)
