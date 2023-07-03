@@ -42,7 +42,7 @@
 		},
 		"items": {
 			"message_object": "items",
-			"fields": "sku,merchant_reference,fk_sales_order,id_sales_order_item,group_key",
+			"fields": "sku,merchant_reference,fk_sales_order,id_sales_order_item",
 			"fields2": "fk_sales_shipment,quantity,is_quantity_splittable,canceled_amount",
 			"fields3": "discount_amount_aggregation,discount_amount_full_aggregation,gross_price,net_price,price",
 			"fields4": "price_to_pay_aggregation,product_offer_reference,refundable_amount",
@@ -71,7 +71,7 @@
 			"fields3": "oms_processor_identifier,created_at,updated_at,channel",
 			"drop": "updated_at",
 			"filter": {
-				"fields": "fk_country,fk_customer,id_sales_order,is_test,order_reference,fk_locale",
+				"fields": "fk_country,fk_customer,id_sales_order,is_test,order_reference,fk_locale,cart_note",
 				"fields2": "currency_iso_code,order_exchange_rate,order_custom_reference,customer_reference",
 				"fields3": "oms_processor_identifier,id_sales_order_totals,discount_total,grand_total",
 				"fields4": "order_expense_total,refund_total,subtotal,tax_total,id_sales_expense",
