@@ -7,7 +7,7 @@ SELECT  sooish.fk_oms_order_item_state id_sales_order_item_state,
   FROM  spy_oms_order_item_state_history sooish
   LEFT  JOIN spy_sales_order_item soi
 ON soi.id_sales_order_item = sooish.fk_sales_order_item
-
+WHERE fk_sales_order >= 15868 and fk_sales_order <= 15877
 
 #sales_order_item
 SELECT
@@ -34,6 +34,7 @@ tax_amount,
 tax_amount_full_aggregation,
 created_at
 FROM spy_sales_order_item
+WHERE fk_sales_order >= 15868 and fk_sales_order <= 15877
 
 #sales_order
 SELECT
@@ -81,6 +82,7 @@ LEFT  JOIN spy_sales_expense se
     ON so.id_sales_order = se.fk_sales_order
 LEFT  JOIN spy_sales_order_address soa
     ON so.fk_sales_order_address_billing = soa.id_sales_order_address
+WHERE id_sales_order >= 15868 and id_sales_order <= 15877
 
 
 ##########################
