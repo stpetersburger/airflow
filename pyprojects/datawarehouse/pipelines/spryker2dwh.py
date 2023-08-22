@@ -61,7 +61,7 @@ def run(args):
                 # if message has no event name, but the items are new, then the order is new
                 if ((msg_data["items"][0]["fk_oms_order_process"] == 4 and msg_data["eventName"] == '' and
                     msg_data["items"][0]["fk_oms_order_item_state"] == 1) or
-                    (msg_data["eventName"] == 'place' and args.btype == 'b2b') or
+                    ((msg_data["eventName"] == 'place' or msg_data["eventName"] == '') and args.btype == 'b2b') or
                     (msg_data["items"][0]["fk_oms_order_process"] == 2 and msg_data["eventName"] == '' and
                      msg_data["items"][0]["fk_oms_order_item_state"] == 5)):
 
@@ -85,6 +85,8 @@ def run(args):
                     customer_to_check = msg_data["customer"]["customer_reference"].strip().lower()
                     if customer_to_check.strip().lower() in fraudtestemails:
                         msg_data_order["is_test"] = True
+                    else:
+                        msg_data_order["is_test"] = False
 
                     # get data of order_totals section of the message and clean the fields' naming
                     msg_data_order_totals = clean_pandas_dataframe(

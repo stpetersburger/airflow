@@ -27,7 +27,8 @@ WITH items AS (
           MIN(b.customer_reference)                                              customer_reference,
           TRIM(MIN(CASE WHEN '{0}'='b2c' THEN b.address3 ELSE b.address2 END))   city_name,
           {points_redeemed}                                                      points_redeemed,
-          {channel}                                                              channel
+          {channel}                                                              channel,
+          MIN(b.fk_country)                                                      address_country_nk
     FROM
           aws_s3.{0}_sales_orders b
           LEFT JOIN aws_s3.{0}_sales_order_items a ON a.fk_sales_order = b.id_sales_order
@@ -105,7 +106,8 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         SUM(CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0
                  THEN item_aggregation_price
                  ELSE 0
-            END ) OVER (PARTITION BY fk_sales_order)                                                  order_non_cancelled_value
+            END ) OVER (PARTITION BY fk_sales_order)                                                  order_non_cancelled_value,
+        address_country_nk
  FROM   items i
         LEFT JOIN {1}.dim_item_states a
         ON i.fk_sales_order_item_state = a.id_sales_order_item_state
@@ -162,5 +164,6 @@ SELECT  order_date,
                        ELSE ROUND(order_points_redeemed*(item_aggregation_price/order_non_cancelled_value),4)
                   END
              ELSE 0
-        END  order_points_redeemed
+        END  order_points_redeemed,
+        address_country_nk
   FROM  items_stg
