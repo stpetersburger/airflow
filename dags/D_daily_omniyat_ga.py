@@ -24,39 +24,26 @@ from datetime import datetime
 from airflow.operators.bash_operator import BashOperator
 
 dag = DAG(
-    dag_id="A_daily_job_working_hours",
+    dag_id="D_daily_omniyat_ga",
     start_date=datetime(2023, 3, 16),
     schedule_interval='00 5 * * *',
     catchup=False,
     tags=["prod"],
 )
 
-t1 = BashOperator(
+t2 = BashOperator(
     task_id="externalfiles2dwh",
     bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
-                 f'-conn gcp -schedule_type daily_working_hours',
+                 f'-conn gcp_omniyat -schedule_type omniyat_daily',
     dag=dag
 )
 
-t2 = BashOperator(
-    task_id="adjust2dwh",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/adjust2dwh.py """
-                 f"""-conn gcp -schema aws_s3 -writing_type append -date ''""",
-    dag=dag
-)
 
-t3 = BashOperator(
-    task_id="ga_intraday",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
-                 f"""-conn gcp -business_type b2c -gatype intraday""",
-    dag=dag
-)
-
-t4 = BashOperator(
+t1 = BashOperator(
     task_id="ga",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
-                 f"""-conn gcp -business_type b2c""",
+                 f"""-conn gcp_omniyat -business_type omniyat""",
     dag=dag
 )
 
-[t2, t3] >> t4 >> t1
+t1 >> t2

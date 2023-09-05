@@ -6,7 +6,7 @@ def run(args):
     pipeline = 'externalfiles2dwh'
     send_telegram_message(1, f"""Pipeline {pipeline} has started""")
 
-    etl_config_spreadsheet = get_data_from_googlesheet(args.conn, get_creds('gcp',
+    etl_config_spreadsheet = get_data_from_googlesheet(args.conn, get_creds(args.conn,
                                                                             'gs',
                                                                             'config_sheet'),
                                                                             'etl_pipelines')
@@ -24,7 +24,7 @@ def run(args):
         if row['truncate'] and row['dwh_schema'] != '':
             wtype = 'append'
             for s in row["dwh_schema"].split('|'):
-                execute_gbq('gcp', f"""TRUNCATE TABLE {s}.{row['name']}""", row['name'], 'truncate')
+                execute_gbq(args.conn, f"""TRUNCATE TABLE {s}.{row['name']}""", row['name'], 'truncate')
         if row['pipeline'] == 's3':
             etl_s3 = boto3.resource(
                 service_name='s3',
@@ -71,7 +71,7 @@ def run(args):
             i = 0
             for b in row['business_type'].split('|'):
                 s = row["dwh_schema"].split("|")[i]
-                df = get_from_gbq('gcp', sqlstr.format(b, s), row['pipeline'], row['name'])
+                df = get_from_gbq(args.conn, sqlstr.format(b, s), row['pipeline'], row['name'])
                 df = df.sort_values(df.columns[0])
                 write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
                 i += 1
@@ -97,7 +97,8 @@ def run(args):
                             del_sql = del_sql + f" AND {row['url']} = '{t}'"
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
                                                       # added on th 31.03.2023 for GA data
-                                                      event_name=t
+                                                      event_name=t,
+                                                      business_type=b
                                                     )
                         else:
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
@@ -108,8 +109,8 @@ def run(args):
                                                     # added on 29.03.2023 as b2b doesn't have order channel (web/app)
                                                     channel="MIN(b.channel)" if b == "b2c" else "'no_channel'"
                                                     )
-                        execute_gbq('gcp', del_sql, f"""{s}.{b}""", 'incremental deletion')
-                        df = get_from_gbq('gcp', sql_str, row['pipeline'], row['name'],)
+                        execute_gbq(args.conn, del_sql, f"""{s}.{b}""", 'incremental deletion')
+                        df = get_from_gbq(args.conn, sql_str, row['pipeline'], row['name'],)
                         df = df.sort_values(df.columns[0])
                         if row['output'] != '':
                             o = row['output'].split('|')
@@ -117,7 +118,7 @@ def run(args):
                                 dfo = df.filter(items=row['output_fields'].split('|'))
                                 write_data_to_googlesheet(conn=args.conn, gsheet_tab=f"""{row['output']}_{b}""", df=dfo)
                     else:
-                        df = get_from_gbq('gcp',
+                        df = get_from_gbq(args.conn,
                                           sqlstr.format(b, s),
                                           f"""{s}.{row['name']}""",
                                           row['name'])
@@ -144,7 +145,7 @@ def run(args):
                          FROM {row['dwh_schema']}.historical_{row['name']}
                          WHERE DATE(inserted_at) > DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)"""
 
-            if get_from_gbq('gcp', strsql, row['name'], 'historical')["f0_"].iloc[0]:
+            if get_from_gbq(args.conn, strsql, row['name'], 'historical')["f0_"].iloc[0]:
                 wtype = 'append'
                 hist_fields = row['historical_fields'].split('|')
                 df = df.filter(items=hist_fields)

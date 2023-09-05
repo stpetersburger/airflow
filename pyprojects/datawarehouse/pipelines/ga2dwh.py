@@ -8,17 +8,17 @@ def run(args):
     id_pipeline = f"""{pipeline}_{args.btype}"""
     send_telegram_message(1, f"""Pipeline {id_pipeline} has started""")
 
-    ga_dataset = get_creds('gcp', f"""ga_{args.btype}""", 'bq_dataset')
+    ga_dataset = get_creds(args.conn, f"""ga_{args.btype}""", 'bq_dataset')
 
-    ga_table_prefix = get_creds('gcp', f"""ga_{args.btype}""", 'bq_ga_table_prefix')
+    ga_table_prefix = get_creds(args.conn, f"""ga_{args.btype}""", 'bq_ga_table_prefix')
 
     ga_config_events = get_data_from_googlesheet(args.conn,
-                                                 get_creds('gcp', 'gs', 'config_sheet'),
-                                                 get_creds('gcp', f"""ga_{args.btype}""", 'ga_config_events')
+                                                 get_creds(args.conn, 'gs', 'config_sheet'),
+                                                 get_creds(args.conn, f"""ga_{args.btype}""", 'ga_config_events')
                                                  )
     ga_config_event_properties = get_data_from_googlesheet(args.conn,
-                                                 get_creds('gcp', 'gs', 'config_sheet'),
-                                                 get_creds('gcp', f"""ga_{args.btype}""", 'ga_config_event_properties')
+                                                 get_creds(args.conn, 'gs', 'config_sheet'),
+                                                 get_creds(args.conn, f"""ga_{args.btype}""", 'ga_config_event_properties')
                                                            )
 
     ga_config_events = ga_config_events[ga_config_events.iloc[:, 0] == 1]
@@ -31,7 +31,7 @@ def run(args):
         print(f"""{en}""")
         today = datetime.date.today()
         yesterday = today - datetime.timedelta(days=1)
-        beforeyesterday = yesterday - datetime.timedelta(days=1)
+        beforeyesterday = today - datetime.timedelta(days=2)
         delete_clause = ''
         select_clause: list = []
         pivot_index: list = []
@@ -59,9 +59,8 @@ def run(args):
                 delete_clause = f"""DELETE FROM gcp_ga.{en} WHERE date(event_timestamp)='{beforeyesterday}'"""
                 from_clause: list = [f"""{ga_dataset}.{ga_table_prefix}{d}"""]
                 where_clause: list = []
-
         if delete_clause != '':
-            execute_gbq('gcp', delete_clause, etl_desc=id_pipeline, note=f"""delete data for {en} - {args.gatype}""")
+            execute_gbq(args.conn, delete_clause, etl_desc=id_pipeline, note=f"""delete data for {en} - {args.gatype}""")
 
         # sorting the event_parameters fields in an alphabetic order
         ep = row["event_params"].split('|')
@@ -158,6 +157,7 @@ def run(args):
         else:
             df = pd.DataFrame()
     send_telegram_message(1, f"""Pipeline {id_pipeline} has finished.""")
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='sourcing datawarehouse with google analytics')

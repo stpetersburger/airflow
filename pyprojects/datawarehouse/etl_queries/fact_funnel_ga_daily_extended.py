@@ -27,5 +27,5 @@ SELECT  estg.event_date_nk,
         COUNT(estg.ga_session_id)                      number_of_sessions,
         COUNT(DISTINCT estg.ga_session_id)             number_of_unique_sessions
   FROM  event_stg estg
-  LEFT  JOIN gcp_gs.map_b2c_ga_marketing_channels mch USING(source,medium,traffic_name)
+  LEFT  JOIN gcp_gs.map_{business_type}_ga_marketing_channels mch USING(source,medium,traffic_name)
  GROUP  BY 1,3,4,5,6,7,8,9,10

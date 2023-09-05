@@ -43,9 +43,9 @@
 			"config_sheet": "GOOGLE_SPREADSHEETS_CONFIGSHEET"
 		},
 		"ga_omniyat": {"bq_dataset": "GOOGLE_GA_DATASET_omniyat",
-			       "bq_ga_table_prefix": "GOOGLE_GA_TABLE_PREFIX",
-			       "ga_config_events": "omniyat_ga_events",
-			       "ga_config_event_properties": "omniyat_ga_event_properties"
+			           "bq_ga_table_prefix": "GOOGLE_GA_TABLE_PREFIX",
+			           "ga_config_events": "omniyat_ga_events",
+			           "ga_config_event_properties": "omniyat_ga_event_properties"
 		}
 	},
 	"ms": {
