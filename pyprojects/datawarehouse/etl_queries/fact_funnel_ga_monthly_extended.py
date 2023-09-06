@@ -9,7 +9,7 @@ WITH event_stg AS (
             COALESCE(medium,'undefined')                     medium,
             COALESCE(source,'undefined')                     source
       FROM  gcp_ga.{event_name}
-     WHERE  DATE(DATE_ADD(event_timestamp, INTERVAl 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL {incr_interval})
+     WHERE  DATE(DATE_ADD(event_timestamp, INTERVAl 3 HOUR)) >= DATE_SUB(DATE(DATE_TRUNC(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR), MONTH)), INTERVAL {incr_interval})
 )
 
 SELECT  DATE_TRUNC(estg.event_date_nk, MONTH)          event_date_nk,

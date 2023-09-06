@@ -88,7 +88,12 @@ def run(args):
                     if row['incr_field'] != '':
                         wtype = 'append'
                         # delete incremental part
-                        del_sql = f"""DELETE FROM {s}.{row["name"]} WHERE {row['incr_field']} \
+                        if 'monthly' in row["tab"]:
+                            del_sql = f"""DELETE FROM {s}.{row["name"]} WHERE {row['incr_field']} \
+                                                                        >= DATE_TRUNC(DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
+                                                                        INTERVAl 3 HOUR)), INTERVAL {row['incr_interval']}), MONTH)"""
+                        else:
+                            del_sql = f"""DELETE FROM {s}.{row["name"]} WHERE {row['incr_field']} \
                                                                             >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
                                                                             INTERVAl 3 HOUR)), INTERVAL {row['incr_interval']})"""
                         # if multiple_table run
