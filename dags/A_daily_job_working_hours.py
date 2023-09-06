@@ -16,7 +16,7 @@
 # specific language governing permissions and limitations
 # under the License.
 
-"""Daily job run at the beginning of working hours (8:30 am Iraq, Saudi Arabia; 9:30 am UAE)"""
+"""Daily job run at the beginning of working hours (7:00 am Iraq, Saudi Arabia; 8:00 am UAE)"""
 
 import os
 from airflow import DAG
@@ -26,7 +26,7 @@ from airflow.operators.bash_operator import BashOperator
 dag = DAG(
     dag_id="A_daily_job_working_hours",
     start_date=datetime(2023, 3, 16),
-    schedule_interval='00 5 * * *',
+    schedule_interval='00 4 * * *',
     catchup=False,
     tags=["prod"],
 )
