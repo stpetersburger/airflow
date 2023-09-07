@@ -32,7 +32,7 @@ x-airflow-common:
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: ${POSTGRES_DRIVER}://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
     FLOWER_PORT: ${FLOWER_PORT}
   volumes:
-    - ./pgdata:/var/lib/postgresql/data/pgdata
+          # - ./pgdata:/var/lib/postgresql/data/pgdata
     - ./dags:${AIRFLOW_USER_HOME}/dags
     - ./logs:${AIRFLOW_USER_HOME}/logs
     - ./plugins:${AIRFLOW_USER_HOME}/plugins
@@ -49,6 +49,8 @@ services:
       container_name: postgres
       hostname: ${POSTGRES_HOST}
       restart: always
+      volumes:
+        - ./pgdata:/var/lib/postgresql/data/pgdata
       environment:
         POSTGRES_DRIVER: ${POSTGRES_DRIVER}
         POSTGRES_USER: ${POSTGRES_USER}
@@ -57,6 +59,7 @@ services:
         POSTGRES_HOST: ${POSTGRES_HOST}
         POSTGRES_PORT: ${POSTGRES_PORT}
         POSTGRES_EXTRAS: ${POSTGRES_EXTRAS}
+        PGDATA: /var/lib/postgresql/data/pgdata
       ports:
         - ${POSTGRES_PORT}:${POSTGRES_PORT}
       healthcheck:
