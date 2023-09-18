@@ -8,7 +8,7 @@ WITH event_stg AS (
                     DATE_SUB(DATE(DATE_TRUNC(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR), MONTH)), INTERVAL {incr_interval})
 )
 
-SELECT  DATE_TRUNC(estg.event_date_nk, MONTH)        event_date_nk,
+SELECT  estg.event_date_nk                           event_date_nk,
         '{event_name}'                               event_name,
         LOWER(COALESCE(molg.page_location,'other'))  page_location,
         COUNT(estg.user_pseudo_id)                   number_of_users,
