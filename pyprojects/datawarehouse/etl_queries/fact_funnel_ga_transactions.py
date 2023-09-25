@@ -39,5 +39,5 @@ SELECT  COALESCE(MIN(a.event_date_nk), MIN(b.event_date_nk))    event_date_nk,
         END                                                     if_order
   FROM  purchases a LEFT JOIN  orders b
         USING(order_reference)
- WHERE  COALESCE(a.order_reference, b.order_reference) is not null
+ WHERE  COALESCE(a.order_reference, b.order_reference) LIKE '%--%'
  GROUP  BY 2

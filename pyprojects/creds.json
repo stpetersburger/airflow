@@ -62,5 +62,19 @@
 			"token": "TELEGRAM_BOT_API_TOKEN",
 			"chat_id": "TELEGRAM_WATCHER_CHANNEL_ID"
 		}
+	},
+	"erp":{
+		"salesforce_omniyat": {
+			"url": "SALESFORCE_URL_omniyat",
+			"username": "SALESFORCE_USERNAME_omniyat",
+			"password": "SALESFORCE_PASSWORD_omniyat",
+			"organisation_id": "SALESFORCE_ORG_ID_omniyat"
+		}
+	},
+	"scrapers": {
+		"bv": {
+			"authority": "SCRAPERS_AUTHORITY_bv",
+			"url": "SCRAPERS_LINK_all_bv"
+		}
 	}
 }

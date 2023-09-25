@@ -9,6 +9,3 @@ logs/*
 .DS_Store
 */__pycache__
 pyprojects/utils/__pycache__
-pyprojects/datawarehouse/pipelines/scrap2dwh.py
-pyprojects/datawarehouse/pipelines/dubaipulse2dwh.py
-pyprojects/datawarehouse/pipelines/salesforce2dwh.py
