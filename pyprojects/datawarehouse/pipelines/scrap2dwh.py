@@ -15,40 +15,41 @@ def run(args):
 
     if args.btype == 'bv':
         authority = get_creds(args.schema, args.btype, 'authority')
-        pn = 1
-        url = get_creds(args.schema, args.btype, 'url').format(page_num=pn)
+        url = get_creds(args.schema, args.btype, 'url').format(page_num=1)
         print(url)
 
         headers = {
             'authority': authority,
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'accept': 'application/vnd.api+json',
             'accept-language': 'en-US,en;q=0.9',
-            'cache-control': 'max-age=0',
-            'referer': f'{authority}/',
+            'content-type': 'application/vnd.api+json',
+            'referer': f'https://{authority}/en/search?c=2&l=1&ob=mr&page=1&rp=y',
             'sec-ch-ua': '"Google Chrome";v="117", "Not;A=Brand";v="8", "Chromium";v="117"',
             'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"macOS"',
-            'sec-fetch-dest': 'document',
-            'sec-fetch-mode': 'navigate',
+            'sec-ch-ua-platform': '"Linux"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
-            'sec-fetch-user': '?1',
-            'upgrade-insecure-requests': '1',
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+            'x-requested-with': 'XMLHttpRequest',
         }
 
-        r = requests.get(url, headers=headers).json()
+        r = requests.get(url, headers=headers).content
+        r = json.loads(r)
         metadata = r["data"]["relationships"]["properties"]["meta"]
         print(metadata)
 
         df = pd.DataFrame()
         for i in range(metadata["page_count"]):
+            print(i)
             url = get_creds(args.schema, args.btype, 'url').format(page_num=i+1)
             r = requests.get(url, headers=headers).json()
             for el in r["included"]:
-                df = pd.concat([df, pd.DataFrame.from_dict([el["attributes"]])])
-            print(i)
-        df.drop_duplicates()
-        write_to_gbq(args.conn, args.schema, dataset='bv', dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+                if el["type"] == 'property':
+                    df = pd.concat([df, pd.DataFrame.from_dict([el["attributes"]])])
+
+        write_to_gbq(args.conn, args.schema, dataset='bv',
+                     dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='replace')
 
 
 if __name__ == '__main__':
@@ -63,3 +64,4 @@ if __name__ == '__main__':
                         help="all or new only")
 
     run(parser.parse_args())
+
