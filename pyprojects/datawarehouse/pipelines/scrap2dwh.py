@@ -37,7 +37,6 @@ def run(args):
         r = json.loads(r)
         metadata = r["data"]["relationships"]["properties"]["meta"]
         print(metadata)
-        sys.exit()
         df = pd.DataFrame()
         for i in range(metadata["page_count"]):
             print(i)
@@ -45,7 +44,12 @@ def run(args):
             r = requests.get(url, headers=headers).json()
             for el in r["included"]:
                 if el["type"] == 'property':
-                    df = pd.concat([df, pd.DataFrame.from_dict([el["attributes"]])])
+                    df_stg = pd.DataFrame.from_dict([el["attributes"]])
+                    if "ask" in el["meta"]["price_text"].lower():
+                        df_stg["price_text"] = 0
+                    else:
+                        df_stg["price_text"] = 1
+                    df = pd.concat([df, df_stg])
 
         write_to_gbq(args.conn, args.schema, dataset='bv',
                      dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='replace')
