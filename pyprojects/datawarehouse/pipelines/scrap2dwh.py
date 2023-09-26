@@ -23,7 +23,6 @@ def run(args):
             'accept': 'application/vnd.api+json',
             'accept-language': 'en-US,en;q=0.9',
             'content-type': 'application/vnd.api+json',
-            'referer': f'https://{authority}/en/search?c=2&l=1&ob=mr&page=1&rp=y',
             'sec-ch-ua': '"Google Chrome";v="117", "Not;A=Brand";v="8", "Chromium";v="117"',
             'sec-ch-ua-mobile': '?0',
             'sec-ch-ua-platform': '"Linux"',
@@ -38,7 +37,7 @@ def run(args):
         r = json.loads(r)
         metadata = r["data"]["relationships"]["properties"]["meta"]
         print(metadata)
-
+        sys.exit()
         df = pd.DataFrame()
         for i in range(metadata["page_count"]):
             print(i)
