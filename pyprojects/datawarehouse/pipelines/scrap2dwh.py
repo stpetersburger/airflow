@@ -42,17 +42,20 @@ def run(args):
             print(i)
             url = get_creds(args.schema, args.btype, 'url').format(page_num=i+1)
             r = requests.get(url, headers=headers).json()
-            for el in r["included"]:
-                if el["type"] == 'property':
-                    df_stg = pd.DataFrame.from_dict([el["attributes"]])
-                    if "ask" in el["meta"]["price_text"].lower():
-                        df_stg["price_text"] = 0
-                    else:
-                        df_stg["price_text"] = 1
-                    df = pd.concat([df, df_stg])
+
+            for c in r:
+                if c == 'included':
+                    for el in r["included"]:
+                        if el["type"] == 'property':
+                            df_stg = pd.DataFrame.from_dict([el["attributes"]])
+                            if "ask" in el["meta"]["price_text"].lower():
+                                df_stg["price_text"] = 0
+                            else:
+                                df_stg["price_text"] = 1
+                            df = pd.concat([df, df_stg])
 
         write_to_gbq(args.conn, args.schema, dataset='bv',
-                     dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='replace')
+                     dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
 
 
 if __name__ == '__main__':
