@@ -48,11 +48,15 @@ def run(args):
                     for el in r["included"]:
                         if el["type"] == 'property':
                             df_stg = pd.DataFrame.from_dict([el["attributes"]])
+                            df_stg["listing_nk"] = el["id"]
                             if "ask" in el["meta"]["price_text"].lower():
                                 df_stg["price_text"] = 0
                             else:
                                 df_stg["price_text"] = 1
+
                             df = pd.concat([df, df_stg])
+                            # removing duplicates, keeping cleaned data in the same dataframe
+                            df.drop_duplicates(keep=False, inplace=True)
 
         write_to_gbq(args.conn, args.schema, dataset='bv',
                      dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
