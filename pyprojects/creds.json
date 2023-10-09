@@ -75,6 +75,9 @@
 		"bv": {
 			"authority": "SCRAPERS_AUTHORITY_bv",
 			"url": "SCRAPERS_LINK_all_bv"
+		},
+		"dld": {
+			"authority": "SCRAPERS_AUTHORITY_dld"
 		}
 	}
 }

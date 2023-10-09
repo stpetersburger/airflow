@@ -1,5 +1,5 @@
 """
-Script to bring pgdata from Scrapping to Analytics datalake
+Script to bring pgdata from scrapping leads to Analytics datalake
 """
 
 import argparse
@@ -56,9 +56,9 @@ def run(args):
 
                             df = pd.concat([df, df_stg])
                             # removing duplicates, keeping cleaned data in the same dataframe
-                            df.drop_duplicates(keep=False, inplace=True)
+                            df.drop_duplicates("listing_nk")
 
-        write_to_gbq(args.conn, args.schema, dataset='bv',
+        write_to_gbq(args.conn, args.schema, dataset=args.btype,
                      dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
 
 

@@ -103,7 +103,8 @@ def run(args):
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
                                                       # added on th 31.03.2023 for GA data
                                                       event_name=t,
-                                                      business_type=b
+                                                      business_type=b,
+                                                      fact_pf_data='DATE_TRUNC(CURRENT_TIMESTAMP(), DAY)'
                                                     )
                         else:
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
