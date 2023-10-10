@@ -20,7 +20,7 @@
 
 import os
 from airflow import DAG
-from datetime import datetime as dt
+from datetime import datetime as dt, timedelta as td
 from airflow.operators.bash_operator import BashOperator
 
 dag = DAG(
@@ -33,7 +33,12 @@ dag = DAG(
 
 t1 = BashOperator(
     task_id="dld_scrap",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_dld2dwh.py -conn gcp_omniyat -business_type dld -schema scrapers -date_from {str(dt.today().strftime('%m/%d/%Y'))} -date_to {str(dt.today().strftime('%m/%d/%Y'))}""",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_dld2dwh.py """ +
+                """-conn gcp_omniyat """ +
+                """-business_type dld """ +
+                """-schema scrapers """ +
+                f"""-date_from {str(dt.today().strftime('%m/%d/%Y'))} """ +
+                f"""-date_to {str((dt.today()+td(days=1)).strftime('%m/%d/%Y'))}""",
     dag=dag
 )
 
