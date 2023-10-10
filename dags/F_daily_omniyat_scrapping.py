@@ -35,8 +35,8 @@ t1 = BashOperator(
     task_id="bv_scrap",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_dld2dwh.py """
                  f"""-conn gcp_omniyat -business_type dld -schema scrapers  
-                 -date_from {str(dt.strftime(dt.date(dt.now()),'%m/%d/%Y'))} 
-                 -date_to {str(dt.strftime(dt.date(dt.now()),'%m/%d/%Y'))}""",
+                 -date_from {str(dt.today().strftime('%m/%d/%Y'))} 
+                 -date_to {str(dt.today().strftime('%m/%d/%Y')}""",
     dag=dag
 )
 
