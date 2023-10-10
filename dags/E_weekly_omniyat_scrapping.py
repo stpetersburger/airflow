@@ -24,7 +24,7 @@ from datetime import datetime as dt
 from airflow.operators.bash_operator import BashOperator
 
 dag = DAG(
-    dag_id="E_daily_omniyat_scrapping",
+    dag_id="E_weekly_omniyat_scrapping",
     start_date=dt(2023, 3, 16),
     schedule_interval='0 0 * * 3',
     catchup=False,
