@@ -24,20 +24,25 @@ from datetime import datetime as dt
 from airflow.operators.bash_operator import BashOperator
 
 dag = DAG(
-    dag_id="F_daily_omniyat_scrapping",
-    start_date=dt(2023, 10, 9),
-    schedule_interval='00 14 * * *',
+    dag_id="E_daily_omniyat_scrapping",
+    start_date=dt(2023, 3, 16),
+    schedule_interval='0 0 * * 3',
     catchup=False,
     tags=["prod"],
 )
 
 t1 = BashOperator(
     task_id="bv_scrap",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_dld2dwh.py """
-                 f"""-conn gcp_omniyat -business_type dld -schema scrapers  
-                 -date_from {str(dt.strftime(dt.date(dt.now()),'%m/%d/%Y'))} 
-                 -date_to {str(dt.strftime(dt.date(dt.now()),'%m/%d/%Y'))}""",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_bv2dwh.py """
+                 f"""-conn gcp_omniyat -business_type dld -schema scrapers""",
     dag=dag
 )
 
-t1
+t2 = BashOperator(
+    task_id="bv_analytics",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py """
+                 f"""-conn gcp_omniyat -schedule_type omniyat_weekly""",
+    dag=dag
+)
+
+t1>>t2
