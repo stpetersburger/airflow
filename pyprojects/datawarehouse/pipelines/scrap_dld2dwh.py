@@ -60,7 +60,7 @@ def run(args):
 
     del_clause = f"""DELETE FROM {args.schema}.{args.btype} 
                       WHERE FORMAT_DATE('%x', DATE(CAST(instance_date AS TIMESTAMP))) 
-                            BETWEEN {args.date_from} AND {args.date_to}"""
+                            BETWEEN '{args.date_from}' AND '{args.date_to}'"""
     print(del_clause)
 
     try:
