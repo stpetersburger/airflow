@@ -23,5 +23,5 @@ SELECT  extract(week from MAX(inserted_at))                                     
         MIN(share_url)                                                                         listing_url
   FROM  scrapers.bv
  WHERE  price_text='1'
-        AND DATE_TRUNC(inserted_at, DAY) = {fact_pf_data}
+        AND DATE_TRUNC(inserted_at, DAY) = DATE_TRUNC(CURRENT_TIMESTAMP(), DAY)
  GROUP  BY 4

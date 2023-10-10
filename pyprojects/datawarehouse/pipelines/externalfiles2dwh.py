@@ -92,10 +92,12 @@ def run(args):
                             del_sql = f"""DELETE FROM {s}.{row["name"]} WHERE {row['incr_field']} \
                                                                         >= DATE_TRUNC(DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
                                                                         INTERVAl 3 HOUR)), INTERVAL {row['incr_interval']}), MONTH)"""
-                        else:
+                        elif row['incr_interval'] != '':
                             del_sql = f"""DELETE FROM {s}.{row["name"]} WHERE {row['incr_field']} \
                                                                             >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), \
                                                                             INTERVAl 3 HOUR)), INTERVAL {row['incr_interval']})"""
+                        else:
+                            del_sql = ''
                         # if multiple_table run
                         if len(t) > 0:
                             print(t)
@@ -103,8 +105,7 @@ def run(args):
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
                                                       # added on th 31.03.2023 for GA data
                                                       event_name=t,
-                                                      business_type=b,
-                                                      fact_pf_data='DATE_TRUNC(CURRENT_TIMESTAMP(), DAY)'
+                                                      business_type=b
                                                     )
                         else:
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
@@ -115,7 +116,9 @@ def run(args):
                                                     # added on 29.03.2023 as b2b doesn't have order channel (web/app)
                                                     channel="MIN(b.channel)" if b == "b2c" else "'no_channel'"
                                                     )
-                        execute_gbq(args.conn, del_sql, f"""{s}.{b}""", 'incremental deletion')
+
+                        if del_sql != '':
+                            execute_gbq(args.conn, del_sql, f"""{s}.{b}""", 'incremental deletion')
                         df = get_from_gbq(args.conn, sql_str, row['pipeline'], row['name'],)
                         df = df.sort_values(df.columns[0])
                         if row['output'] != '':
