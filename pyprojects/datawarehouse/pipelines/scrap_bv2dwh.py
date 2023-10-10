@@ -13,6 +13,9 @@ from io import StringIO
 
 def run(args):
 
+    pipeline = 'scrap_bv2dwh'
+    send_telegram_message(1, f"""Pipeline {pipeline} has started""")
+
     if args.btype == 'bv':
         authority = get_creds(args.schema, args.btype, 'authority')
         url = get_creds(args.schema, args.btype, 'url').format(page_num=1)
@@ -57,9 +60,14 @@ def run(args):
                             df = pd.concat([df, df_stg])
                             # removing duplicates, keeping cleaned data in the same dataframe
                             df.drop_duplicates("listing_nk")
+        try:
+            write_to_gbq(args.conn, args.schema, dataset=args.btype,
+                         dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+        except Exception as e:
+            send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
+            print(f'caught {type(e)}: {str(e)}')
 
-        write_to_gbq(args.conn, args.schema, dataset=args.btype,
-                     dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+        send_telegram_message(1, f"""Pipeline {pipeline} has finished""")
 
 
 if __name__ == '__main__':

@@ -13,6 +13,9 @@ from io import StringIO
 
 def run(args):
 
+    pipeline = 'scrap_dld2dwh'
+    send_telegram_message(1, f"""Pipeline {pipeline} has started""")
+
     authority = get_creds(args.schema, args.btype, 'authority')
 
     headers = {
@@ -54,8 +57,21 @@ def run(args):
         df = pd.concat([df, pd.DataFrame.from_dict([el])])
     df = clean_pandas_dataframe(df, '', standartise=True)
     df = df.loc[:, ~df.columns.str.endswith('_ar')]
-    write_to_gbq(args.conn, args.schema, dataset=args.btype,
-                 dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+
+    del_clause = f"""DELETE FROM {args.schema}.{args.btype} 
+                      WHERE FORMAT_DATE('%x', DATE(CAST(instance_date AS TIMESTAMP))) 
+                            BETWEEN {args.date_from} AND {args.date_to}"""
+    print(del_clause)
+
+    try:
+        execute_gbq(args.conn, del_clause, pipeline, args.btype)
+        write_to_gbq(args.conn, args.schema, dataset=args.btype,
+                    dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+    except Exception as e:
+        send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
+        print(f'caught {type(e)}: {str(e)}')
+
+    send_telegram_message(1, f"""Pipeline {pipeline} has finished""")
 
 
 if __name__ == '__main__':
