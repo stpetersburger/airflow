@@ -58,8 +58,9 @@ def run(args):
                                 df_stg["price_text"] = 1
 
                             df = pd.concat([df, df_stg])
-                            # removing duplicates, keeping cleaned data in the same dataframe
-                            df.drop_duplicates("listing_nk")
+        # removing duplicates, keeping cleaned data in the same dataframe
+        df.drop_duplicates("listing_nk")
+
         try:
             write_to_gbq(args.conn, args.schema, dataset=args.btype,
                          dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
