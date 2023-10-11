@@ -19,7 +19,6 @@ def run(args):
     if args.btype == 'bv':
         authority = get_creds(args.schema, args.btype, 'authority')
         url = get_creds(args.schema, args.btype, 'url').format(page_num=1)
-        print(url)
 
         headers = {
             'authority': authority,
@@ -32,43 +31,51 @@ def run(args):
             'sec-fetch-dest': 'empty',
             'sec-fetch-mode': 'cors',
             'sec-fetch-site': 'same-origin',
-            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
+            'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
+                          '(KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36',
             'x-requested-with': 'XMLHttpRequest',
         }
 
         r = requests.get(url, headers=headers).content
-        r = json.loads(r)
-        metadata = r["data"]["relationships"]["properties"]["meta"]
-        print(metadata)
-        df = pd.DataFrame()
-        for i in range(metadata["page_count"]):
-            print(i)
-            url = get_creds(args.schema, args.btype, 'url').format(page_num=i+1)
-            r = requests.get(url, headers=headers).json()
 
-            for c in r:
-                if c == 'included':
-                    for el in r["included"]:
-                        if el["type"] == 'property':
-                            df_stg = pd.DataFrame.from_dict([el["attributes"]])
-                            df_stg["listing_nk"] = el["id"]
-                            if "ask" in el["meta"]["price_text"].lower():
-                                df_stg["price_text"] = 0
-                            else:
-                                df_stg["price_text"] = 1
+        if r.status_code == 200:
 
-                            df = pd.concat([df, df_stg])
-        # removing duplicates, keeping cleaned data in the same dataframe
-        df.drop_duplicates("listing_nk")
+            r = json.loads(r.content)
+            metadata = r["data"]["relationships"]["properties"]["meta"]
+            print(metadata)
+            df = pd.DataFrame()
+            for i in range(metadata["page_count"]):
+                print(i)
+                url = get_creds(args.schema, args.btype, 'url').format(page_num=i+1)
+                r = requests.get(url, headers=headers)
+                print(r.status_code)
+                if r.status_code == 200:
+                    r = r.json()
+                    for c in r:
+                        if c == 'included':
+                            for el in r["included"]:
+                                if el["type"] == 'property':
+                                    df_stg = pd.DataFrame.from_dict([el["attributes"]])
+                                    df_stg["listing_nk"] = el["id"]
+                                    if "ask" in el["meta"]["price_text"].lower():
+                                        df_stg["price_text"] = 0
+                                    else:
+                                        df_stg["price_text"] = 1
 
-        try:
-            write_to_gbq(args.conn, args.schema, dataset=args.btype,
-                         dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
-        except Exception as e:
-            send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
-            print(f'caught {type(e)}: {str(e)}')
+                                    df = pd.concat([df, df_stg])
+                                    print(df)
+                                    sys.exit()
+            # removing duplicates, keeping cleaned data in the same dataframe
+            df.drop_duplicates("listing_nk")
 
-        send_telegram_message(1, f"""Pipeline {pipeline} has finished""")
+            try:
+                write_to_gbq(args.conn, args.schema, dataset=args.btype,
+                             dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+            except Exception as e:
+                send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
+                print(f'caught {type(e)}: {str(e)}')
+
+            send_telegram_message(1, f"""Pipeline {pipeline} has finished""")
 
 
 if __name__ == '__main__':
