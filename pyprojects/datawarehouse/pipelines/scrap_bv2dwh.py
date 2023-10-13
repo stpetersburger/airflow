@@ -86,8 +86,6 @@ if __name__ == '__main__':
                         help="b2c or b2b")
     parser.add_argument('-schema_name', dest='schema', required=True,
                         help="dwh schema to write in")
-    parser.add_argument('-increment', dest='incr', required=False,
-                        help="all or new only")
 
     run(parser.parse_args())
 

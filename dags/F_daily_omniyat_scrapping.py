@@ -38,7 +38,7 @@ t1 = BashOperator(
                 """-business_type dld """ +
                 """-schema scrapers """ +
                 f"""-date_from {str((dt.today()-td(days=1)).strftime('%m/%d/%Y'))} """ +
-                f"""-date_to {str((dt.today()+td(days=1)).strftime('%m/%d/%Y'))}""",
+                f"""-date_to {str((dt.today()+td(days=7)).strftime('%m/%d/%Y'))}""",
     dag=dag
 )
 

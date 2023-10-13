@@ -13,7 +13,7 @@ from io import StringIO
 
 def run(args):
 
-    pipeline = 'scrap_dld2dwh'
+    pipeline = f'''scrap_dld_{args.dataset}2dwh'''
     send_telegram_message(1, f"""Pipeline {pipeline} has started""")
 
     authority = get_creds(args.schema, args.btype, 'authority')
@@ -36,21 +36,36 @@ def run(args):
             'sec-ch-ua-platform': '"macOS"',
         }
 
-    json_data = {
-        'P_FROM_DATE': args.date_from,
-        'P_TO_DATE': args.date_to,
-        'P_GROUP_ID': '',
-        'P_IS_OFFPLAN': '',
-        'P_IS_FREE_HOLD': '',
-        'P_AREA_ID': '',
-        'P_USAGE_ID': '',
-        'P_PROP_TYPE_ID': '',
-        'P_TAKE': '50000',
-        'P_SKIP': '0',
-        'P_SORT': 'TRANSACTION_NUMBER_ASC',
-    }
+    if args.dataset == 'transactions':
+        json_data = {
+            'P_FROM_DATE': args.date_from,
+            'P_TO_DATE': args.date_to,
+            'P_GROUP_ID': '',
+            'P_IS_OFFPLAN': '',
+            'P_IS_FREE_HOLD': '',
+            'P_AREA_ID': '',
+            'P_USAGE_ID': '',
+            'P_PROP_TYPE_ID': '',
+            'P_TAKE': '50000',
+            'P_SKIP': '0',
+            'P_SORT': 'TRANSACTION_NUMBER_ASC',
+        }
+    elif args.dataset == 'rents':
+        json_data = {
+            'P_DATE_TYPE': '0',
+            'P_FROM_DATE': args.date_from,
+            'P_TO_DATE': args.date_to,
+            'P_IS_FREE_HOLD': '',
+            'P_VERSION': '',
+            'P_AREA_ID': '',
+            'P_USAGE_ID': '',
+            'P_PROP_TYPE_ID': '',
+            'P_TAKE': '50000',
+            'P_SKIP': '0',
+            'P_SORT': 'CONTRACT_NUMBER_ASC',
+        }
 
-    r = requests.post(f'''https://gateway.{authority}/open-data/transactions''', headers=headers, json=json_data)
+    r = requests.post(f'''https://gateway.{authority}/open-data/{args.dataset}''', headers=headers, json=json_data)
     r = json.loads(r.content)
     df = pd.DataFrame()
     for el in r["response"]["result"]:
@@ -58,17 +73,19 @@ def run(args):
     df = clean_pandas_dataframe(df, '', standartise=True)
     df = df.loc[:, ~df.columns.str.endswith('_ar')]
 
-    del_clause = f"""DELETE FROM {args.schema}.{args.btype} 
+    del_clause = f"""DELETE FROM {args.schema}.{args.btype}_{args.dataset} 
                       WHERE FORMAT_DATE('%x', DATE(CAST(instance_date AS TIMESTAMP))) 
                             BETWEEN '{args.date_from}' AND '{args.date_to}'"""
-    print(del_clause)
 
     try:
         execute_gbq(args.conn, del_clause, pipeline, args.btype)
-        write_to_gbq(args.conn, args.schema, dataset=args.btype,
-                    dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+        write_to_gbq(args.conn,
+                     args.schema,
+                     dataset=f'''{args.btype}_{args.dataset}''',
+                     dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'),
+                     wtype='replace')
     except Exception as e:
-        send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
+        send_telegram_message(0, f'{pipeline} caught {type(e)}: {str(e)}')
         print(f'caught {type(e)}: {str(e)}')
 
     send_telegram_message(1, f"""Pipeline {pipeline} has finished""")
@@ -86,5 +103,7 @@ if __name__ == '__main__':
                         help="from date mm/dd/yyyy")
     parser.add_argument('-date_to', dest='date_to', required=True,
                         help="to date mm/dd/yyyy")
+    parser.add_argument('-dataset', dest='dataset', required=True,
+                        help="which data to bring")
 
     run(parser.parse_args())
