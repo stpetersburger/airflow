@@ -46,7 +46,7 @@ def run(args):
             'P_AREA_ID': '',
             'P_USAGE_ID': '',
             'P_PROP_TYPE_ID': '',
-            'P_TAKE': '50000',
+            'P_TAKE': '60000',
             'P_SKIP': '0',
             'P_SORT': 'TRANSACTION_NUMBER_ASC',
         }
@@ -60,7 +60,7 @@ def run(args):
             'P_AREA_ID': '',
             'P_USAGE_ID': '',
             'P_PROP_TYPE_ID': '',
-            'P_TAKE': '50000',
+            'P_TAKE': '60000',
             'P_SKIP': '0',
             'P_SORT': 'CONTRACT_NUMBER_ASC',
         }
@@ -83,7 +83,7 @@ def run(args):
                      args.schema,
                      dataset=f'''{args.btype}_{args.dataset}''',
                      dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'),
-                     wtype='replace')
+                     wtype='append')
     except Exception as e:
         send_telegram_message(0, f'{pipeline} caught {type(e)}: {str(e)}')
         print(f'caught {type(e)}: {str(e)}')
