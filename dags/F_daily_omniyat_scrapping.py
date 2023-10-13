@@ -32,14 +32,27 @@ dag = DAG(
 )
 
 t1 = BashOperator(
-    task_id="dld_scrap",
+    task_id="dld_scrap_transactions",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_dld2dwh.py """ +
                 """-conn gcp_omniyat """ +
                 """-business_type dld """ +
                 """-schema scrapers """ +
                 f"""-date_from {str((dt.today()-td(days=1)).strftime('%m/%d/%Y'))} """ +
-                f"""-date_to {str((dt.today()+td(days=7)).strftime('%m/%d/%Y'))}""",
+                f"""-date_to {str((dt.today()+td(days=7)).strftime('%m/%d/%Y'))}""" +
+                f"""-dataset {'transactions'}""",
     dag=dag
 )
 
-t1
+t2 = BashOperator(
+    task_id="dld_scrap_rents",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_dld2dwh.py """ +
+                """-conn gcp_omniyat """ +
+                """-business_type dld """ +
+                """-schema scrapers """ +
+                f"""-date_from {str((dt.today()-td(days=1)).strftime('%m/%d/%Y'))} """ +
+                f"""-date_to {str((dt.today()+td(days=7)).strftime('%m/%d/%Y'))}""" +
+                f"""-dataset {'rents'}""",
+    dag=dag
+)
+
+t1, t2
