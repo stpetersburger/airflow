@@ -37,6 +37,7 @@ def run(args):
         }
 
     if args.dataset == 'transactions':
+        incr_field = 'instance_date'
         json_data = {
             'P_FROM_DATE': args.date_from,
             'P_TO_DATE': args.date_to,
@@ -51,6 +52,7 @@ def run(args):
             'P_SORT': 'TRANSACTION_NUMBER_ASC',
         }
     elif args.dataset == 'rents':
+        incr_field = 'registration_date'
         json_data = {
             'P_DATE_TYPE': '0',
             'P_FROM_DATE': args.date_from,
@@ -74,7 +76,7 @@ def run(args):
     df = df.loc[:, ~df.columns.str.endswith('_ar')]
 
     del_clause = f"""DELETE FROM {args.schema}.{args.btype}_{args.dataset} 
-                      WHERE FORMAT_DATE('%x', DATE(CAST(instance_date AS TIMESTAMP))) 
+                      WHERE FORMAT_DATE('%x', DATE(CAST({incr_field} AS TIMESTAMP))) 
                             BETWEEN '{args.date_from}' AND '{args.date_to}'"""
 
     try:
