@@ -7,7 +7,7 @@ SELECT  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR))  trans
         prop_sb_type_en                                                    property_sybtype_name_en,
         rooms_en                                                           property_room_number_en,
         is_offplan_en                                                      property_completion_name_en,
-        trans_value                                                        transaction_value_aed
+        CAST(trans_value AS DECIMAL)                                       transaction_value_aed
   FROM  scrapers.dld_transactions
  WHERE  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR) >=
         DATE_ADD(DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR)), INTERVAL {incr_interval})

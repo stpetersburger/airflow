@@ -55,4 +55,11 @@ t2 = BashOperator(
     dag=dag
 )
 
-t1, t2
+t3 = BashOperator(
+    task_id="scrap_analytics",
+    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
+                 f'-conn gcp_omniyat -schedule_type omniyat_ga_daily',
+    dag=dag
+)
+
+[t1, t2] >> t3
