@@ -17,6 +17,6 @@ SELECT  generated_dates                         date_nk,
         FORMAT_DATE('%Y-%m', generated_dates)   year_month_nk,
         FORMAT_DATE('%Y%m', generated_dates)    year_month_code,
         FORMAT_DATE('%Y-%b', generated_dates)   year_month_name_short,
-        FORMAT_DATE('%u', generated_dates)      date_week_num,
+        FORMAT_DATE('%W', generated_dates)      date_week_num,
         FORMAT_DATE('%V', generated_dates)      date_week_num_iso
   FROM  dates
