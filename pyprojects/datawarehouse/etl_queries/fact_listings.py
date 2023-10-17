@@ -20,7 +20,7 @@ SELECT  DATE_ADD(MAX(inserted_at), INTERVAL 4 HOUR)                             
         REVERSE(SPLIT(REVERSE(MIN(location_tree_path)),',')[OFFSET(3)]), 'undefined')         project_name_en,
         DATE_DIFF(MAX(inserted_at),MAX(CAST(date_insert AS TIMESTAMP)), DAY)                  listing_ageing_day,
         MIN(share_url)                                                                        listing_url,
-        0                                                                                     listing_source                                                                                    listing_source
+        0                                                                                     listing_source_nk                                                                                    listing_source
   FROM  scrapers.bv
  WHERE  price_text='1'
         AND DATE_TRUNC(inserted_at, DAY) = DATE_TRUNC(CURRENT_TIMESTAMP(), DAY)
