@@ -26,7 +26,7 @@ from airflow.operators.bash_operator import BashOperator
 dag = DAG(
     dag_id="F_daily_omniyat_scrapping",
     start_date=dt(2023, 10, 9),
-    schedule_interval='00 14 * * *',
+    schedule_interval='0 3,14 * * *',
     catchup=False,
     tags=["prod"],
 )
