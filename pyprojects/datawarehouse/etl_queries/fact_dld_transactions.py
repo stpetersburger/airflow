@@ -1,4 +1,5 @@
 SELECT  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR))  transaction_date_nk,
+        transaction_number                                                 transaction_nk,
         group_en                                                           transaction_type_name_en,
         procedure_en                                                       transaction_subtype_name_en,
         usage_en                                                           deal_type_name_en,
@@ -9,5 +10,5 @@ SELECT  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR))  trans
         is_offplan_en                                                      property_completion_name_en,
         CAST(trans_value AS DECIMAL)                                       transaction_value_aed
   FROM  scrapers.dld_transactions
- WHERE  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR) >=
-        DATE_ADD(DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR)), INTERVAL {incr_interval})
+ WHERE  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR)) >=
+        DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 4 HOUR)), INTERVAL {incr_interval})
