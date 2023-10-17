@@ -5,7 +5,7 @@ SELECT  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR))  trans
         usage_en                                                           deal_type_name_en,
         area_en                                                            district_name_en,
         prop_type_en                                                       property_type_name_en,
-        prop_sb_type_en                                                    property_sybtype_name_en,
+        prop_sb_type_en                                                    property_subtype_name_en,
         rooms_en                                                           property_room_number_en,
         is_offplan_en                                                      property_completion_name_en,
         CAST(trans_value AS DECIMAL)                                       transaction_value_aed
