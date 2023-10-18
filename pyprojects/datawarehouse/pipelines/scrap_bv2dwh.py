@@ -62,7 +62,7 @@ def run(args):
                                         df_stg["price_text"] = 1
 
                                     df = pd.concat([df, df_stg])
-                                    print(i)
+                            print(i)
             # removing duplicates, keeping cleaned data in the same dataframe
             df.drop_duplicates("listing_nk")
 
