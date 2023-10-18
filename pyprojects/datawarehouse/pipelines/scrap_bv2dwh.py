@@ -36,7 +36,7 @@ def run(args):
             'x-requested-with': 'XMLHttpRequest',
         }
 
-        r = requests.get(url, headers=headers).content
+        r = requests.get(url, headers=headers)
 
         if r.status_code == 200:
 
@@ -45,7 +45,6 @@ def run(args):
             print(metadata)
             df = pd.DataFrame()
             for i in range(metadata["page_count"]):
-                print(i)
                 url = get_creds(args.schema, args.btype, 'url').format(page_num=i+1)
                 r = requests.get(url, headers=headers)
                 print(r.status_code)
@@ -63,8 +62,7 @@ def run(args):
                                         df_stg["price_text"] = 1
 
                                     df = pd.concat([df, df_stg])
-                                    print(df)
-                                    sys.exit()
+                                    print(i)
             # removing duplicates, keeping cleaned data in the same dataframe
             df.drop_duplicates("listing_nk")
 

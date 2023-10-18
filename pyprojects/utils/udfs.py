@@ -84,19 +84,21 @@ def get_data_from_googlesheet(conn, gsheet, gsheet_tab):
     return pd.DataFrame(gs_sheet.get_all_records())
 
 
-def write_data_to_googlesheet(conn, gsheet_tab, df):
+def write_data_to_googlesheet(conn, gsheet_tab, df=pd.DataFrame()):
 
-    gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'bq', 'google_cloud_platform')))
-    gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gcp', 'gs', 
-                                                                'prefix')}{get_creds('gcp', 'gs', 'output_sheet')}""")
-    df = df.astype(str)
-    try:
-        gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
-        gs_sheet.clear()
-        gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
-    except Exception as e:
-        print(f'caught {type(e)}: {str(e)}')
-        send_telegram_message(0, f"""OUTPUT Googlesheet - {gsheet_tab} caught {type(e)}: {str(e)}""")
+    if not df.empty:
+        gcp_credentials = gs.service_account_from_dict(json.loads(get_creds(conn, 'bq', 'google_cloud_platform')))
+        gc_spreadsheet = gcp_credentials.open_by_url(f"""{get_creds('gcp', 'gs', 
+                                                                    'prefix')}{get_creds('gcp', 'gs', 'output_sheet')}""")
+        df = df.astype(str)
+        df = df.sort_values(df.columns[0])
+        try:
+            gs_sheet = gc_spreadsheet.worksheet(gsheet_tab)
+            gs_sheet.clear()
+            gs_sheet.update([df.columns.values.tolist()] + df.values.tolist())
+        except Exception as e:
+            print(f'caught {type(e)}: {str(e)}')
+            send_telegram_message(0, f"""OUTPUT Googlesheet - {gsheet_tab} caught {type(e)}: {str(e)}""")
 
 
 def get_data_from_sharepoint(conn="ms", sheet='', sheet_tab='Sheet1'):
@@ -132,21 +134,21 @@ def get_data_from_url(url, file, file_type):
         return pd.read_csv(full_url)
 
 
-def write_to_gbq(conn, schema, dataset, dataframe, wtype, method=''):
+def write_to_gbq(conn, schema, dataset, df=pd.DataFrame(), wtype='', method=''):
+    if not df.empty:
+        df = df.sort_values(df.columns[0])
     # bigQuery credentials
-    gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
-    gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
-
+        gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
+        gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
     #pandas_gbq definition
-    pd_gbq.context.credentials = gcp_gbq_credentials
-    pd_gbq.context.project = gcp_credentials['project_id']
-    if not dataframe.empty:
+        pd_gbq.context.credentials = gcp_gbq_credentials
+        pd_gbq.context.project = gcp_credentials['project_id']
         try:
             print(f'WRITE TO BQ START - {datetime.datetime.now()}')
             if method == 'csv':
-                pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
+                pd_gbq.to_gbq(df, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
             elif method == '':
-                pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
+                pd_gbq.to_gbq(df, f'{schema}.{dataset}', if_exists=wtype)
             print(f'WRITE TO BQ END - {datetime.datetime.now()}')
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
@@ -193,77 +195,77 @@ def execute_gbq(conn, str_sql, etl_desc='', note=''):
         send_telegram_message(0, f"""execute BQ {etl_desc} - {note}: ERROR caught {type(e)}: {str(e)}""")
 
 
-def clean_pandas_dataframe(df, pipeline='', standartise=False, batch_num=''):
+def clean_pandas_dataframe(df=pd.DataFrame(), pipeline='', standartise=False, batch_num=''):
 
-    if pipeline == '':
+    if not df.empty:
+        if pipeline == '':
 
-        # get the initial names of the fields
-        header_list = df.columns.tolist()
-        # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
-        if standartise:
-            header_list_new = list(
-                map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
-                                     re.sub(r'\B([A-Z]{1})[a-z]{1,2}|(ID)', lambda x: '_' + x.group().lower(),
-                                            header_list[i])
-                                     ).lower(),
-                                    range(0, len(header_list))
-                    )
-                                    )
-        else:
-            header_list_new = list(
-                map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
-                                     header_list[i]
-                                     ).lower(),
-                    range(0, len(header_list))))
+            # get the initial names of the fields
+            header_list = df.columns.tolist()
+            # removes any non-numeric OR non-letter symbol in a column name into _ and lowers the register
+            if standartise:
+                header_list_new = list(
+                    map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
+                                        re.sub(r'\B([A-Z]{1})[a-z]{1,2}|(ID)', lambda x: '_' + x.group().lower(),
+                                                header_list[i])
+                                        ).lower(),
+                                        range(0, len(header_list))
+                        )
+                                        )
+            else:
+                header_list_new = list(
+                    map(lambda i: re.sub('[^a-zA-Z0-9] *', '_',
+                                        header_list[i]
+                                        ).lower(),
+                        range(0, len(header_list))))
 
-        df.columns = header_list_new
-
-        for col in df.columns.tolist():
-            if "_at" in col:
-                if str(df[col].dtypes) == 'int64':
-                    df[col] = pd.to_datetime(df[col], unit='s', utc=True)
-                else:
-                    df[col] = pd.to_datetime(df[col], utc=True)
-
-    else:
-        if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
-
-            #make all data string
-            df = df.replace('', np.nan).fillna(np.nan).astype(str)
-            #filter out all lines with empty first field
-            df = df[df.iloc[:, 0] != 'nan']
-
-        elif pipeline in ['spryker2dwh', 'url', 'ga2dwh']:
-
-            datasets_schemas = get_etl_datatypes(pipeline)
-
-            #changing the field format to be accepted by BQ
-            for fld in datasets_schemas:
-                if fld in df.columns.tolist():
-                    df[fld] = df[fld].fillna(np.nan).astype("string")
+            df.columns = header_list_new
 
             for col in df.columns.tolist():
-                if "price" in col or "amount" in col or "rate" in col or "quantity" in col:
-                    df[col] = pd.to_numeric(df[col], errors='coerce').fillna(np.nan).astype('float')
-                elif df[col].dtypes == 'str':
-                    # remove non-ASCII symbols from dataframe
-                    df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
+                if "_at" in col:
+                    if str(df[col].dtypes) == 'int64':
+                        df[col] = pd.to_datetime(df[col], unit='s', utc=True)
+                    else:
+                        df[col] = pd.to_datetime(df[col], utc=True)
+        else:
+            if pipeline in ['googlesheet2dwh', 'sharepoint2dwh']:
 
-        if pipeline not in ['fact', 'dimension']:
-            if pipeline in ['ga2dwh']:
+                #make all data string
+                df = df.replace('', np.nan).fillna(np.nan).astype(str)
+                #filter out all lines with empty first field
+                df = df[df.iloc[:, 0] != 'nan']
+
+            elif pipeline in ['spryker2dwh', 'url', 'ga2dwh']:
+
+                datasets_schemas = get_etl_datatypes(pipeline)
+
+                #changing the field format to be accepted by BQ
+                for fld in datasets_schemas:
+                    if fld in df.columns.tolist():
+                        df[fld] = df[fld].fillna(np.nan).astype("string")
+
                 for col in df.columns.tolist():
-                    if df[col].dtypes == 'object':
-                        df[col] = df[col].astype("string")
-                df["event_timestamp"] = pd.to_datetime(df["event_timestamp"]*1000, unit='ns')
-                df['event_timestamp'] = pd.to_datetime(df['event_timestamp'], format='%Y-%m-%d %H:%M:%S.%f')
-                df["event_date"] = pd.to_numeric(df["event_date"]).astype('int')
-                # add inserted_at as the first column. helps on first runs of an entity
-                df.insert(0, "inserted_at", pd.to_datetime(datetime.datetime.utcnow(), utc=True))
-            else:
-                if batch_num != '':
-                    df["inserted_at"] = batch_num
+                    if "price" in col or "amount" in col or "rate" in col or "quantity" in col:
+                        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(np.nan).astype('float')
+                    elif df[col].dtypes == 'str':
+                        # remove non-ASCII symbols from dataframe
+                        df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
+
+            if pipeline not in ['fact', 'dimension']:
+                if pipeline in ['ga2dwh']:
+                    for col in df.columns.tolist():
+                        if df[col].dtypes == 'object':
+                            df[col] = df[col].astype("string")
+                    df["event_timestamp"] = pd.to_datetime(df["event_timestamp"]*1000, unit='ns')
+                    df['event_timestamp'] = pd.to_datetime(df['event_timestamp'], format='%Y-%m-%d %H:%M:%S.%f')
+                    df["event_date"] = pd.to_numeric(df["event_date"]).astype('int')
+                    # add inserted_at as the first column. helps on first runs of an entity
+                    df.insert(0, "inserted_at", pd.to_datetime(datetime.datetime.utcnow(), utc=True))
                 else:
-                    df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
+                    if batch_num != '':
+                        df["inserted_at"] = batch_num
+                    else:
+                        df["inserted_at"] = pd.to_datetime(datetime.datetime.utcnow(), utc=True)
 
     return df
 
@@ -319,7 +321,7 @@ def get_delta(conn, id_pipeline, dt=''):
     return delta
 
 
-def get_deduplication_data(conn, btype, entity, df_new, index):
+def get_deduplication_data(conn, btype, entity, df_new=pd.DataFrame(), index=[]):
 
     flds = ','.join(str(x) for x in index)
 
@@ -343,7 +345,7 @@ def get_deduplication_data(conn, btype, entity, df_new, index):
     return df
 
 
-def concatenate_dataframes(df1, df2):
+def concatenate_dataframes(df1=pd.DataFrame(), df2=pd.DataFrame()):
 
     if df1.empty:
         df1 = df2

@@ -72,7 +72,6 @@ def run(args):
             for b in row['business_type'].split('|'):
                 s = row["dwh_schema"].split("|")[i]
                 df = get_from_gbq(args.conn, sqlstr.format(b, s), row['pipeline'], row['name'])
-                df = df.sort_values(df.columns[0])
                 write_to_gbq(args.conn, s, row['name'], clean_pandas_dataframe(df, row['pipeline']), wtype)
                 i += 1
                 df = pd.DataFrame()
@@ -120,7 +119,6 @@ def run(args):
                         if del_sql != '':
                             execute_gbq(args.conn, del_sql, f"""{s}.{b}""", 'incremental deletion')
                         df = get_from_gbq(args.conn, sql_str, row['pipeline'], row['name'],)
-                        df = df.sort_values(df.columns[0])
                         if row['output'] != '':
                             o = row['output'].split('|')
                             if not i+1 > len(o):
