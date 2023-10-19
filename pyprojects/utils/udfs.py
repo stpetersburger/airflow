@@ -134,9 +134,9 @@ def get_data_from_url(url, file, file_type):
         return pd.read_csv(full_url)
 
 
-def write_to_gbq(conn, schema, dataset, df=pd.DataFrame(), wtype='', method=''):
-    if not df.empty:
-        df = df.sort_values(df.columns[0])
+def write_to_gbq(conn, schema, dataset, dataframe=pd.DataFrame(), wtype='', method=''):
+    if not dataframe.empty:
+        dataframe = dataframe.sort_values(dataframe.columns[0])
     # bigQuery credentials
         gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
         gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
@@ -146,9 +146,9 @@ def write_to_gbq(conn, schema, dataset, df=pd.DataFrame(), wtype='', method=''):
         try:
             print(f'WRITE TO BQ START - {datetime.datetime.now()}')
             if method == 'csv':
-                pd_gbq.to_gbq(df, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
+                pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype, api_method='load_csv')
             elif method == '':
-                pd_gbq.to_gbq(df, f'{schema}.{dataset}', if_exists=wtype)
+                pd_gbq.to_gbq(dataframe, f'{schema}.{dataset}', if_exists=wtype)
             print(f'WRITE TO BQ END - {datetime.datetime.now()}')
         except Exception as e:
             print(f'caught {type(e)}: {str(e)}')
@@ -400,3 +400,21 @@ def send_email(email_from, email_to, text):
     s.send_message(msg)
     del msg
     s.quit()
+
+
+def check_pddf_structures(conn, schema, dataset, new_columns=[]):
+
+    if len(new_columns)>0:
+        str_sql = f"""SELECT  column_name
+                        FROM  {schema}.INFORMATION_SCHEMA.COLUMNS 
+                       WHERE  table_name = '{dataset}'"""
+
+        get_old_columns = get_from_gbq(conn, str_sql, f"""{schema}.{dataset}""", f"""{schema}.{dataset}""")
+
+        old_columns = get_old_columns['column_name'].tolist()
+        columns_discrepancy = list(set(new_columns) - set(old_columns))
+
+        for col_name in columns_discrepancy:
+            str_sql = f"""ALTER TABLE {schema}.{dataset} ADD COLUMN {col_name} STRING"""
+            execute_gbq(conn, str_sql, f"""{schema}.{dataset}""", note=col_name)
+

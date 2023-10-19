@@ -65,10 +65,12 @@ def run(args):
                             print(i)
             # removing duplicates, keeping cleaned data in the same dataframe
             df.drop_duplicates("listing_nk")
+            #checking for new columns
+            check_pddf_structures(args.conn, args.schema, args.btype, df.columns.tolist())
 
             try:
                 write_to_gbq(args.conn, args.schema, dataset=args.btype,
-                             dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+                             dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='replace')
             except Exception as e:
                 send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
                 print(f'caught {type(e)}: {str(e)}')

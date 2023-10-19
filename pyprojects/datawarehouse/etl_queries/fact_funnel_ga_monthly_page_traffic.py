@@ -8,13 +8,13 @@ WITH event_stg AS (
                     DATE_SUB(DATE(DATE_TRUNC(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR), MONTH)), INTERVAL {incr_interval})
 )
 
-SELECT  DATE_TRUNC(estg.event_date_nk, MONTH)        event_date_nk,
-        '{event_name}'                               event_name,
-        LOWER(COALESCE(molg.page_location,'other'))  page_location,
-        COUNT(estg.user_pseudo_id)                   number_of_users,
-        COUNT(DISTINCT estg.user_pseudo_id)          number_of_unique_users,
-        COUNT(estg.ga_session_id)                    number_of_sessions,
-        COUNT(DISTINCT estg.ga_session_id)           number_of_unique_sessions
+SELECT  DATE_TRUNC(estg.event_date_nk, MONTH)                                           event_date_nk,
+        '{event_name}'                                                                  event_name,
+        LOWER(COALESCE(molg.page_location, CONCAT('other - ', reduced_page_location)))  page_location,
+        COUNT(estg.user_pseudo_id)                                                      number_of_users,
+        COUNT(DISTINCT estg.user_pseudo_id)                                             number_of_unique_users,
+        COUNT(estg.ga_session_id)                                                       number_of_sessions,
+        COUNT(DISTINCT estg.ga_session_id)                                              number_of_unique_sessions
   FROM  event_stg estg
   LEFT  JOIN gcp_gs.map_{business_type}_page_location_groups molg
         ON LOWER(estg.reduced_page_location) LIKE CONCAT('%',LOWER(molg.page_location),'%')
