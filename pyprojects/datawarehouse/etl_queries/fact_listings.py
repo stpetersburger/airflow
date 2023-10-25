@@ -5,9 +5,9 @@ SELECT  DATE_ADD(MAX(inserted_at), INTERVAL 4 HOUR)                             
         MAX(bedroom_name)                                                                     property_type_l1_name_en,
         DATE_ADD(MAX(CAST(date_insert AS TIMESTAMP)), INTERVAL 4 HOUR)                        listing_created_at,
         DATE(DATE_TRUNC(DATE_ADD(MAX(CAST(date_insert AS TIMESTAMP)), INTERVAL 4 HOUR), DAY)) listing_date_nk,
-        MAX(CAST(size AS DECIMAL))                                                            size,
-        MAX(CAST(NULLIF(bedroom_value, 'nan') AS DECIMAL))                                    bedrooms_num,
-        MAX(CAST(NULLIF(bathroom_value,'nan') AS DECIMAL))                                    bathrooms_num,
+        COALESCE(MAX(CAST(NULLIF(NULLIF(size,''), 'nan') AS DECIMAL)),-9999)                  size,
+        COALESCE(MAX(CAST(NULLIF(NULLIF(bedroom_value,''), 'nan') AS DECIMAL)),-9999)         bedrooms_num,
+        COALESCE(MAX(CAST(NULLIF(NULLIF(bathroom_value,''),'nan') AS DECIMAL)),-9999)         bathrooms_num,
         AVG(CAST(default_price as DECIMAL))                                                   price_aed,
         COALESCE(MAX(NULLIF(completion_status,'nan')),'undefined')                            completion_status_en,
         CASE WHEN LOWER(MAX(verified)) = 'true' OR LOWER(MAX(verified_by_owner)) = 'true'

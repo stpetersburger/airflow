@@ -140,7 +140,7 @@ def write_to_gbq(conn, schema, dataset, dataframe=pd.DataFrame(), wtype='', meth
     # bigQuery credentials
         gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
         gcp_gbq_credentials = service_account.Credentials.from_service_account_info(gcp_credentials)
-    #pandas_gbq definition
+    # pandas_gbq definition
         pd_gbq.context.credentials = gcp_gbq_credentials
         pd_gbq.context.project = gcp_credentials['project_id']
         try:
@@ -409,7 +409,8 @@ def check_pddf_structures(conn, schema, dataset, new_columns=[]):
                         FROM  {schema}.INFORMATION_SCHEMA.COLUMNS 
                        WHERE  table_name = '{dataset}'"""
 
-        get_old_columns = get_from_gbq(conn, str_sql, f"""{schema}.{dataset}""", f"""{schema}.{dataset}""")
+        get_old_columns = get_from_gbq(conn,
+                                       str_sql, f"""{schema}.{dataset}""", f"""{schema}.{dataset}""")
 
         old_columns = get_old_columns['column_name'].tolist()
         columns_discrepancy = list(set(new_columns) - set(old_columns))

@@ -11,6 +11,7 @@ WITH event_stg AS (
 SELECT  DATE_TRUNC(estg.event_date_nk, MONTH)                                           event_date_nk,
         '{event_name}'                                                                  event_name,
         LOWER(COALESCE(molg.page_location, CONCAT('other - ', reduced_page_location)))  page_location,
+        LOWER(COALESCE(molg.page_location, CONCAT('other - ', reduced_page_location)))  page_location_type,
         COUNT(estg.user_pseudo_id)                                                      number_of_users,
         COUNT(DISTINCT estg.user_pseudo_id)                                             number_of_unique_users,
         COUNT(estg.ga_session_id)                                                       number_of_sessions,

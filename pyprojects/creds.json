@@ -76,6 +76,11 @@
 			"authority": "SCRAPERS_AUTHORITY_bv",
 			"url": "SCRAPERS_LINK_all_bv"
 		},
+		"tp": {
+			"authority": "SCRAPERS_AUTHORITY_tp",
+			"data": "SCRAPERS_DATA_tp",
+			"url": "SCRAPERS_LINK_all_tp"
+		},
 		"dld": {
 			"authority": "SCRAPERS_AUTHORITY_dld"
 		}

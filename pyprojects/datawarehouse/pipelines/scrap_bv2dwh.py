@@ -70,7 +70,7 @@ def run(args):
 
             try:
                 write_to_gbq(args.conn, args.schema, dataset=args.btype,
-                             dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='replace')
+                             dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
             except Exception as e:
                 send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
                 print(f'caught {type(e)}: {str(e)}')
