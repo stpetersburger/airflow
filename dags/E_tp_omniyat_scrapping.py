@@ -33,7 +33,7 @@ dag = DAG(
 
 t1 = BashOperator(
     task_id="tp_scrap",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_bv2dwh.py """
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/scrap_tp2dwh.py """
                  f"""-conn gcp_omniyat -business_type tp -schema scrapers""",
     retries=3,
     retry_delay=td(minutes=3),

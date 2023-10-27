@@ -143,8 +143,8 @@
 		"tp": {
 			"fields": "name,size,size_unit_identifier,price_period_label,offering_type,verified,furnished,reference",
 			"fields2": "default_price,category_identifier,type_identifier,broker_id,agent_id,listing_level_label",
-			"fields3": "bathroom_name,bedroom_name,location_tree_path,coordinates,completion_status,is_expired",
-			"fields4": "date_insert,share_url,listing_nk,listed_by"
+			"fields3": "bathroom_value,bedroom_value,location_tree_path,coordinates",
+			"fields4": "completion_status,is_expired,date_insert,share_url,listing_nk,listed_by"
 		}
    }
 }

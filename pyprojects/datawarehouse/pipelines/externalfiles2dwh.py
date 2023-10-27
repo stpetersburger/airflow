@@ -40,7 +40,7 @@ def run(args):
                     file_data = obj.get()['Body'].read().decode('utf-8')
                     obj_info = obj.key.split('.')
                     if obj_info[1] == 'csv':
-                        df = pd.read_csv(io.StringIO(file_data))
+                        df = pd.read_csv(io.StringIO(file_data), low_memory=False)
                         write_to_gbq(args.conn,
                                      row['dwh_schema'],
                                      f"""{row['business_type']}_{obj_info[0]}""",

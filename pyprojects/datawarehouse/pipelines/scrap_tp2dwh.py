@@ -102,26 +102,28 @@ def run(args):
 
                         ln = c["neighborhoods"]["name"]["en"]
 
-                        if list(ln) is not None:
+                        if ln is not None:
                             if len(ln) > 1:
-                                ln.reverse()
-                                ln = ','.join(ln)
+                                ln = '|/|'.join(ln)
                             else:
-                                ln = ln[0]
+                                if len(ln) != 0:
+                                    ln = ln[0]
+                                else:
+                                    ln = 'unspecified_area'
                         else:
-                            ln = ''
+                            ln = 'unspecified_area'
 
                         if c["building"] is not None:
                             b = c["building"]["name"]["en"]
                         else:
-                            b = ''
+                            b = 'unknown_building'
 
                         if len(c["city"]["name"]["en"]) != 0:
                             ct = c["city"]["name"]["en"]
                         else:
-                            ct = ''
+                            ct = 'unknown_city'
 
-                        df_stg.loc[row_index, "location_tree_path"] = f'{b},{ln},{ct}'
+                        df_stg.loc[row_index, "location_tree_path"] = f'{ct},{ln},{b}'
                         df_stg.loc[row_index, "coordinates"] = str(c["_geoloc"])
                         df_stg.loc[row_index, "completion_status"] = c["completion_status"]
                         df_stg.loc[row_index, "is_expired"] = not c["active"]
@@ -140,7 +142,7 @@ def run(args):
 
             try:
                 write_to_gbq(args.conn, args.schema, dataset=args.btype,
-                             dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='append')
+                             dataframe=clean_pandas_dataframe(df, 'googlesheet2dwh'), wtype='replace')
             except Exception as e:
                 send_telegram_message(0, f' {pipeline} caught {type(e)}: {str(e)}')
                 print(f'caught {type(e)}: {str(e)}')

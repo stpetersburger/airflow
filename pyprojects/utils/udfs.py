@@ -421,4 +421,3 @@ def check_pddf_structures(conn, schema, dataset, new_columns=[]):
         for col_name in columns_discrepancy:
             str_sql = f"""ALTER TABLE {schema}.{dataset} ADD COLUMN {col_name} STRING"""
             execute_gbq(conn, str_sql, f"""{schema}.{dataset}""", note=col_name)
-
