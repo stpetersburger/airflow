@@ -97,12 +97,20 @@ def run(args):
                             lll = lll + '|' + 'promoted'
                         df_stg.loc[row_index, "listing_level_label"] = lll
 
-                        df_stg.loc[row_index, "bathroom_name"] = c["bathrooms"]
-                        df_stg.loc[row_index, "bedroom_name"] = c["bedrooms"]
+                        df_stg.loc[row_index, "bathroom_value"] = c["bathrooms"]
+                        df_stg.loc[row_index, "bedroom_value"] = c["bedrooms"]
 
-                        la = ''
-                        for el in c["neighborhoods"]["name"]["en"]:
-                            la = la + el + ','
+                        ln = c["neighborhoods"]["name"]["en"]
+
+                        if list(ln) is not None:
+                            if len(ln) > 1:
+                                ln.reverse()
+                                ln = ','.join(ln)
+                            else:
+                                ln = ln[0]
+                        else:
+                            ln = ''
+
                         if c["building"] is not None:
                             b = c["building"]["name"]["en"]
                         else:
@@ -113,13 +121,12 @@ def run(args):
                         else:
                             ct = ''
 
-                        df_stg.loc[row_index, "location_tree_path"] = f'{b},{la},{ct}'
+                        df_stg.loc[row_index, "location_tree_path"] = f'{b},{ln},{ct}'
                         df_stg.loc[row_index, "coordinates"] = str(c["_geoloc"])
                         df_stg.loc[row_index, "completion_status"] = c["completion_status"]
                         df_stg.loc[row_index, "is_expired"] = not c["active"]
                         df_stg.loc[row_index, "date_insert"] = (datetime.datetime
-                                                                .fromtimestamp(c["added"])
-                                                                .strftime('%c'))
+                                                                .fromtimestamp(c["added"]))
                         df_stg.loc[row_index, "share_url"] = c["short_url"]
                         df_stg.loc[row_index, "listing_nk"] = c["id"]
                         df_stg.loc[row_index, "listed_by"] = c["listed_by"]["en"]
@@ -130,8 +137,6 @@ def run(args):
                 print(i)
             # removing duplicates, keeping cleaned data in the same dataframe
             df.drop_duplicates("listing_nk")
-            #checking for new columns
-            check_pddf_structures(args.conn, args.schema, args.btype, df.columns.tolist())
 
             try:
                 write_to_gbq(args.conn, args.schema, dataset=args.btype,

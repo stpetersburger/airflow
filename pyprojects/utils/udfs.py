@@ -136,6 +136,9 @@ def get_data_from_url(url, file, file_type):
 
 def write_to_gbq(conn, schema, dataset, dataframe=pd.DataFrame(), wtype='', method=''):
     if not dataframe.empty:
+    # checking for new columns
+        if wtype == 'append':
+            check_pddf_structures(conn, schema, dataset, dataframe.columns.tolist())
         dataframe = dataframe.sort_values(dataframe.columns[0])
     # bigQuery credentials
         gcp_credentials = json.loads(get_creds(conn, 'bq', 'google_cloud_platform'))
