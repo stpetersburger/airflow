@@ -81,6 +81,12 @@
 			"data": "SCRAPERS_DATA_tp",
 			"url": "SCRAPERS_LINK_all_tp"
 		},
+		"pyd": {
+			"authority": "SCRAPERS_AUTHORITY_pyd",
+			"data": "SCRAPERS_DATA_pyd",
+			"url": "SCRAPERS_LINK_all_pyd"
+
+		},
 		"dld": {
 			"authority": "SCRAPERS_AUTHORITY_dld"
 		}

@@ -13,30 +13,24 @@ from io import StringIO
 
 def run(args):
 
-    pipeline = 'scrap_tp2dwh'
+    pipeline = 'scrap_pyd2dwh'
     send_telegram_message(1, f"""Pipeline {pipeline} has started""")
 
-    if args.btype == 'tp':
+    if args.btype == 'pyd':
         authority = get_creds(args.schema, args.btype, 'authority')
         url = get_creds(args.schema, args.btype, 'url')
 
         headers = {
-            'Accept': '*/*',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Connection': 'keep-alive',
-            'Origin': authority,
-            'Referer': authority,
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'cross-site',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
-            'content-type': 'application/x-www-form-urlencoded',
             'sec-ch-ua': '"Chromium";v="118", "Google Chrome";v="118", "Not=A?Brand";v="99"',
+            'accept': 'application/json',
+            'content-type': 'application/x-www-form-urlencoded',
+            'Referer': authority,
             'sec-ch-ua-mobile': '?0',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
             'sec-ch-ua-platform': '"macOS"',
         }
 
-        data = data = get_creds(args.schema, args.btype, 'data').replace('page_num', '1')
+        data = get_creds(args.schema, args.btype, 'data').replace('page_num', '1')
 
         r = requests.post(
             url=url,
@@ -47,12 +41,16 @@ def run(args):
         if r.status_code == 200:
 
             r = json.loads(r.content)
-            print(r["results"][0]["nbHits"])
+            print(r["results"][0]["hits"]["nbHits"])
+            #print(r["results"][0])
+            sys.exit()
             df = pd.DataFrame()
             row_index = 0
-            for i in range(r["results"][0]["nbPages"]):
+            rng = r["results"][0]["hits"]["nbHits"]/r["results"][1]["hits"]["hitsPerPage"]
 
-                data = get_creds(args.schema, args.btype, 'data').replace('page_num', f'{i+1}')
+            for i in range(rng if rng.is_integer() else int(rng) + 1):
+
+                data = get_creds(args.schema, args.btype, 'data').replace('page_num', f'{i}')
                 r = requests.post(
                     url=url,
                     headers=headers,
