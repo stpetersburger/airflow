@@ -9,7 +9,8 @@ SELECT  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR))  trans
         rooms_en                                                           property_room_number_en,
         is_offplan_en                                                      property_completion_name_en,
         CAST(trans_value AS DECIMAL)                                       transaction_value_aed,
-        project_en                                                         building_name_en
+        project_en                                                         building_name_en,
+        CAST(actual_area AS DECIMAL)                                       size
   FROM  scrapers.dld_transactions
  WHERE  DATE(DATE_ADD(CAST(instance_date as TIMESTAMP), INTERVAL 4 HOUR)) >=
         DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 4 HOUR)), INTERVAL {incr_interval})
