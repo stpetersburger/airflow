@@ -58,6 +58,7 @@ def run(args):
                                           sheet_tab=row["tab"])
 
         elif row['pipeline'] == 'url':
+            wtype = 'replace'
             df = get_data_from_url(url=row['url'],
                                    file=row['tab'],
                                    file_type=row['tab'].split(".")[1])

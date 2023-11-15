@@ -146,6 +146,8 @@ def run(args):
         df_hist_items = clean_pandas_dataframe(df_hist_items.drop_duplicates(), pipeline, '', last_modified)
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
 
+        print(df_news_orders.dtypes)
+
         # write datasets into datawraehouse, using incremental approach
         write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_orders""", df_news_orders, args.wtype)
         write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_order_items""", df_news_items, args.wtype)

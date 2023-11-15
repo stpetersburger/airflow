@@ -242,17 +242,19 @@ def clean_pandas_dataframe(df=pd.DataFrame(), pipeline='', standartise=False, ba
 
                 datasets_schemas = get_etl_datatypes(pipeline)
 
-                #changing the field format to be accepted by BQ
-                for fld in datasets_schemas:
-                    if fld in df.columns.tolist():
-                        df[fld] = df[fld].fillna(np.nan).astype("string")
+                ### changing the field format to be accepted by BQ
+                ## fixing mixed formats (object) in 1 column (e.g. int64 and str)
+                for fld in df.columns:
+                    if df[fld].dtype == 'object':
+                        df[fld] = df[fld].astype('string')
+                        df[fld] = df[fld].str.encode('ascii', 'ignore').str.decode('ascii')
 
-                for col in df.columns.tolist():
-                    if "price" in col or "amount" in col or "rate" in col or "quantity" in col:
-                        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(np.nan).astype('float')
-                    elif df[col].dtypes == 'str':
-                        # remove non-ASCII symbols from dataframe
-                        df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
+                #for col in df.columns.tolist():
+                #    if "price" in col or "amount" in col or "rate" in col or "quantity" in col:
+                #        df[col] = pd.to_numeric(df[col], errors='coerce').fillna(np.nan).astype('float')
+                #    elif df[col].dtypes == 'str':
+                #        # remove non-ASCII symbols from dataframe
+                #        df[col] = df[col].str.encode('ascii', 'ignore').str.decode('ascii')
 
             if pipeline not in ['fact', 'dimension']:
                 if pipeline in ['ga2dwh']:
@@ -278,7 +280,7 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
     prefix = []
 
     if dt == '' or datetime.datetime.strptime(dt, "%Y%m%d").date() > datetime.datetime.now().date():
-        d = datetime.datetime.now().date() - datetime.timedelta(9)
+        d = datetime.datetime.now().date() - datetime.timedelta(100)
     else:
         d = datetime.datetime.strptime(dt, "%Y%m%d").date()
 
