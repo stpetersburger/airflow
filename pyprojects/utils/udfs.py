@@ -247,7 +247,7 @@ def clean_pandas_dataframe(df=pd.DataFrame(), pipeline='', standartise=False, ba
                 for fld in df.columns:
                     if df[fld].dtype == 'object':
                         df[fld] = df[fld].astype('string')
-                        df[fld] = df[fld].str.encode('ascii', 'ignore').str.decode('ascii')
+                        #df[fld] = df[fld].str.encode('ascii', 'ignore').str.decode('ascii')
 
                 #for col in df.columns.tolist():
                 #    if "price" in col or "amount" in col or "rate" in col or "quantity" in col:
@@ -280,7 +280,7 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
     prefix = []
 
     if dt == '' or datetime.datetime.strptime(dt, "%Y%m%d").date() > datetime.datetime.now().date():
-        d = datetime.datetime.now().date() - datetime.timedelta(100)
+        d = datetime.datetime.now().date() - datetime.timedelta(30)
     else:
         d = datetime.datetime.strptime(dt, "%Y%m%d").date()
 
@@ -360,14 +360,17 @@ def concatenate_dataframes(df1=pd.DataFrame(), df2=pd.DataFrame()):
     return df1
 
 
-def get_gbq_dim_data(conn, dataset, table, fields):
+def get_gbq_dim_data(conn, dataset, table, fields, btype=''):
 
     if isinstance(fields, list):
         flds = ','.join(str(x) for x in fields)
     else:
         flds = fields
 
-    strsql = f"""SELECT {flds} FROM {dataset}.{table}"""
+    if btype == '':
+        strsql = f"""SELECT {flds} FROM {dataset}.{table}"""
+    else:
+        strsql = f"""SELECT {flds} FROM {dataset}.{table} WHERE business_type={btype}"""
 
     return get_from_gbq(conn, strsql, table, dataset)
 
@@ -423,3 +426,12 @@ def check_pddf_structures(conn, schema, dataset, new_columns=[]):
         for col_name in columns_discrepancy:
             str_sql = f"""ALTER TABLE {schema}.{dataset} ADD COLUMN {col_name} STRING"""
             execute_gbq(conn, str_sql, f"""{schema}.{dataset}""", note=col_name)
+
+        json_tbl_schema = f"""SELECT  TO_JSON_STRING(ARRAY_AGG(STRUCT(    
+                                              column_name AS name,
+                                              data_type AS type)
+                                                ORDER BY ordinal_position), TRUE) AS schema
+                                        FROM  {schema}.INFORMATION_SCHEMA.COLUMNS
+                                       WHERE  table_name = '{dataset}'"""
+
+    return get_from_gbq(conn, json_tbl_schema,f"""{schema}.{dataset}""", f"""{schema}.{dataset}""")

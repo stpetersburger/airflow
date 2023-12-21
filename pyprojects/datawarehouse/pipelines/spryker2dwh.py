@@ -36,7 +36,11 @@ def run(args):
 
     # fraud or test check
     # not all the users have fk_customer
-    fraudtestemails = get_gbq_dim_data(args.conn, 'gcp_gs', 'test_fraud_users', 'customer_reference').values.tolist()
+    fraudtestemails = get_gbq_dim_data(args.conn,
+                                       'gcp_gs',
+                                       'test_fraud_users',
+                                       'customer_reference',
+                                       args.btype).values.tolist()
     fraudtestemails = list(map(''.join, fraudtestemails))
     fraudtestemails = [x.strip().lower() for x in fraudtestemails]
 
