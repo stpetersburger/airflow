@@ -370,7 +370,7 @@ def get_gbq_dim_data(conn, dataset, table, fields, btype=''):
     if btype == '':
         strsql = f"""SELECT {flds} FROM {dataset}.{table}"""
     else:
-        strsql = f"""SELECT {flds} FROM {dataset}.{table} WHERE business_type={btype}"""
+        strsql = f"""SELECT {flds} FROM {dataset}.{table} WHERE business_type='{btype}'"""
 
     return get_from_gbq(conn, strsql, table, dataset)
 
