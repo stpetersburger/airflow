@@ -17,8 +17,14 @@
 			"aws_access_key_id": "AWS_ACCESS_KEY_ID_adjust",
 			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY_adjust",
 			"bucket": "amal-user-device-data"
+		},
+		"vendure2dwh_b2c": {
+			"region_name": "AWS_DEFAULT_REGION",
+			"aws_access_key_id": "AWS_ACCESS_KEY_ID",
+			"aws_secret_access_key": "AWS_SECRET_ACCESS_KEY",
+			"bucket": "stg-analytics-stream"
 		}
-	},
+		},
 	"gcp": {
 		"bq": {
 			"google_cloud_platform": "GOOGLE_APPLICATION_CREDENTIALS"
@@ -75,6 +81,10 @@
 		"bv": {
 			"authority": "SCRAPERS_AUTHORITY_bv",
 			"url": "SCRAPERS_LINK_all_bv"
+		},
+		"bv_beta": {
+			"authority": "SCRAPERS_AUTHORITY_bv",
+			"url": "SCRAPERS_LINK_bv"
 		},
 		"tp": {
 			"authority": "SCRAPERS_AUTHORITY_tp",

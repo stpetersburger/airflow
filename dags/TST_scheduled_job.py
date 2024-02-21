@@ -24,39 +24,18 @@ from datetime import datetime
 from airflow.operators.bash_operator import BashOperator
 
 dag = DAG(
-    dag_id="C_scheduled_job",
+    dag_id="TST_scheduled_job",
     start_date=datetime(2023, 3, 16),
-    schedule_interval='20 1-19/4 * * *',
+    schedule_interval=None,
     catchup=False,
     tags=["prod"],
 )
 
 t1 = BashOperator(
-    task_id="spryker2dwh_b2b",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
-                 f"""-conn gcp -business_type b2b -schema aws_s3 -writing_type append -date ''""",
-    dag=dag
-)
-
-t2 = BashOperator(
-    task_id="spryker2dwh_b2c",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
-                 f"""-conn gcp -business_type b2c -schema aws_s3 -writing_type append -date ''""",
-    dag=dag
-)
-
-t3 = BashOperator(
-    task_id="vendure2dwh_b2c",
+    task_id="vendure2dwh_b2b",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/vendure2dwh.py """
                  f"""-conn gcp -business_type b2c -schema aws_s3 -writing_type append -date ''""",
     dag=dag
 )
 
-t4 = BashOperator(
-    task_id="externalfiles2dwh",
-    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
-                 f'-conn gcp -schedule_type scheduled',
-    dag=dag
-)
-
-[t1, t2, t3] >> t4
+t1

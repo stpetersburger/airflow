@@ -131,7 +131,11 @@ def run(args):
                                                                 .fromtimestamp(c["added"]))
                         df_stg.loc[row_index, "share_url"] = c["short_url"]
                         df_stg.loc[row_index, "listing_nk"] = c["id"]
-                        df_stg.loc[row_index, "listed_by"] = c["listed_by"]["en"]
+                        if c["listed_by"] is not None:
+                            df_stg.loc[row_index, "listed_by"] = c["listed_by"]["en"]
+                        else:
+                            df_stg.loc[row_index, "listed_by"] = 'unknown'
+
                         row_index+=1
 
                 df = pd.concat([df, df_stg])

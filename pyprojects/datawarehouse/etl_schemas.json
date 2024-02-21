@@ -113,6 +113,98 @@
 			}
 		}
 	},
+	"vendure2dwh_b2c": {
+		"items_state": {
+			"message_object": "items",
+			"fields": "productVariantId,quantity,aggregateQuantity,createdAt,updatedAt",
+			"rename": {
+				"aggregateQuantity": "ordered_quantity",
+				"productVariantId": "fk_sku_simple",
+				"aggregateQuantity": "remained_quantity"
+			},
+			"drop": "engine_order_state_name_en"
+		},
+		"items_state_order_info": {
+			"message_object": "meta",
+			"fields": "state,idSalesOrder",
+			"rename": {
+				"state": "engine_order_state_name_en",
+				"idSalesOrder": "fk_sales_order"
+			}
+		},
+		"order": {
+			"message_object": "meta",
+			"fields": "idSalesOrder,locale,currencyIsoCode,aggregateOrderId,createdAt",
+			"rename": {
+				"idSalesOrder": "id_sales_order",
+				"locale": "fk_locale",
+				"currencyIsoCode": "currency_iso_code",
+				"aggregateOrderId": "fk_parent_order",
+				"createdAt": "created_at",
+				"orderReference": "order_reference",
+				"exchangeRate": "order_exchange_rate",
+				"orderChannel": "channel_name",
+				"loyaltyPoints": "points_redeemed",
+				"customerId": "fk_customer",
+				"customerReference": "customer_reference",
+				"country": "country_name",
+				"city": "city_name",
+				"amount": "discount_total",
+				"grandTotal": "grand_total",
+				"shippingWithTax": "tax_total"
+			}
+		},
+		"order_meta_customfields": {
+			"message_object": "customFields",
+			"fields": "orderReference,exchangeRate,orderChannel,loyaltyPoints"
+		},
+		"order_customer": {
+			"message_object": "customer",
+			"fields": "customerId"
+		},
+		"order_customer_user": {
+			"message_object": "user",
+			"fields": "createdAt",
+			"rename": {
+				"createdAt": "customer_created_at"
+			}
+		},
+		"order_customer_custom_fields": {
+			"message_object": "customFields",
+			"fields": "customerReference"
+		},
+		"order_shippingAddress": {
+			"fields": "country,address1,address2,city"
+		},
+		"order_discounts": {
+			"message_object": 0,
+			"fields": "amount"
+		},
+		"order_totals": {
+			"message_object": 0,
+			"fields": "grandTotal,shippingWithTax"
+		},
+		"items": {
+			"message_object": "items",
+			"fields": "sku,merchantId,productVariantId,quantity,listPrice,price,createdAt",
+			"rename": {
+				"sku": "sk_sku_simple",
+				"merchantId": "merchant_id",
+				"productVariantId": "fk_sku_simple",
+				"listPrice": "gross_price",
+				"price": "net_price",
+				"createdAt": "created_at",
+				"idSalesOrder": "fk_sales_order"
+
+			},
+			"drop": "engine_order_state_name_en"
+		},
+		"items_discount": {
+			"message_object": "discounts",
+			"fields": "amount"
+		}
+
+	},
 	"externalfiles2dwh": {
 		"b2c_catalog_products": {
 			"filter": {

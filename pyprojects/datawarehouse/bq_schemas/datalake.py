@@ -153,6 +153,74 @@ create table if not exists gcp_gs.etl_config
     inserted_at TIMESTAMP
 );
 
+### VENDURE
+
+drop table if exists aws_s3.sales_order_item_states_vendure;
+create table aws_s3.b2c_sales_order_item_states_vendure
+(
+    fk_sku_simple             INT64,
+    quantity                  INT64,
+    remained_quantity         INT64,
+    created_at                TIMESTAMP,
+    updated_at                TIMESTAMP,
+    fk_sales_order            INT64,
+    fk_sales_order_item_state STRING,
+    inserted_at               INT64
+)
+    partition by DATE_TRUNC(created_at, MONTH)
+    cluster by fk_sales_order_item_state, fk_sku_simple, fk_sales_order
+    options (require_partition_filter = TRUE);
+
+drop table if exists aws_s3.b2c_sales_order_items_vendure;
+create table aws_s3.b2c_sales_order_items_vendure_
+(
+    sk_sku_simple      STRING,
+    merchant_id        STRING,
+    fk_sku_simple      INT64,
+    quantity           INT64,
+    gross_price        INT64,
+    net_price          INT64,
+    created_at         TIMESTAMP,
+    fk_sales_order     INT64,
+    discount_amount    INT64,
+    discount_type      STRING,
+    inserted_at        INT64
+)
+    partition by DATE_TRUNC(created_at, MONTH)
+    cluster by fk_sku_simple, fk_sales_order
+    options (require_partition_filter = TRUE);
+
+drop table if exists aws_s3.b2c_sales_orders_vendure;
+create table aws_s3.b2c_sales_orders_vendure
+(
+    id_sales_order      INT64,
+    fk_locale           STRING,
+    currency_iso_code   STRING,
+    fk_parent_order     STRING,
+    created_at          TIMESTAMP,
+    order_reference     STRING,
+    order_exchange_rate STRING,
+    channel_name        STRING,
+    points_redeemed     FLOAT64,
+    fk_customer         INT64,
+    customer_created_at TIMESTAMP,
+    customer_reference  STRING,
+    country_name        STRING,
+    address1            STRING,
+    address2            STRING,
+    city_name           STRING,
+    grand_total         INT64,
+    tax_total           INT64,
+    is_test             BOOL,
+    inserted_at         INT64
+)
+    partition by DATE_TRUNC(created_at, MONTH)
+    cluster by customer_reference, fk_parent_order, id_sales_order
+    options (require_partition_filter = TRUE);
+
+
+
+
 
 
 

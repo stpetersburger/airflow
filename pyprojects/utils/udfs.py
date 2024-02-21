@@ -26,6 +26,7 @@ import requests
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+import numbers
 
 with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/creds.json""") as f:
     creds = json.load(f)
@@ -238,15 +239,23 @@ def clean_pandas_dataframe(df=pd.DataFrame(), pipeline='', standartise=False, ba
                 #filter out all lines with empty first field
                 df = df[df.iloc[:, 0] != 'nan']
 
-            elif pipeline in ['spryker2dwh', 'url', 'ga2dwh']:
+            elif pipeline in ['vendure2dwh', 'spryker2dwh', 'url', 'ga2dwh']:
 
                 datasets_schemas = get_etl_datatypes(pipeline)
 
                 ### changing the field format to be accepted by BQ
                 ## fixing mixed formats (object) in 1 column (e.g. int64 and str)
                 for fld in df.columns:
+                    print(fld)
+                    #df[fld].fillna(value=np.nan, inplace=True)
                     if df[fld].dtype == 'object':
-                        df[fld] = df[fld].astype('string')
+                        if isinstance(df[fld], numbers.Number):
+                            if isinstance(df[fld], numbers.Integral):
+                                df[fld] = df[fld].astype(np.int64())
+                            else:
+                                df[fld] = df[fld].astype(np.float64())
+                        else:
+                            df[fld] = df[fld].astype('string')
                         #df[fld] = df[fld].str.encode('ascii', 'ignore').str.decode('ascii')
 
                 #for col in df.columns.tolist():
@@ -280,12 +289,12 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
     prefix = []
 
     if dt == '' or datetime.datetime.strptime(dt, "%Y%m%d").date() > datetime.datetime.now().date():
-        d = datetime.datetime.now().date() - datetime.timedelta(30)
+        d = datetime.datetime.now().date() - datetime.timedelta(2)
     else:
         d = datetime.datetime.strptime(dt, "%Y%m%d").date()
 
     while not d > datetime.datetime.now().date():
-        if project == 'spryker':
+        if project == 'spryker' or project == 'vendure':
             dp = "{}/{}/{}/{}/{}/".format(d.year,
                                           d.month,
                                           d.day,
