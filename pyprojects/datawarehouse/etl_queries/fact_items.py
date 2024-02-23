@@ -82,7 +82,7 @@ SELECT  MIN(b.created_at)                                                      o
   LEFT  JOIN aws_s3.{0}_sales_orders_vendure b
         ON a.fk_sales_order = b.id_sales_order
         JOIN aws_s3.b2c_sales_orders_vendure b_parent
-        ON CAST(b.fk_parent_order AS INT64) = b_parent.id_sales_order
+        ON b.fk_parent_order = b_parent.id_sales_order
   LEFT  JOIN aws_s3.{0}_sales_order_items_vendure c
         ON a.fk_sales_order = c.fk_sales_order
         AND a.fk_sku_simple = c.fk_sku_simple
@@ -130,37 +130,29 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         quantity,
         order_reference,
         fk_sales_order,
-        CAST(fk_sales_order_item AS STRING)                                                            id_sales_order_item,
+        CAST(fk_sales_order_item AS STRING)                                         id_sales_order_item,
         CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0 THEN
              CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) < 5 THEN
                   DATE_DIFF(CURRENT_TIMESTAMP(), order_created_at, DAY)
              ELSE DATE_DIFF(status_last_updated_date, order_created_at, DAY)
              END
         ELSE DATE_DIFF(status_last_updated_date, order_created_at, DAY)
-        END                                                                                            days_in_process_num,
+        END                                                                         days_in_process_num,
         CASE WHEN CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(0)] AS INT64) = 5
              THEN DATE_DIFF(CAST(SPLIT(item_max_reporting_state,'@')[OFFSET(1)] AS TIMESTAMP), order_created_at, DAY)
         ELSE NULL
-        END                                                                                            days_delivery_num,
-        'USD' currency,
+        END                                                                         days_delivery_num,
+        currency,
         exchange_rate,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_price/exchange_rate,2)
-             ELSE item_price END                                                                       item_price,
+        item_price,
         coupon_code,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_gross_price/exchange_rate,2)
-             ELSE item_gross_price END                                                                 item_gross_price,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_net_price/exchange_rate,2)
-             ELSE item_net_price END                                                                   item_net_price,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_aggregation_price/exchange_rate,2)
-             ELSE item_aggregation_price END                                                           item_aggregation_price,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_refundable_amount/exchange_rate,2)
-             ELSE item_refundable_amount END                                                           item_refundable_amount,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_subtotal_aggregation/exchange_rate,2)
-             ELSE item_subtotal_aggregation END                                                        item_subtotal_aggregation,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_discount_amount_aggregation/exchange_rate,2)
-             ELSE item_discount_amount_aggregation END                                                 item_discount_amount_aggregation,
-        CASE WHEN currency = 'IQD' THEN ROUND(item_discount_amount_full_aggregation/exchange_rate,2)
-             ELSE item_discount_amount_full_aggregation END                                            item_discount_amount_full_aggregation,
+        item_gross_price,
+        item_net_price,
+        item_aggregation_price,
+        item_refundable_amount,
+        item_subtotal_aggregation,
+        item_discount_amount_aggregation,
+        item_discount_amount_full_aggregation,
         i.customer_reference                                                                           customer_reference,
         COALESCE(c.city_name_en, i.city_name)                                                          city_name_en,
         CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) = 0 THEN 1 ELSE 0 END  if_cancelled,
@@ -177,7 +169,7 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         SUM(CASE WHEN CAST(SPLIT(item_min_reporting_state,'@')[OFFSET(0)] AS INT64) > 0
                  THEN item_aggregation_price
                  ELSE 0
-            END ) OVER (PARTITION BY fk_sales_order)                                                   order_non_cancelled_value,
+            END ) OVER (PARTITION BY fk_sales_order)                                                  order_non_cancelled_value,
         address_country_nk
  FROM   items i
         LEFT JOIN {1}.dim_item_states a

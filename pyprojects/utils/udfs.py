@@ -246,8 +246,7 @@ def clean_pandas_dataframe(df=pd.DataFrame(), pipeline='', standartise=False, ba
                 ### changing the field format to be accepted by BQ
                 ## fixing mixed formats (object) in 1 column (e.g. int64 and str)
                 for fld in df.columns:
-                    print(fld)
-                    #df[fld].fillna(value=np.nan, inplace=True)
+                    df[fld].fillna(value=np.nan, inplace=True)
                     if df[fld].dtype == 'object':
                         if isinstance(df[fld], numbers.Number):
                             if isinstance(df[fld], numbers.Integral):

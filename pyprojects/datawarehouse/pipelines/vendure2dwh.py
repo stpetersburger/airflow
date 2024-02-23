@@ -171,18 +171,15 @@ def run(args):
         df_hist_items = clean_pandas_dataframe(df_hist_items.drop_duplicates(), '', True, last_modified)
         delta_update = clean_pandas_dataframe(delta_update.drop_duplicates(), pipeline)
 
-        print(df_new_orders.dtypes)
-        print(clean_pandas_dataframe(df_new_orders, pipeline,'', last_modified).dtypes)
-
         # write datasets into datawraehouse, using incremental approach
-        write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_orders_{project}_""",
+        write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_orders_{project}""",
                      clean_pandas_dataframe(df_new_orders, pipeline,'', last_modified), args.wtype)
-        write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_order_items_{project}_""",
+        write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_order_items_{project}""",
                      clean_pandas_dataframe(df_new_items, pipeline,'', last_modified), args.wtype)
-        write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_order_item_states_{project}_""",
+        write_to_gbq(args.conn, args.schema, f"""{args.btype}_sales_order_item_states_{project}""",
                      clean_pandas_dataframe(df_hist_items, pipeline,'', last_modified), args.wtype)
 
-        #write_to_gbq(args.conn, 'etl_metadata', 'airflow_run', delta_update, 'append')
+        write_to_gbq(args.conn, 'etl_metadata', 'airflow_run', delta_update, 'append')
 
     send_telegram_message(1, f"""Pipeline {id_pipeline} has finished. {cnt} files; delta - {last_modified} """)
 
