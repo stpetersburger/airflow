@@ -53,7 +53,7 @@ SELECT  MIN(b.created_at)                                                      o
         MIN(e.sku)                                                             sku,
         CAST(MIN(a.fk_sales_order) AS INT64) * 1000000000 + a.fk_sku_simple    fk_sales_order_item,
         COALESCE(MIN(b_parent.order_reference),
-                 CAST(MIN(b.fk_parent_order) AS STRING))                       order_reference,
+                 CAST(MIN(b.fk_parent_order) AS STRING))                       order_reference, #if parent order was missing in streaming
         a.fk_sales_order                                                       fk_sales_order,
         MIN(a.remained_quantity)                                               quantity,
         MAX(d.id_sales_order_item_state)                                       fk_sales_order_item_state,
