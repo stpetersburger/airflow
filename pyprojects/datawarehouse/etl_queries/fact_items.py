@@ -230,4 +230,4 @@ SELECT  order_date,
         END  order_points_redeemed,
         address_country_nk
   FROM  items_stg
- ORDER  BY order_date
+ ORDER  BY 1,12,
