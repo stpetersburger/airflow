@@ -6,7 +6,6 @@ SELECT  id_category                           fk_product_category,
         simple_name_en,
         if_simple_active
   FROM  aws_s3.{0}_catalog_products
- GROUP  BY 2
 UNION ALL
 SELECT  id_category                                 fk_product_category,
         COALESCE(id_sku_simple, 'undefined')        sku,
@@ -17,7 +16,6 @@ SELECT  id_category                                 fk_product_category,
                   THEN '0' ELSE  if_simple_active
               END AS INT64)                         if_simple_active
   FROM  aws_s3.{0}_catalog_products_vendure
- GROUP  BY 2
 )
 
 SELECT  MAX(fk_product_category)  fk_product_category,
