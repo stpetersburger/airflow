@@ -6,7 +6,7 @@ SELECT  id_category                  id_product_category,
 UNION ALL
 SELECT  id_category                  id_product_category,
         category_name_en
-  FROM  aws_s3.{0}_catalog_products_vemdure
+  FROM  aws_s3.{0}_catalog_products_vendure
  GROUP  BY 1,2
 )
 SELECT  a.id_product_category                                           id_product_category,
