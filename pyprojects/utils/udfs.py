@@ -127,12 +127,12 @@ def get_data_from_sharepoint(conn="ms", sheet='', sheet_tab='Sheet1'):
     return df
 
 
-def get_data_from_url(url, file, file_type):
+def get_data_from_url(url, file, file_type, sep):
 
     full_url = f"""{url}/{file}"""
     print(full_url)
     if file_type == 'csv':
-        return pd.read_csv(full_url)
+        return pd.read_csv(full_url, sep=sep, on_bad_lines='warn')
 
 
 def write_to_gbq(conn, schema, dataset, dataframe=pd.DataFrame(), wtype='', method=''):

@@ -3,6 +3,11 @@ SELECT  id_category                  id_product_category,
         category_name_en
   FROM  aws_s3.{0}_catalog_products
  GROUP  BY 1,2
+UNION ALL
+SELECT  id_category                  id_product_category,
+        category_name_en
+  FROM  aws_s3.{0}_catalog_products_vemdure
+ GROUP  BY 1,2
 )
 SELECT  a.id_product_category                                           id_product_category,
         STRING_AGG(COALESCE(b.category_l1_name_en, 'unassigned'), "|")  category_L1_name_en,

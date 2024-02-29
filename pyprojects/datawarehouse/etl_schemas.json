@@ -229,6 +229,26 @@
 				"net_original_price": "net_original_price",
 				"merchant_name": "merchant_name_en"
 			}
+		},
+		"b2c_catalog_products_vendure": {
+			"filter": {
+				"fields": "sku_id,concrete_sku,category_name,category_id,stock_level,variant_price",
+				"fields2": "list_price,product_name,product_description,brand,is_enabled,merchant_name"
+			},
+			"rename": {
+				"sku_id": "id_sku_config",
+				"concrete_sku": "id_sku_simple",
+				"category_id": "id_category",
+				"category_name": "category_name_en",
+				"brand": "brand_name_en",
+				"product_name": "config_name_en",
+				"product_description": "simple_name_en",
+				"stock_level": "simple_quantity",
+				"is_enabled": "if_simple_active",
+				"variant_price": "net_default_price",
+				"list_price": "gross_default_price",
+				"merchant_name": "merchant_name_en"
+			}
 		}
 	},
 	"scrap_tp2dwh": {

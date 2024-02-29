@@ -61,8 +61,9 @@ def run(args):
             wtype = 'replace'
             df = get_data_from_url(url=row['url'],
                                    file=row['tab'],
-                                   file_type=row['tab'].split(".")[1])
-            if row['name'] == 'b2c_catalog_products':
+                                   file_type=row['tab'].split(".")[1],
+                                   sep=row['sep'])
+            if 'b2c_catalog_products' in row['name']:
                 df = clean_pandas_dataframe(df).filter(items=get_etl_schema(pipeline, row['name'], 'filter'))
                 df.rename(columns=get_etl_schema(pipeline, row['name'], 'rename'), inplace=True)
 
