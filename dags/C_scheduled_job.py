@@ -31,20 +31,6 @@ dag = DAG(
     tags=["prod"],
 )
 
-t1 = BashOperator(
-    task_id="spryker2dwh_b2b",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
-                 f"""-conn gcp -business_type b2b -schema aws_s3 -writing_type append -date ''""",
-    dag=dag
-)
-
-t2 = BashOperator(
-    task_id="spryker2dwh_b2c",
-    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/spryker2dwh.py """
-                 f"""-conn gcp -business_type b2c -schema aws_s3 -writing_type append -date ''""",
-    dag=dag
-)
-
 t3 = BashOperator(
     task_id="vendure2dwh_b2c",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/vendure2dwh.py """
@@ -59,4 +45,4 @@ t4 = BashOperator(
     dag=dag
 )
 
-[t1, t2, t3] >> t4
+t3 >> t4

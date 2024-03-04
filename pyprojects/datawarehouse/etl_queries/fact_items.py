@@ -61,7 +61,7 @@ SELECT  MIN(b.created_at)                                                      o
         MAX(CONCAT(d.reporting_order_item_state,'@',a.updated_at))             item_max_reporting_state,
         MIN(CONCAT(d.reporting_order_item_state,'@',a.updated_at))             item_min_reporting_state,
         MIN(b.currency_iso_code)                                               currency,
-        MIN(COALESCE(CAST(b.order_exchange_rate AS DECIMAL),1310))             exchange_rate,
+        MIN(COALESCE(CAST(b.order_exchange_rate AS DECIMAL),0))                exchange_rate,
         MIN(c.discount_type)                                                   coupon_code,
         MIN(c.gross_price)                                                     item_price,
         MIN(c.gross_price)                                                     item_gross_price,
