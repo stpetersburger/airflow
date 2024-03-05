@@ -10,7 +10,9 @@ SELECT  id_category                  id_product_category,
  GROUP  BY 1,2
 )
 SELECT  a.id_product_category                                           id_product_category,
-        STRING_AGG(COALESCE(b.category_l1_name_en, 'unassigned'), "|")  category_L1_name_en,
+        STRING_AGG(COALESCE(b.category_l1_name_en,
+                            COALESCE(a.category_name_en,
+                                     'unassigned')), "|")               category_L1_name_en,
         STRING_AGG(a.category_name_en, "|")                             category_name_en,
         MAX(COALESCE(CAST(base_influencer_commission AS FLOAT64),0))    base_influencer_commission
   FROM  cats a
