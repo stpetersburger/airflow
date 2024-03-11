@@ -180,6 +180,7 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         LEFT JOIN gcp_gs.map_customers cust
         ON i.customer_reference = cust.customer_reference
         AND cust.business_type = '{0}'
+        AND engine_name = 'vendure'
 )
 
 SELECT  order_date,
