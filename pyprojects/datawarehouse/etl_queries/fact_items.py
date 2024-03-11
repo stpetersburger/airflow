@@ -96,8 +96,9 @@ SELECT  MIN(b.created_at)                                                      o
         AND d.reporting_order_item_state < 6
         AND DATE(a.created_at) >= DATE_SUB(DATE(CURRENT_TIMESTAMP()), INTERVAL {incr_interval})
         AND DATE(b.created_at) >= DATE_SUB(DATE(CURRENT_TIMESTAMP()), INTERVAL {incr_interval})
-        AND DATE(b_parent.created_at) >= DATE_SUB(DATE(CURRENT_TIMESTAMP()), INTERVAL 1 MONTH)
+        AND DATE(b_parent.created_at) >= DATE_SUB(DATE(CURRENT_TIMESTAMP()), INTERVAL {incr_interval})
         AND DATE(c.created_at) >= DATE_SUB(DATE(CURRENT_TIMESTAMP()), INTERVAL {incr_interval})
+        AND engine_name_en = 'vendure'
  GROUP  BY a.fk_sales_order, a.fk_sku_simple
 ),
 
@@ -180,7 +181,6 @@ SELECT  DATE_ADD(order_created_at, INTERVAL 3 HOUR)                             
         LEFT JOIN gcp_gs.map_customers cust
         ON i.customer_reference = cust.customer_reference
         AND cust.business_type = '{0}'
-        AND engine_name = 'vendure'
 )
 
 SELECT  order_date,
