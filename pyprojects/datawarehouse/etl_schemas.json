@@ -118,7 +118,6 @@
 			"message_object": "items",
 			"fields": "productVariantId,quantity,aggregateQuantity,createdAt,updatedAt",
 			"rename": {
-				"aggregateQuantity": "ordered_quantity",
 				"productVariantId": "fk_sku_simple",
 				"aggregateQuantity": "remained_quantity"
 			},

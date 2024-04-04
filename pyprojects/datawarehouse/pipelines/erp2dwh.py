@@ -20,33 +20,23 @@ def run(args):
     un = get_creds(args.schema, id_pipeline, 'username')
     pw = get_creds(args.schema, id_pipeline, 'password')
     oi = get_creds(args.schema, id_pipeline, 'organisation_id')
-    ins = 'CS249'
+    ins = 'USA22S'
 
     #flds = 'Name, Ageing_in_Days__c'
     flds = 'yr, cnt'
-    tbl = 'Unit__c'
+    tbl = 'User Permissions'#'Unit__c'
     incr = 'CreatedDate'
     incr_value = 365
 
-    sf = Salesforce(instance_url=i_url, username=un, password=pw, organizationId=oi, domain='test', instance=ins)
+    sf = Salesforce(instance_url=i_url, username=un, password=pw, organizationId=oi, instance=ins, domain='test')
 
-    describe = sf.Opportunity.describe()
+    describe = getattr(sf, tbl).describe()
     for el in describe['fields']:
         print(el['name'])
-    results = sf.query_all(f"""SELECT FIELDS(ALL) FROM {tbl} LIMIT 1""")
-    #results = sf.query_all(f"""SELECT CALENDAR_YEAR(CreatedDate) yr, COUNT(Name) cnt FROM {tbl} GROUP BY CALENDAR_YEAR(CreatedDate)""")
+    results = sf.query_all(f"""SELECT ProfileName__c, Id, ProfileId, Email, UserRoleId, LastModifiedDate, LastModifiedById  FROM {tbl} LIMIT 100""")
     print(results['records'])
-    r = pd.DataFrame.from_dict(results, orient='columns')
+    r = pd.DataFrame(results, columns=results[0].keys())#pd.DataFrame.from_dict(results, orient='columns')
     print(r)
-    d = []
-    for r in results['records']:
-        z = {}
-        for k, v in r.items():
-            if k in flds:
-                z[k] = v
-        print(z)
-        d.append(z)
-    print(pd.DataFrame(d))
 
 
 if __name__ == '__main__':

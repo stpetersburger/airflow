@@ -7,7 +7,7 @@ WITH items AS (
           a.id_sales_order_item                                                  fk_sales_order_item,
           MIN(b.order_reference)                                                 order_reference,
           MIN(b.id_sales_order)                                                  fk_sales_order,
-          MIN(quantity)                                                          quantity,
+          MIN(quantity)                                                        quantity,
           MAX(c.fk_sales_order_item_state)                                       fk_sales_order_item_state,
           MAX(c.updated_at)                                                      status_last_updated_date,
           MAX(CONCAT(d.reporting_order_item_state,'@',c.updated_at))             item_max_reporting_state,
@@ -55,8 +55,10 @@ SELECT  MIN(b.created_at)                                                      o
         COALESCE(MIN(b_parent.order_reference),
                  CAST(MIN(b.fk_parent_order) AS STRING))                       order_reference, #if parent order was missing in streaming
         a.fk_sales_order                                                       fk_sales_order,
-        MIN(a.remained_quantity)                                               quantity,
-        MAX(d.id_sales_order_item_state)                                       fk_sales_order_item_state,
+        MIN(a.quantity)                                                        quantity,
+        CASE WHEN MIN(a.quantity) = 0 THEN 32
+             ELSE MAX(d.id_sales_order_item_state)
+        END                                                                    fk_sales_order_item_state,
         MAX(a.updated_at)                                                      status_last_updated_date,
         MAX(CONCAT(d.reporting_order_item_state,'@',a.updated_at))             item_max_reporting_state,
         MIN(CONCAT(d.reporting_order_item_state,'@',a.updated_at))             item_min_reporting_state,
@@ -69,7 +71,8 @@ SELECT  MIN(b.created_at)                                                      o
         MIN(c.net_price)                                                       item_aggregation_price,
         MIN(c.net_price)                                                       item_refundable_amount,
         MIN(c.net_price)                                                       item_subtotal_aggregation,
-        MIN(c.discount_amount)                                                 item_discount_amount_aggregation,
+        MIN(c.discount_amount)*MIN(a.quantity)/
+        COALESCE(NULLIF(MAX(a.remained_quantity),0),1)                         item_discount_amount_aggregation,
         MIN(c.discount_amount)                                                 item_discount_amount_full_aggregation,
         -9999                                                                  fk_sales_shipment,
         MIN(b.customer_reference)                                              customer_reference,
@@ -87,7 +90,8 @@ SELECT  MIN(b.created_at)                                                      o
         ON a.fk_sales_order = c.fk_sales_order
         AND a.fk_sku_simple = c.fk_sku_simple
   LEFT  JOIN {1}.dim_item_states d
-        ON a.fk_sales_order_item_state = CAST(d.id_sales_order_item_state AS STRING)
+        ON CASE WHEN a.quantity > 0 THEN a.fk_sales_order_item_state
+           ELSE '32' END = CAST(d.id_sales_order_item_state AS STRING)
   LEFT  JOIN {1}.dim_products e ON c.sk_sku_simple = e.sku
   LEFT  JOIN {1}.dim_product_categories f
         ON f.id_product_category = e.fk_product_category
