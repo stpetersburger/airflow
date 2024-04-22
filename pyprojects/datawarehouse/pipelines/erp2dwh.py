@@ -20,22 +20,27 @@ def run(args):
     un = get_creds(args.schema, id_pipeline, 'username')
     pw = get_creds(args.schema, id_pipeline, 'password')
     oi = get_creds(args.schema, id_pipeline, 'organisation_id')
-    ins = 'USA22S'
+    ins = 'USA682'
 
     #flds = 'Name, Ageing_in_Days__c'
     flds = 'yr, cnt'
-    tbl = 'User Permissions'#'Unit__c'
+    tbl = 'Account'#'User Permissions'#'Unit__c'
     incr = 'CreatedDate'
     incr_value = 365
 
-    sf = Salesforce(instance_url=i_url, username=un, password=pw, organizationId=oi, instance=ins, domain='test')
+    sf = Salesforce(instance_url=i_url,
+                    username=un,
+                    password=pw,
+                    organizationId=oi,
+                    instance=ins,
+                    domain='omniyat-properties.my')
 
     describe = getattr(sf, tbl).describe()
     for el in describe['fields']:
         print(el['name'])
-    results = sf.query_all(f"""SELECT ProfileName__c, Id, ProfileId, Email, UserRoleId, LastModifiedDate, LastModifiedById  FROM {tbl} LIMIT 100""")
+    results = sf.query_all(f"""SELECT FIELDS(ALL)  FROM {tbl} LIMIT 100""")
     print(results['records'])
-    r = pd.DataFrame(results, columns=results[0].keys())#pd.DataFrame.from_dict(results, orient='columns')
+    r = pd.DataFrame(results, columns=describe['fields'])#pd.DataFrame.from_dict(results, orient='columns')
     print(r)
 
 
