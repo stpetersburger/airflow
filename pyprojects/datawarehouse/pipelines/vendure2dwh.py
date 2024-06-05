@@ -107,9 +107,16 @@ def run(args):
                     msg_data_order_customer_custom_fields = pd.json_normalize(msg_data['customer']['customFields'])[get_etl_schema(id_pipeline,
                                                                                                 'order_customer_custom_fields',
                                                                                                 'fields')]
-                    msg_data_order_shipping_address = pd.json_normalize(msg_data['shippingAddress'])[get_etl_schema(id_pipeline,
+                    if msg_data['shippingAddress'] != {}:
+                        msg_data_order_shipping_address = pd.json_normalize(msg_data['shippingAddress'])[get_etl_schema(id_pipeline,
                                                                                                     'order_shippingAddress',
                                                                                                     'fields')]
+                    else:
+                        msg_data_order_shipping_address = pd.json_normalize(msg_data['billingAddress'])[
+                            get_etl_schema(id_pipeline,
+                                           'order_shippingAddress',
+                                           'fields')]
+
                     msg_data_order_totals = pd.json_normalize(msg_data['totals'][0])[get_etl_schema(id_pipeline,
                                                                                                     'order_totals',
                                                                                                     'fields')]

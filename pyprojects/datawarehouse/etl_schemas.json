@@ -257,5 +257,81 @@
 			"fields3": "bathroom_value,bedroom_value,location_tree_path,coordinates",
 			"fields4": "completion_status,is_expired,date_insert,share_url,listing_nk,listed_by"
 		}
-   }
+   },
+	"salesforce_omniyat": {
+		"Lead": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields": "Id,CreatedDate,LastModifiedDate,Name,FirstName,Project__c,LeadSubSource__c",
+			"fields1": "Lead_Channel__c,UTM_Campaign__c,Country_Code__c,Lead_Created_Date__c,MediaSource__c",
+			"field2": "Event__c,CreatedById,IsConverted,LeadOwner__c,LeadSource,Prior_Lead_Status__c"
+		},
+		"Opportunity": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields": "Id,CreatedDate,LastModifiedDate,AccountId,Account_Number__c,Contact__c",
+			"fields1": "ContactId,CampaignId,Status__c,OwnerId,SalesManager__c,IsWon,Account_Name__c,Stage__c",
+			"fields2": "Lead_Created_Date__c,Project__c,BrokerAgentName__c,MediaSource__c,LeadChannel__c,LeadNumber__c"
+
+		},
+		"Unit__c": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields1": "Id,CreatedDate,LastModifiedDate,BlockedBy__c,BlockedByName__c,BlockedComments__c",
+			"fields2": "BlockedDate__c,Business_Unit__c,CarParkAllocation__c,Base_Price_Per_SQFT__c",
+			"fields3": "Description__c,DLD_No__c,DEWA_Number__c,DLDZone__c,FloorNumber__c,GarageArea__c,Hold_Date__c",
+			"fields4": "Hold_Reason__c,Hold_For_Opportunity__c,Interior_Type__c,IsActive__c,Maid_Room__c",
+			"fields5": "MarketPrice__c,Name,Name__c,NumberOfBathrooms__c,NumberOfBedrooms__c,OwnerID,PlotArea__c",
+			"fields6": "PlotMasterPlan__c,Project__c,ProjectName__c,PropertyUsage__c,SaleableArea__c,Selling_Price__c",
+			"fields7": "SellingPrice__c,SPA_Unit_Area__c,Sub_Status__c,Unit_Code__c,UnitNumber__c,UnitType__c",
+			"fields8": "UnitPlotArea__c,TotalRooms__c,TotalArea__c,TerraceArea__c,Status__c,ReleaseDate__c"
+		},
+		"SalesOrder__c": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields": "Id,CreatedDate,LastModifiedDate,ProjectName__c,SellingPrice__c,OwnerID,Name,CreatedById",
+			"fields1": "BookingDate__c,CustomerSignedSPADate__c,KYC_checked__c,PaymentPlan__c,RC_Generate__c",
+			"fields2": "RC_Initiated_Date__c,RC_Status__c,RC_Unit_Area__c,SPA_Unit_Area__c,Unit__c,AccountName__c",
+			"fields3": "DLD_Fee_Cleared_Amount__c, First_Installment_Amount__c,First_Installment_Received_Amount__c",
+			"fields4": "Sales_Order_Installment_Total__c,Sales_Order_Received_Amount__c",
+			"fields5": "SPA_Customer_Signed__c,Total_Amount_Received__c,UnitNumber__c,Unit_Name__c",
+			"fields6": "Sales_Order_Due_Amount__c,Sales_Order_Pending_Amount__c,Booking_Number__c,Unit_Name1__c",
+			"fields7": "Total_received_amount__c,Account__c,Status__c,SubStatus__c,SubStatusRemarks__c"
+		},
+		"User": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields1": "Id,CreatedDate,LastModifiedDate,AccountID,City,Address,Country,Department",
+			"fields2": "Email,EmployeeNumber,FirstName,LastName,IsActive,ManagerID,MobilePhone",
+			"fields3": "Name,Phone,Title,State,Username,UserType,UserRoleID,LastViewedDate,IndividualId,Division",
+			"fields4": "ContactID,alias"
+		},
+		"ReceiptAllocation__c": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields": "Id,CreatedDate,LastModifiedDate,Account__c,AmountApplied__c,CreatedById,CurrencyIsoCode",
+			"fields1": "DateOfApplication__c,InstallmentNumberOrChargeType__c",
+			"fields2": "InstallmentAmountOtherChargeAmount__c,InstallmentLine__c,Is_Active__c",
+			"fields3": "LastModifiedById,Migrated_Date__c,OriginalCreationDate__c",
+			"fields4": "ReceiptAcknowledgement__c,Name",
+			"fields5": "Receipt_Outstanding_Amount_Cleared__c,ReceiptStatus__c,SalesOrder__c,SalesOrderOtherCharges__c",
+			"fields6": "TypeOfInvoice__c,Unapply__c"
+		},
+		"InstallmentLines__c": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields": "Id,CreatedDate,LastModifiedDate,Description__c,InstallmentAmount__c,InstallmentDate__c",
+			"fields1": "InstallmentPercentage__c,Invoice_Number__c,Name,ClearedAmount__c,Is_Invoiced__c",
+			"fields2": "Is_SPA_Payment__c,Project__c,SalesOrder__c,Unit__c,Unique_No__c,Unit_Category__c",
+			"fields3": "Sales_Order_Status__c,Due_Date__c"
+
+		},
+		"Receipt_Application__c": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields": "Id,CreatedDate,LastModifiedDate,Amount_Applied__c,Application_Date__c,CreatedById",
+			"fields1": "CurrencyIsoCode,ERP_ID__c,Invoice__c,LastModifiedById,Receipt__c,Name,Status__c"
+		},
+		"PaymentInstallments__c": {
+			"base_attributes": "Id,CreatedDate,LastModifiedDate",
+			"fields": "Id,CreatedDate,LastModifiedDate,BrokerPayoutPercentage__c,CreatedById,CurrencyIsoCode",
+			"fields1": "Customer_Type__c,Description__c,InstallmentNumber__c",
+			"fields2": "InstallmentPercentage__c,InstallmentDate__c,Installment_Name__c,Installment_Type__c",
+			"fields3": "Is_Handover_Payment__c,Is_RC_Payment__c,Is_SPA_Payment__c,LastModifiedById,Migrated_Data__c",
+			"fields4": "Milestone__c,Milestone_Name__c,Milestones__c,Name,Payment_Line_ID__c,PaymentPlan__c",
+			"fields5": "Relative_From__c,Relative_Days__c,Milestonee__c"
+		}
+	}
 }

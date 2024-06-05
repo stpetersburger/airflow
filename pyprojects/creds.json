@@ -74,7 +74,9 @@
 			"url": "SALESFORCE_URL_omniyat",
 			"username": "SALESFORCE_USERNAME_omniyat",
 			"password": "SALESFORCE_PASSWORD_omniyat",
-			"organisation_id": "SALESFORCE_ORG_ID_omniyat"
+			"organisation_id": "SALESFORCE_ORG_ID_omniyat",
+			"instance_id": "SALESFORCE_INSTANCE_ID_omniyat",
+			"domain": "SALESFORCE_DOMAIN_omniyat"
 		}
 	},
 	"scrapers": {
@@ -99,6 +101,22 @@
 		},
 		"dld": {
 			"authority": "SCRAPERS_AUTHORITY_dld"
+		}
+	},
+	"oracle": {
+		"paas": {
+			"username": "ORACLE_PAAS_USERNAME",
+			"servicename": "ORACLE_PAAS_SERVICENAME",
+			"password": "ORACLE_PAAS_PASSWORD"
+		}
+	},
+	"postgres": {
+		"eoi": {
+			"database": "EOI_DATABASE",
+			"username": "EOI_USERNAME",
+			"password": "EOI_PASSWORD",
+			"host": "EOI_HOST",
+			"port": "EOI_PORT"
 		}
 	}
 }

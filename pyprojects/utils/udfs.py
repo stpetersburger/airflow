@@ -27,6 +27,8 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import numbers
+from datetime import timezone
+
 
 with open(f"""{os.environ["AIRFLOW_HOME"]}/pyprojects/creds.json""") as f:
     creds = json.load(f)
@@ -189,7 +191,6 @@ def execute_gbq(conn, str_sql, etl_desc='', note=''):
     pd_gbq.context.credentials = gcp_gbq_credentials
     pd_gbq.context.project = gcp_credentials['project_id']
     try:
-
         #pd_gbq.read_gbq(str_sql, progress_bar_type=None)
         query_job = client.query(str_sql)
         print(query_job.result())
@@ -239,7 +240,7 @@ def clean_pandas_dataframe(df=pd.DataFrame(), pipeline='', standartise=False, ba
                 #filter out all lines with empty first field
                 df = df[df.iloc[:, 0] != 'nan']
 
-            elif pipeline in ['vendure2dwh', 'spryker2dwh', 'url', 'ga2dwh']:
+            elif pipeline in ['vendure2dwh', 'spryker2dwh', 'url', 'ga2dwh', 'salesforce']:
 
                 datasets_schemas = get_etl_datatypes(pipeline)
 
@@ -318,9 +319,9 @@ def get_s3_prefix(project='spryker', business_type='b2c', dt=''):
 def get_delta(conn, id_pipeline, dt=''):
 
     if dt == '':
-        strsql = f"""select max(delta)  delta
-                       from etl_metadata.airflow_run 
-                      where id_pipeline ='{id_pipeline}'"""
+        strsql = f"""SELECT  max(delta) delta 
+                       FROM  etl_metadata.airflow_run  
+                      WHERE  id_pipeline = '{id_pipeline}'"""
 
         delta = get_from_gbq(conn, strsql, id_pipeline, 'get_delta')
 
