@@ -52,6 +52,11 @@
 			           "bq_ga_table_prefix": "GOOGLE_GA_TABLE_PREFIX",
 			           "ga_config_events": "omniyat_ga_events",
 			           "ga_config_event_properties": "omniyat_ga_event_properties"
+		},
+		"ga_omniyatcom": {"bq_dataset": "GOOGLE_GA_DATASET_omniyatcom",
+			           "bq_ga_table_prefix": "GOOGLE_GA_TABLE_PREFIX",
+			           "ga_config_events": "omniyat_ga_events",
+			           "ga_config_event_properties": "omniyat_ga_event_properties"
 		}
 	},
 	"ms": {

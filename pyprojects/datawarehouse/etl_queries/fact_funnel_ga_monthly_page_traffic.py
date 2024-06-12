@@ -3,7 +3,7 @@ WITH event_stg AS (
             ga_session_id,
             user_pseudo_id,
             LEFT(page_location, 60)                          reduced_page_location
-      FROM  gcp_ga.{event_name}
+      FROM  {schema}.{event_name}
      WHERE  DATE(DATE_TRUNC(DATE_ADD(event_timestamp, INTERVAl 3 HOUR), MONTH))>=
                     DATE_SUB(DATE(DATE_TRUNC(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR), MONTH)), INTERVAL {incr_interval})
 )

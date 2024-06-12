@@ -4,7 +4,7 @@ WITH event_stg AS (
             user_pseudo_id,
             install_source,
             platform
-      FROM  gcp_ga.{event_name}
+      FROM  {schema}.{event_name}
      WHERE  DATE(DATE_ADD(event_timestamp, INTERVAl 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL {incr_interval})
 ),
 

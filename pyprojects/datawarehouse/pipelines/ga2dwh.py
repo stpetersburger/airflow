@@ -24,6 +24,10 @@ def run(args):
     ga_config_events = ga_config_events[ga_config_events.iloc[:, 0] == 1]
     ga_config_event_properties = ga_config_event_properties[ga_config_event_properties.iloc[:, 0] == 1]
     df = pd.DataFrame()
+    if args.wt is None:
+        wtype = 'append'
+    else:
+        wtype = 'replace'
 
     for index, row in ga_config_events.iterrows():
 
@@ -40,7 +44,7 @@ def run(args):
 
         if args.gatype is not None:
 
-            delete_clause = f"""DELETE FROM gcp_ga.{en} 
+            delete_clause = f"""DELETE FROM {args.schema}.{en} 
                                        WHERE date(event_timestamp)>='{yesterday.strftime('%Y-%m-%d')}'"""
             from_clause: list = [f"""`{ga_dataset}.{ga_table_prefix}intraday_*`"""]
             where_clause: list = [
@@ -56,7 +60,7 @@ def run(args):
                     where_clause: list = []
             else:
                 d = beforeyesterday.strftime('%Y%m%d')
-                delete_clause = f"""DELETE FROM gcp_ga.{en} WHERE date(event_timestamp)='{beforeyesterday}'"""
+                delete_clause = f"""DELETE FROM {args.schema}.{en} WHERE date(event_timestamp)='{beforeyesterday}'"""
                 from_clause: list = [f"""{ga_dataset}.{ga_table_prefix}{d}"""]
                 where_clause: list = []
         if delete_clause != '':
@@ -152,7 +156,7 @@ def run(args):
             # removing issues with columns naming
             df = clean_pandas_dataframe(df, pipeline='', standartise=True)
             df = clean_pandas_dataframe(df, pipeline)
-            write_to_gbq(args.conn, 'gcp_ga', en, df, 'append')
+            write_to_gbq(args.conn, args.schema, en, df, wtype)
             df = pd.DataFrame()
         else:
             df = pd.DataFrame()
@@ -167,6 +171,10 @@ if __name__ == '__main__':
                         help="b2c or b2b")
     parser.add_argument('-gatype', dest='gatype', required=False,
                         help="intraday events data (today and yesterday) or just events data(today and yesterday)")
+    parser.add_argument('-schema', dest='schema', required=True,
+                        help="bq schema to write the data to")
     parser.add_argument('-date', dest='dt', required=False,
                         help="start date to get the data")
+    parser.add_argument('-wtype', dest='wt', required=False,
+                        help="how to add data: append or replace")
     run(parser.parse_args())

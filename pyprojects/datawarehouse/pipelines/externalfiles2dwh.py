@@ -106,7 +106,9 @@ def run(args):
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
                                                       # added on th 31.03.2023 for GA data
                                                       event_name=t,
-                                                      business_type=b
+                                                      business_type=b,
+                                                      # added on th 10.06.2025 for GA.com data omniyat
+                                                      schema=args.schema
                                                     )
                         else:
                             sql_str = sqlstr.format(b, s, incr_interval=row['incr_interval'],
@@ -171,4 +173,6 @@ if __name__ == '__main__':
                         help="connection name to gbq")
     parser.add_argument('-schedule_type', dest='schedule', required=False,
                         help="schedule type from the config: hourly, daily, etc.")
+    parser.add_argument('-schema', dest='schema', required=False,
+                        help="schema to get ga data from")
     run(parser.parse_args())

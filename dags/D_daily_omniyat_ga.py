@@ -31,10 +31,17 @@ dag = DAG(
     tags=["prod"],
 )
 
-t2 = BashOperator(
+t4 = BashOperator(
+    task_id="externalfiles2dwh_com",
+    bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
+                 f'-conn gcp_omniyat -schedule_type omniyatcom_ga_daily -schema gcp_ga_com',
+    dag=dag
+)
+
+t3 = BashOperator(
     task_id="externalfiles2dwh",
     bash_command=f'python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/externalfiles2dwh.py '
-                 f'-conn gcp_omniyat -schedule_type omniyat_ga_daily',
+                 f'-conn gcp_omniyat -schedule_type omniyat_ga_daily -schema gcp_ga',
     dag=dag
 )
 
@@ -42,8 +49,15 @@ t2 = BashOperator(
 t1 = BashOperator(
     task_id="ga",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
-                 f"""-conn gcp_omniyat -business_type omniyat""",
+                 f"""-conn gcp_omniyat -business_type omniyat -schema gcp_ga""",
     dag=dag
 )
 
-t1 >> t2
+t2 = BashOperator(
+    task_id="ga_com",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
+                 f"""-conn gcp_omniyat -business_type omniyatcom -schema gcp_ga_com""",
+    dag=dag
+)
+
+[t1>>t3,t2>>t4]

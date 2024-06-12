@@ -12,9 +12,7 @@ SELECT  id_category                                  fk_product_category,
         merchant_name_en,
         brand_name_en,
         config_name_en                               simple_name_en,
-        CAST(CASE WHEN LENGTH(if_simple_active) >1
-                  THEN '0' ELSE  if_simple_active
-              END AS INT64)                          if_simple_active
+        if_simple_active
   FROM  aws_s3.{0}_catalog_products_vendure
 )
 
