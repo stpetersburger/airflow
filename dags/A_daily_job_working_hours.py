@@ -48,14 +48,14 @@ t2 = BashOperator(
 t3 = BashOperator(
     task_id="ga_intraday",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
-                 f"""-conn gcp -business_type b2c -gatype intraday""",
+                 f"""-conn gcp -business_type b2c -gatype intraday -schema gcp_ga""",
     dag=dag
 )
 
 t4 = BashOperator(
     task_id="ga",
     bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/ga2dwh.py """
-                 f"""-conn gcp -business_type b2c""",
+                 f"""-conn gcp -business_type b2c -schema gcp_ga""",
     dag=dag
 )
 
