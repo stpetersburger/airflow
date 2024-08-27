@@ -60,4 +60,11 @@ t2 = BashOperator(
     dag=dag
 )
 
-[t1>>t3,t2>>t4]
+t5 = BashOperator(
+    task_id="facebook_ads",
+    bash_command=f"""python {os.environ["AIRFLOW_HOME"]}/pyprojects/datawarehouse/pipelines/fb2dwh.py """
+                 f"""-conn gcp_omniyat -schema facebook_ads""",
+    dag=dag
+)
+
+[t1>>t3,t2>>t4,t5]

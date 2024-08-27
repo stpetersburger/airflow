@@ -11,8 +11,7 @@ WITH event_stg AS (
             COALESCE(country,'undefined')                    country,
             LEFT(page_location, 60)                          reduced_page_location
       FROM  {schema}.{event_name}
-     WHERE  DATE(DATE_TRUNC(DATE_ADD(event_timestamp, INTERVAl 3 HOUR), MONTH))>=
-                    DATE_SUB(DATE(DATE_TRUNC(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR), MONTH)), INTERVAL {incr_interval})
+     WHERE  DATE(DATE_ADD(event_timestamp, INTERVAl 3 HOUR)) >= DATE_SUB(DATE(DATE_ADD(CURRENT_TIMESTAMP(), INTERVAL 3 HOUR)), INTERVAL {incr_interval})
 )
 
 SELECT  estg.event_date_nk                           event_date_nk,

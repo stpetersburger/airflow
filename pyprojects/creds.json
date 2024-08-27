@@ -82,6 +82,8 @@
 			"organisation_id": "SALESFORCE_ORG_ID_omniyat",
 			"instance_id": "SALESFORCE_INSTANCE_ID_omniyat",
 			"domain": "SALESFORCE_DOMAIN_omniyat"
+		},
+		"oracle_fusion": {
 		}
 	},
 	"scrapers": {
@@ -113,6 +115,10 @@
 			"username": "ORACLE_PAAS_USERNAME",
 			"servicename": "ORACLE_PAAS_SERVICENAME",
 			"password": "ORACLE_PAAS_PASSWORD"
+		},
+		"fusion": {
+			"namespace_name": "ORACLE_FUSION_NAMESPACE_NAME",
+			"bucket_name": "ORACLE_FUSION_BUCKET_NAME"
 		}
 	},
 	"postgres": {
@@ -122,6 +128,15 @@
 			"password": "EOI_PASSWORD",
 			"host": "EOI_HOST",
 			"port": "EOI_PORT"
+		}
+	},
+	"marketing": {
+		"facebook_ads": {
+			"app_id": "FACEBOOK_ADS_APP_ID",
+			"app_secret": "FACEBOOK_ADS_APP_SECRET",
+			"access_token": "FACEBOOK_ADS_ACCESS_TOKEN",
+			"accounts_list": "FACEBOOK_ADS_ACCOUNTS_LIST",
+			"params_fields": "FACEBOOK_ADS_PARAMS_FIELDS"
 		}
 	}
 }

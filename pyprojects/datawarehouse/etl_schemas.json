@@ -173,7 +173,7 @@
 			"fields": "customerReference"
 		},
 		"order_shippingAddress": {
-			"fields": "country,address1,address2,city"
+			"fields": "country,address1,city"
 		},
 		"order_discounts": {
 			"message_object": 0,

@@ -30,3 +30,4 @@ Office365-REST-Python-Client
 office365
 requests
 simple_salesforce
+facebook_business
