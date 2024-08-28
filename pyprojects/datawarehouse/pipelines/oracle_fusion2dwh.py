@@ -19,7 +19,7 @@ def run(args):
     if args.dwh_dataset == '':
         dst=args.file_infix
     else:
-        dst = args.dwh_datset
+        dst = args.dwh_dataset
 
     list_objects_response = object_storage_client.list_objects(namespace_name=ocp_namespace_name,
                                                                bucket_name=ocp_namespace_bucket_name)
@@ -38,6 +38,10 @@ def run(args):
     df = pd.read_csv(
         f"oci://{ocp_namespace_bucket_name}@{ocp_namespace_name}/{fname}",
         storage_options={"config": "~/.oci/config"}, low_memory=False)
+
+    nan_value = float("NaN")
+    df.replace("", nan_value, inplace=True)
+    df.dropna(how='all', axis=1, inplace=True)
 
     print(df)
 
