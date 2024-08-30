@@ -16,7 +16,7 @@ def run(args):
 
     sftp.chdir(get_creds('marketing', 'sftp', 'folder'))
 
-    d = datetime.datetime.now() - datetime.timedelta(days=1)
+    d = datetime.datetime.now() #- datetime.timedelta(days=1)
     d = d.strftime("%d%m%Y")
     zf = f"{get_creds('marketing', 'sftp', 'archive_prefix')}_{d}.zip"
     print(zf)

@@ -1,0 +1,16 @@
+#fb2dwh
+
+The pipeline brings data from facebook app, collecting ads information
+
+To generate a user access token: https://developers.facebook.com/tools/explorer
+
+For generating the long-live access token, the user access token to be used in:
+https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived/
+
+curl -i -X GET "https://graph.facebook.com/{graph-api-version}/oauth/access_token?
+    grant_type=fb_exchange_token&
+    client_id={app-id}&
+    client_secret={app-secret}&
+    fb_exchange_token={your-access-token}"
+
+
