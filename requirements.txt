@@ -32,4 +32,3 @@ requests
 simple_salesforce
 facebook_business
 pysftp
-zipfile

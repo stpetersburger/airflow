@@ -28,8 +28,8 @@ def run(args):
         for zff in zf.filelist:
             print(zff.filename.split('.')[0])
             df = pd.read_csv(zf.open(zff.filename), sep='|')
-            write_to_gbq(args.conn, args.schema, zff.filename.split('.')[0],
-                         clean_pandas_dataframe(df, '', True, datetime.datetime.now()), 'replace')
+            write_to_gbq(args.conn, args.schema, f"sftp_{zff.filename.split('.')[0]}",
+                         clean_pandas_dataframe(df, '', True, datetime.datetime.now()), 'append')
     sftp.close()
 
 
