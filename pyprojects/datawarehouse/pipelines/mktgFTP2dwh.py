@@ -16,20 +16,22 @@ def run(args):
 
     sftp.chdir(get_creds('marketing', 'sftp', 'folder'))
 
-    d = datetime.datetime.now() #- datetime.timedelta(days=1)
+    d = datetime.datetime.now() - datetime.timedelta(days=1)
     d = d.strftime("%d%m%Y")
     zf = f"{get_creds('marketing', 'sftp', 'archive_prefix')}_{d}.zip"
     print(zf)
-    zf = ZipFile(sftp.open(zf))
 
-    sftp_files = get_creds('marketing', 'sftp', 'files').split(',')
+    if zf in sftp.listdir():
 
-    for f in sftp_files:
-        print(f)
-        df = (pd.read_csv(zf.open(f'{f}.csv'), sep='|'))
-        write_to_gbq(args.conn, args.schema, f'sftp_{f}',
-                     clean_pandas_dataframe(df, '', True, datetime.datetime.now()), 'append')
+        zf = ZipFile(sftp.open(zf))
+
+        for zff in zf.filelist:
+            print(zff.filename.split('.')[0])
+            df = pd.read_csv(zf.open(zff.filename), sep='|')
+            write_to_gbq(args.conn, args.schema, zff.filename.split('.')[0],
+                         clean_pandas_dataframe(df, '', True, datetime.datetime.now()), 'replace')
     sftp.close()
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='sourcing datawarehouse with eoi data')
