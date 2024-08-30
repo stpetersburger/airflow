@@ -17,7 +17,7 @@ def run(args):
     ocp_namespace_name = get_creds('oracle', 'fusion', 'namespace_name')
     ocp_namespace_bucket_name = get_creds('oracle', 'fusion', 'bucket_name')
     if args.dwh_dataset == '':
-        dst=args.file_infix
+        dst = args.file_infix
     else:
         dst = args.dwh_dataset
 

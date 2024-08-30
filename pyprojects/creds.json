@@ -137,6 +137,14 @@
 			"access_token": "FACEBOOK_ADS_ACCESS_TOKEN",
 			"accounts_list": "FACEBOOK_ADS_ACCOUNTS_LIST",
 			"params_fields": "FACEBOOK_ADS_PARAMS_FIELDS"
+		},
+		"sftp": {
+			"host": "MKTG_SFTP_HOSTNAME",
+			"username": "MKTG_SFTP_USERNAME",
+			"password": "MKTG_SFTP_PASSWORD",
+			"folder": "MKTG_SFTP_FOLDER",
+			"archive_prefix": "MKTG_SFTP_ARCHIVE",
+			"files": "MKTG_SFTP_FILES"
 		}
 	}
 }
